@@ -144,6 +144,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+*.egg-info
 
 # pytype static type analyzer
 .pytype/

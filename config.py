@@ -10,9 +10,9 @@ class APISettings(BaseSettings):
 
 class Settings(BaseSettings):
     name = 'aladdin'
-    version = '0.0.2'
+    version = '0.0.1'
     url = 'https://github.com/amruthvvkp/flaui-uiautomation-wrapper'
-    description = 'Tools to perform UI Automation on Windows desktop applications using an underlying Fla-UI wrapper.'
+    description = 'Tool to perform UI Automation on Windows desktop applications using an underlying Fla-UI wrapper.'
     python_requires = '>=3.8'
     packages = find_packages(include=('src', 'tests'))
     api_settings: APISettings = APISettings()
