@@ -51,7 +51,7 @@ install_requires = open('requirements.txt').read().strip().split('\n')
 cmdclass = {
     "verify_version": VerifyVersionCommand,
 }
-cmdclass.update(versioneer.get_cmdclass())
+cmdclass |= versioneer.get_cmdclass()
 
 setup(
     name='flaui-uiautomation-wrapper',
