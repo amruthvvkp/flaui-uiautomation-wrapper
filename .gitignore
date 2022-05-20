@@ -158,3 +158,6 @@ cython_debug/
 
 # Visual Studio Code relevant settings/debug config
 .vscode/launch.json
+
+# pytest files
+junit/*

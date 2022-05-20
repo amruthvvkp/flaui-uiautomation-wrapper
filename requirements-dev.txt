@@ -1,10 +1,6 @@
 -r requirements.txt
-
-# VS Code Requirements
 yapf
 mypy
 jupyter
 isort
-
-# Unit Testing
 pytest
