@@ -9,3 +9,5 @@ Other than RobotFramework-FLAUI, there are no Python libraries that help us leve
 This project is in active development over the latest version of FlaUI (3.2.0) available on GitHub. New releases are expected to come by in the next few weeks and certainly the documentation would improve alongside the planned releases.
 
 If you would like to contribute or request a feature, feel free to join the discussions on the [project's GitHub page](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/discussions).
+
+This project is designed to work only on Python 3.7 or 3.8 due to the Python version dependency from Pythonnet 2.5.2, PythonNet 3.0.0 is under development and post it's release this project would support Python 3.9 & 3.10.
