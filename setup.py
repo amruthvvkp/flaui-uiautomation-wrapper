@@ -64,7 +64,7 @@ setup(
     'Tool to perform UI Automation on Windows desktop applications using an underlying FlaUI wrapper.',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    python_requires='>=3.7',
+    python_requires='>=3.7, !=3.9, != 3.10',
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     package_data={'flaui': ['flaui/bin/*.dll']},
