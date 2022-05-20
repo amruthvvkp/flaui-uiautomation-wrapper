@@ -1,3 +1,8 @@
 {
-    "autoDocstring.docstringFormat": "sphinx-notypes"
+    "autoDocstring.docstringFormat": "sphinx-notypes",
+    "cSpell.words": [
+        "flaui",
+        "uiautomation",
+        "versioneer"
+    ]
 }
