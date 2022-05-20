@@ -47,19 +47,11 @@ class VerifyVersionCommand(install):
 
 
 install_requires = open('requirements.txt').read().strip().split('\n')
-dev_requires = open('dev-requirements.txt').read().strip().split('\n')
-test_requires = open('test-requirements.txt').read().strip().split('\n')
 
 cmdclass = {
     "verify_version": VerifyVersionCommand,
 }
 cmdclass.update(versioneer.get_cmdclass())
-
-extras = {
-    "dev": dev_requires + test_requires,
-}
-
-extras["all_extras"] = sum(extras.values(), [])
 
 setup(
     name='flaui-uiautomation-wrapper',
@@ -73,11 +65,10 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     python_requires='>=3.7',
-    packages=find_packages(where=('src'), include=('flaui', 'tests')),
-    package_dir={'flaui': 'src/flaui'},
-    package_data={'flaui': ['bin/*.dll']},
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
+    package_data={'flaui': ['flaui/bin/*.dll']},
     install_requires=install_requires,
-    xtras_require=extras,
     classifiers=[
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.7',
