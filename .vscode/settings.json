@@ -2,6 +2,7 @@
     "autoDocstring.docstringFormat": "sphinx-notypes",
     "cSpell.words": [
         "flaui",
+        "pydantic",
         "uiautomation",
         "versioneer"
     ],
