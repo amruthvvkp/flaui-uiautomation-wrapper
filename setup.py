@@ -46,7 +46,7 @@ class VerifyVersionCommand(install):
             )
 
 
-install_requires = open('requirements.txt').read().strip().split('\n')
+install_requires = ["wheel", "pythonnet==2.5.2", "pydantic>=1.9.0", "loguru>=0.6.0", "pillow>=9.1.0", "versioneer"]
 
 cmdclass = {
     "verify_version": VerifyVersionCommand,
