@@ -7,6 +7,6 @@ python -m pip install --upgrade wheel
 python -m pip install --upgrade build
 python -m pip install --upgrade twine
 
-python -m build
+python setup.py bdist_wheel
 
 python -m twine check dist/*
