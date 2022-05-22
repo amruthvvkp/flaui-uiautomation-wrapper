@@ -1,2 +1,3 @@
 include versioneer.py
 include src/flaui/_version.py
+include src/flaui/bin/*.dll

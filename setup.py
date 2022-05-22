@@ -71,6 +71,7 @@ setup(
         # If any package contains *.dll files, include them:
         "": ["*.dll"],
     },
+    include_package_data=True,
     install_requires=install_requires,
     classifiers=[
         'Programming Language :: Python :: 3',
@@ -84,4 +85,4 @@ setup(
     ],
     distclass=BinaryDistribution,
     platforms=['Windows'],
-    license=license)
+    license='LGPLv3')
