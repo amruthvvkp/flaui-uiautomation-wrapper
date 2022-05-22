@@ -161,3 +161,6 @@ cython_debug/
 
 # pytest files
 junit/*
+
+# PYPI Secrets
+.pypirc
