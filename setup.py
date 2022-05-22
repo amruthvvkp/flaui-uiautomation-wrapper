@@ -65,9 +65,12 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     python_requires='>=3.7, !=3.9, != 3.10',
-    packages=find_packages(where="src"),
-    package_dir={"": "src"},
-    package_data={'flaui': ['flaui/bin/*.dll']},
+    packages=find_packages("src"),
+    package_dir={"": "src"},   # tell distutils packages are under src
+    package_data={
+        # If any package contains *.dll files, include them:
+        "": ["*.dll"],
+    },
     install_requires=install_requires,
     classifiers=[
         'Programming Language :: Python :: 3',
