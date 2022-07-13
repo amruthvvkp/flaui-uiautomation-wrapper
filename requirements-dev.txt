@@ -4,3 +4,4 @@ mypy
 jupyter
 isort
 pytest
+pylint

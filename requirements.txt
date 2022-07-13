@@ -4,3 +4,7 @@ pydantic>=1.9.0
 loguru>=0.6.0
 pillow>=9.1.0
 versioneer
+PyAutoGUI
+psutil
+Pillow
+arrow
