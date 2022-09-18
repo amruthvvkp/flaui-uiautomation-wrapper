@@ -6,13 +6,13 @@ authors = ["Amruth VVKP <amruthvvkp@gmail.com>"]
 license = "LGPL-3.0-or-later"
 readme = "README.md"
 keywords = [
-    "testing",
-    "ui",
-    "ui-automation",
-    "automation",
-    "windows",
-    "windows testing",
-    "desktop automation",
+  "testing",
+  "ui",
+  "ui-automation",
+  "automation",
+  "windows",
+  "windows testing",
+  "desktop automation",
 ]
 packages = [{ include = "flaui" }]
 include = [{ path = "flaui/bin/*.dll", format = "sdist" }]
@@ -48,16 +48,16 @@ testpaths = ["tests/pytest/unit_tests"]
 
 
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-    "Operating System :: Microsoft :: Windows",
-    "Operating System :: POSIX :: Linux",
-    "Operating System :: MacOS :: MacOS X",
-    "Topic :: Software Development :: Developers",
-    "Topic :: Software Development :: Testing",
-    "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
+  "Operating System :: MacOS :: MacOS X",
+  "Topic :: Software Development :: Developers",
+  "Topic :: Software Development :: Testing",
+  "Intended Audience :: Developers",
 ]
 
 repository = "https://github.com/amruthvvkp/flaui-uiautomation-wrapper"
