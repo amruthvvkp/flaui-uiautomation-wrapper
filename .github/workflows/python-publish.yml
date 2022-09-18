@@ -1,0 +1,47 @@
+# This workflow will upload a Python Package using Twine when a release is created
+# For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Publish Python 🐍 distributions 📦 to PyPI and TestPyPI
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.x"
+      - name: Setup Poetry
+        run: |
+          RUN curl -sSL https://install.python-poetry.org | python3 -
+          ENV PATH="/root/.local/bin:$PATH"
+          RUN poetry --version
+          RUN poetry config virtualenvs.create false
+      - name: Build package
+        run: poetry build
+      - name: Publish distribution 📦 to Test PyPI
+        uses: JRubics/poetry-publish@v1.13
+        with:
+          pypi_token: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          repository_url: https://test.pypi.org/legacy/
+          repository_name: flaui-uiautomation-wrapper
+          allow_poetry_pre_release: "yes"
+      - name: Publish distribution 📦 to PyPI
+        if: startsWith(github.ref, 'refs/tags')
+        uses: JRubics/poetry-publish@v1.13
+        with:
+          pypi_token: ${{ secrets.PYPI_API_TOKEN }}
