@@ -25,12 +25,6 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: "3.x"
-      - name: Setup Poetry
-        run: |
-          RUN curl -sSL https://install.python-poetry.org | python3 -
-          ENV PATH="/root/.local/bin:$PATH"
-          RUN poetry --version
-          RUN poetry config virtualenvs.create false
       - name: Build package
         run: poetry build
       - name: Publish distribution 📦 to Test PyPI
