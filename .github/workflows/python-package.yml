@@ -24,15 +24,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Setup Poetry
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Configure Poetry
-        run: |
-          poetry --version
-          poetry config virtualenvs.create false
+        uses: knowsuchagency/poetry-install@v1
+        env:
+          POETRY_VIRTUALENVS_CREATE: false
       - name: Install dependencies
         run: |
+          poetry --version
           poetry install
       - name: Update package version
         run: poetry version minor
