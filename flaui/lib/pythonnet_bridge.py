@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import clr
 from loguru import logger
@@ -14,6 +15,7 @@ def setup_pythonnet_bridge() -> None:
     :raises err: On failure to load the existing C# dependencies listed under flaui/bin
     """
     BIN_HOME = config.settings.BIN_HOME
+    logger.info(f"Looking for valid binaries at - {BIN_HOME}")
     try:
         for _ in os.listdir(BIN_HOME):
             path, dll = os.path.join(BIN_HOME, _), _.replace(".dll", "")
