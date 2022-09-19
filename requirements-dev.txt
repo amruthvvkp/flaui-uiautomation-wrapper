@@ -1,6 +1,0 @@
--r requirements.txt
-yapf
-mypy
-jupyter
-isort
-pytest
