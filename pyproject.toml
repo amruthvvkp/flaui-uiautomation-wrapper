@@ -24,6 +24,8 @@ pydantic = "^1.10.2"
 loguru = "^0.6.0"
 Pillow = "^9.2.0"
 pytest-cov = "^3.0.0"
+arrow = "^1.2.3"
+PyAutoGUI = "^0.9.53"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.8.0"

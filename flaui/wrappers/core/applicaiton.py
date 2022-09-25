@@ -1,38 +1,49 @@
-"""
-Auto-Generated wrapper for Application class from the object <class 'FlaUI.Core.Application'> from the module - FlaUI.Core
-"""
+# Auto-Generated wrapper for Application class from the object <class 'FlaUI.Core.Application'> from the module - FlaUI.Core
 
 from __future__ import annotations
+
 from typing import Any, Optional, Union
 
+from FlaUI.Core import Application as CSApplication  # pyright: ignore  # type: ignore  # noqa: E402
 from flaui.lib.cast_type_converter import TypeConverter
-from FlaUI.Core import Application as CSApplication
 
 
 class Application:
     """
     Wrapper for an application which should be automated
     """
+
     def __init__(self, application: Optional[Any] = None):
         self.application = application if application else CSApplication()
 
         self.name: str = self.application.Name  # The name of the application's process.
         self.process_id: int = self.application.ProcessId  # The process id of the application.
-        self.is_store_app: bool = self.application.IsStoreApp  # Flag to indicate, if the application is a windows store app.
-        self.close_timeout: int = self.application.CloseTimeout  # The timeout to wait to close an application gracefully.
-        self.has_exited: bool = self.application.HasExited  # Gets a value indicating whether the associated process has been terminated.
-        self.main_window_handle: int = self.application.MainWindowHandle  # The current handle (Win32) of the application's main window. Can be IntPtr.Zero if no main window is currently available.
-        self.exit_code: int = self.application.ExitCode  # Gets the value that the associated process specified when it terminated.
+        self.is_store_app: bool = (
+            self.application.IsStoreApp
+        )  # Flag to indicate, if the application is a windows store app.
+        self.close_timeout: int = (
+            self.application.CloseTimeout
+        )  # The timeout to wait to close an application gracefully.
+        self.has_exited: bool = (
+            self.application.HasExited
+        )  # Gets a value indicating whether the associated process has been terminated.
+        self.main_window_handle: int = (
+            self.application.MainWindowHandle
+        )  # The current handle (Win32) of the application's main window. Can be IntPtr.Zero if no main window is currently available.
+        self.exit_code: int = (
+            self.application.ExitCode
+        )  # Gets the value that the associated process specified when it terminated.
 
     @classmethod
-    def return_application(cls, application) -> Application:
+    def return_application(cls, application: Any) -> Application:
         """Returns an instance of the Application class
 
+        :param cls: Reference to the class itself
         :param application: Application object
         :return: New Application class
         """
         return Application(application)
-    
+
     def launch(self, executable: str, arguments: Optional[str] = None) -> Application:
         """Launches the given executable.
 
@@ -51,7 +62,7 @@ class Application:
         # return element
         return TypeConverter.cast_to_py_list(self.application.GetAllTopLevelWindows())
 
-    def launch_store_app(self, app_user_model_ltd: str, arguments: Optional[str] = None):
+    def launch_store_app(self, app_user_model_ltd: str, arguments: Optional[str] = None) -> Application:
         """Launches a store application.
 
         :param app_user_model_ltd: The app id of the application to launch.
@@ -66,7 +77,7 @@ class Application:
         :param automation: The automation object to use.
         :return: The main window object as Window element or null if no main window was found within the timeout.
         """
-        
+
         # return element
         return self.application.GetMainWindow()
 

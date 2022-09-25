@@ -1,16 +1,17 @@
 from typing import Any, Optional
-import pyautogui
-from flaui.lib.enums import UIAutomationTypes
-from FlaUI.Core import Application
-from FlaUI.UIA2 import UIA2Automation
-from FlaUI.UIA3 import UIA3Automation
 
+import pyautogui
+
+from flaui.lib.enums import UIAutomationTypes
+from FlaUI.UIA2 import UIA2Automation  # pyright: ignore
+from FlaUI.UIA3 import UIA3Automation  # pyright: ignore
 
 
 class UIAutomation:
     """UIAutomation constructed wrapper for FlaUI DLL
 
-    FlaUI is written entirely on C# .Net, using it directly inside an IDE within a Python project would be painful since intellisense does not pick up the methods/typing hints.
+    FlaUI is written entirely on C# .Net, using it directly inside an IDE within a Python project 
+    would be painful since intellisense does not pick up the methods/typing hints.
     This class is designed to overcome those challenges by providing Python compatible workstream.
     """
 

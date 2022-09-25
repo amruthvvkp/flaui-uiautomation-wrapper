@@ -26,5 +26,8 @@
         "COLUMN_LIMIT=120"
     ],
     "python.formatting.provider": "black",
-    "python.linting.mypyEnabled": true
+    "python.linting.mypyEnabled": true,
+    "python.analysis.extraPaths": [
+        "typings"
+    ]
 }

@@ -1,5 +1,11 @@
 from typing import Any
-from FlaUI.Core.AutomationElements import AutomationElementExtensions as CSAutomationElementExtensions
+
+# isort: off
+from FlaUI.Core.AutomationElements import (
+    AutomationElementExtensions as CSAutomationElementExtensions,
+)  # pyright: ignore
+
+# isort: on
 
 
 class AutomationElementExtensions:
@@ -7,9 +13,9 @@ class AutomationElementExtensions:
 
     Automation Element Extensions to convert generic FlaUI identified objects casted into proper identified FlaUI objects
     """
-    
+
     @staticmethod
-    def as_button(element) -> Any:
+    def as_button(element: Any) -> Any:
         """Convert as Button
 
         Converts element as Button
@@ -19,7 +25,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsButton(element)
 
     @staticmethod
-    def as_calendar(element) -> Any:
+    def as_calendar(element: Any) -> Any:
         """Convert as Calendar
 
         Converts element as Calendar
@@ -29,7 +35,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsCalendar(element)
 
     @staticmethod
-    def as_check_box(element) -> Any:
+    def as_check_box(element: Any) -> Any:
         """Convert as CheckBox
 
         Converts element as CheckBox
@@ -39,7 +45,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsCheckBox(element)
 
     @staticmethod
-    def as_combo_box(element) -> Any:
+    def as_combo_box(element: Any) -> Any:
         """Convert as ComboBox
 
         Converts element as ComboBox
@@ -49,7 +55,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsComboBox(element)
 
     @staticmethod
-    def as_data_grid_view(element) -> Any:
+    def as_data_grid_view(element: Any) -> Any:
         """Convert as DataGridView
 
         Converts element as DatGridView
@@ -59,7 +65,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsDataGridView(element)
 
     @staticmethod
-    def as_date_time_picker(element) -> Any:
+    def as_date_time_picker(element: Any) -> Any:
         """Convert as DateTimePicker
 
         Converts element as DateTimePicker
@@ -69,7 +75,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsDateTimePicker(element)
 
     @staticmethod
-    def as_grid(element) -> Any:
+    def as_grid(element: Any) -> Any:
         """Convert as Grid
 
         Converts element as Grid
@@ -79,7 +85,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsGrid(element)
 
     @staticmethod
-    def as_grid_cell(element) -> Any:
+    def as_grid_cell(element: Any) -> Any:
         """Convert as GridCell
 
         Converts element as GridCell
@@ -89,7 +95,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsGridCell(element)
 
     @staticmethod
-    def as_grid_header(element) -> Any:
+    def as_grid_header(element: Any) -> Any:
         """Convert as GridHeader
 
         Converts element as GridHeader
@@ -99,7 +105,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsGridHeader(element)
 
     @staticmethod
-    def as_grid_header_item(element) -> Any:
+    def as_grid_header_item(element: Any) -> Any:
         """Convert as GridHeaderItem
 
         Converts element as GridHeaderItem
@@ -109,7 +115,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsGridHeaderItem(element)
 
     @staticmethod
-    def as_grid_row(element) -> Any:
+    def as_grid_row(element: Any) -> Any:
         """Convert as GridRow
 
         Converts element as GridRow
@@ -119,7 +125,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsGridRow(element)
 
     @staticmethod
-    def as_horizontal_scroll_bar(element) -> Any:
+    def as_horizontal_scroll_bar(element: Any) -> Any:
         """Convert as HorizontalScrollBar
 
         Converts element as HorizontalScrollBar
@@ -129,7 +135,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsHorizontalScrollBar(element)
 
     @staticmethod
-    def as_label(element) -> Any:
+    def as_label(element: Any) -> Any:
         """Convert as Label
 
         Converts element as Label
@@ -139,7 +145,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsLabel(element)
 
     @staticmethod
-    def as_list_box(element) -> Any:
+    def as_list_box(element: Any) -> Any:
         """Convert as ListBox
 
         Converts element as ListBox
@@ -149,7 +155,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsListBox(element)
 
     @staticmethod
-    def as_list_box_item(element) -> Any:
+    def as_list_box_item(element: Any) -> Any:
         """Convert as ListBoxItem
 
         Converts element as ListBoxItem
@@ -159,7 +165,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsListBoxItem(element)
 
     @staticmethod
-    def as_menu(element) -> Any:
+    def as_menu(element: Any) -> Any:
         """Convert as Menu
 
         Converts element as Menu
@@ -169,7 +175,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsMenu(element)
 
     @staticmethod
-    def as_menu_item(element) -> Any:
+    def as_menu_item(element: Any) -> Any:
         """Convert as MenuItem
 
         Converts element as MenuItem
@@ -179,7 +185,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsMenuItem(element)
 
     @staticmethod
-    def as_progress_bar(element) -> Any:
+    def as_progress_bar(element: Any) -> Any:
         """Convert as ProgressBar
 
         Converts element as ProgressBar
@@ -189,7 +195,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsProgressBar(element)
 
     @staticmethod
-    def as_radio_button(element) -> Any:
+    def as_radio_button(element: Any) -> Any:
         """Convert as RadioButton
 
         Converts element as RadioButton
@@ -199,7 +205,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsRadioButton(element)
 
     @staticmethod
-    def as_slider(element) -> Any:
+    def as_slider(element: Any) -> Any:
         """Convert as Slider
 
         Converts element as Slider
@@ -209,7 +215,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsSlider(element)
 
     @staticmethod
-    def as_spinner(element) -> Any:
+    def as_spinner(element: Any) -> Any:
         """Convert as Spinner
 
         Converts element as Spinner
@@ -219,7 +225,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsSpinner(element)
 
     @staticmethod
-    def as_tab(element) -> Any:
+    def as_tab(element: Any) -> Any:
         """Convert as Tab
 
         Converts element as Tab
@@ -229,7 +235,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsTab(element)
 
     @staticmethod
-    def as_tab_item(element) -> Any:
+    def as_tab_item(element: Any) -> Any:
         """Convert as TabItem
 
         Converts element as TabItem
@@ -239,7 +245,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsTabItem(element)
 
     @staticmethod
-    def as_text_box(element) -> Any:
+    def as_text_box(element: Any) -> Any:
         """Convert as TextBox
 
         Converts element as TextBox
@@ -249,7 +255,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsTextBox(element)
 
     @staticmethod
-    def as_thumb(element) -> Any:
+    def as_thumb(element: Any) -> Any:
         """Convert as Thumb
 
         Converts element as Thumb
@@ -259,7 +265,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsThumb(element)
 
     @staticmethod
-    def as_title_bar(element) -> Any:
+    def as_title_bar(element: Any) -> Any:
         """Convert as TitleBar
 
         Converts element as TitleBar
@@ -269,7 +275,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsTitleBar(element)
 
     @staticmethod
-    def as_toggle_button(element) -> Any:
+    def as_toggle_button(element: Any) -> Any:
         """Convert as ToggleButton
 
         Converts element as ToggleButton
@@ -279,7 +285,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsToggleButton(element)
 
     @staticmethod
-    def as_tree(element) -> Any:
+    def as_tree(element: Any) -> Any:
         """Convert as Tree
 
         Converts element as Tree
@@ -289,7 +295,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsTree(element)
 
     @staticmethod
-    def as_tree_item(element) -> Any:
+    def as_tree_item(element: Any) -> Any:
         """Convert as TreeItem
 
         Converts element as TreeItem
@@ -299,7 +305,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsTreeItem(element)
 
     @staticmethod
-    def as_vertical_scroll_bar(element) -> Any:
+    def as_vertical_scroll_bar(element: Any) -> Any:
         """Convert as VerticalScrollBar
 
         Converts element as VerticalScrollBar
@@ -309,7 +315,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsVerticalScrollBar(element)
 
     @staticmethod
-    def as_window(element) -> Any:
+    def as_window(element: Any) -> Any:
         """Convert as Window
 
         Converts element as Window
@@ -319,7 +325,7 @@ class AutomationElementExtensions:
         return CSAutomationElementExtensions.AsWindow(element)
 
     @staticmethod
-    def draw_highlight(element) -> Any:
+    def draw_highlight(element: Any) -> Any:
         """Convert as DrawHighlight
 
         Converts element as Button
