@@ -2,11 +2,32 @@
     "autoDocstring.docstringFormat": "sphinx-notypes",
     "cSpell.words": [
         "flaui",
+        "pyautogui",
         "pydantic",
         "uiautomation",
         "versioneer"
     ],
     "python.testing.pytestArgs": [],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "files.exclude": {
+        "**/*.egg-info": true
+    },
+    "pythonTestExplorer.testFramework": "testplan",
+    "pythonTestExplorer.testplanEnabled": true,
+    "pythonTestExplorer.testplanPath": "src\\integration_tests\\test_plan.py",
+    "testExplorer.mergeSuites": true,
+    "testExplorer.hideWhen": "noTests",
+    "testExplorer.showOnRun": true,
+    "python.linting.pylintEnabled": false,
+    "python.linting.enabled": true,
+    "python.linting.flake8Enabled": false,
+    "python.formatting.yapfArgs": [
+        "COLUMN_LIMIT=120"
+    ],
+    "python.formatting.provider": "black",
+    "python.linting.mypyEnabled": true,
+    "python.analysis.extraPaths": [
+        "typings"
+    ]
 }
