@@ -53,7 +53,7 @@ class Application:
         """
         return self.return_application(self.application.Launch(executable, arguments))
 
-    def get_all_top_level_windows(self, automation: Any) -> Any:
+    def get_all_top_level_windows(self) -> Any:  # TODO: Update this to return Element object
         """Gets all top level windows from the application.
 
         :param automation: The automation object to use.
@@ -71,7 +71,7 @@ class Application:
         """
         return self.application.LaunchStoreApp(app_user_model_ltd, arguments)
 
-    def get_main_window(self, automation: Any) -> Any:
+    def get_main_window(self) -> Any:  # TODO: Update this to return Element object
         """Gets the main window of the applications process.
 
         :param automation: The automation object to use.
