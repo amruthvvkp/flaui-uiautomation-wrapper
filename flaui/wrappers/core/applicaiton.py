@@ -1,10 +1,10 @@
-# Auto-Generated wrapper for Application class from the object <class 'FlaUI.Core.Application'> from the module - FlaUI.Core
+# Wrapper for Application class from the object <class 'FlaUI.Core.Application'> from the module - FlaUI.Core
 
 from __future__ import annotations
 
 from typing import Any, Optional, Union
 
-from FlaUI.Core import Application as CSApplication  # pyright: ignore  # type: ignore  # noqa: E402
+from FlaUI.Core import Application as CSApplication  # pyright: ignore
 from flaui.lib.cast_type_converter import TypeConverter
 
 
