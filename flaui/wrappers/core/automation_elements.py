@@ -8,7 +8,7 @@ from typing import Any, List, Optional, Union
 
 import arrow
 
-from flaui.lib.cast_type_converter import TypeConverter
+from flaui.lib.collections import TypeCast
 from flaui.wrappers.core.automation_element_extensions import AutomationElementExtensions
 
 
@@ -96,8 +96,7 @@ class AutomationElement:
         :return: The found elements or an empty list if no elements were found.
         """
         return [
-            self.return_automation_element(_)
-            for _ in TypeConverter.cast_to_py_list(self.element.FindAll(tree_scope, condition))
+            self.return_automation_element(_) for _ in TypeCast.py_list(self.element.FindAll(tree_scope, condition))
         ]
 
     def find_all_by_x_path(self, x_path: str) -> List[AutomationElement]:
@@ -106,10 +105,7 @@ class AutomationElement:
         :param x_path: Element XPath
         :return: The found elements or an empty list if no elements were found.
         """
-        return [
-            self.return_automation_element(_)
-            for _ in TypeConverter.cast_to_py_list(self.element.FindAllByXPath(x_path))
-        ]
+        return [self.return_automation_element(_) for _ in TypeCast.py_list(self.element.FindAllByXPath(x_path))]
 
     def find_all_children(self, condition: Optional[Any]) -> List[AutomationElement]:
         """Finds all children with the condition.
@@ -117,10 +113,7 @@ class AutomationElement:
         :param condition: The search condition.
         :return: The found elements or an empty list if no elements were found.
         """
-        return [
-            self.return_automation_element(_)
-            for _ in TypeConverter.cast_to_py_list(self.element.FindAllChildren(condition))
-        ]
+        return [self.return_automation_element(_) for _ in TypeCast.py_list(self.element.FindAllChildren(condition))]
 
     def find_all_descendants(self, condition: Optional[Any]) -> List[AutomationElement]:
         """Finds all descendants with the condition.
@@ -128,10 +121,7 @@ class AutomationElement:
         :param condition: The search condition.
         :return: The found elements or an empty list if no elements were found.
         """
-        return [
-            self.return_automation_element(_)
-            for _ in TypeConverter.cast_to_py_list(self.element.FindAllDescendants(condition))
-        ]
+        return [self.return_automation_element(_) for _ in TypeCast.py_list(self.element.FindAllDescendants(condition))]
 
     def find_all_nested(self, condition: Optional[Any]) -> List[AutomationElement]:
         """Finds all elements by iterating thru all conditions.
@@ -139,10 +129,7 @@ class AutomationElement:
         :param condition: The search condition.
         :return: The found elements or an empty list if no elements were found.
         """
-        return [
-            self.return_automation_element(_)
-            for _ in TypeConverter.cast_to_py_list(self.element.FindAllNested(condition))
-        ]
+        return [self.return_automation_element(_) for _ in TypeCast.py_list(self.element.FindAllNested(condition))]
 
     def find_all_with_options(
         self, tree_scope: Any, condition: Optional[Any], traversal_options: Any, root: Any
@@ -157,9 +144,7 @@ class AutomationElement:
         """
         return [
             self.return_automation_element(_)
-            for _ in TypeConverter.cast_to_py_list(
-                self.element.FindAllWithOptions(tree_scope, condition, traversal_options, root)
-            )
+            for _ in TypeCast.py_list(self.element.FindAllWithOptions(tree_scope, condition, traversal_options, root))
         ]
 
     def find_at(self, tree_scope: Any, index: int, condition: Optional[Any]) -> AutomationElement:
@@ -540,11 +525,9 @@ class ComboBox(AutomationElement):
             self.element.IsReadOnly
         )  #   Flag which indicates, if the combobox is read-only or not.
         self.value: str = self.element.Value  #   Getter / setter for the selected value.
-        self.selected_items: List[str] = TypeConverter.cast_to_py_list(
-            self.element.SelectedItems
-        )  #   Gets all selected items.
+        self.selected_items: List[str] = TypeCast.py_list(self.element.SelectedItems)  #   Gets all selected items.
         self.selected_item: str = self.element.SelectedItem  #   Gets the first selected item or null otherwise.
-        self.items: List[str] = TypeConverter.cast_to_py_list(self.element.Items)  #   Gets all items.
+        self.items: List[str] = TypeCast.py_list(self.element.Items)  #   Gets all items.
         self.expand_collapse_state: Any = (
             self.element.ExpandCollapseState
         )  #   Gets the ExpandCollapseStateof the element.
@@ -575,7 +558,7 @@ class DataGridViewHeader:
         :param header: Header element of DataGridView object
         """
         self.header = header
-        self.columns: List[str] = TypeConverter.cast_to_py_list(self.header.Columns)  #   Gets the header items.
+        self.columns: List[str] = TypeCast.py_list(self.header.Columns)  #   Gets the header items.
 
 
 class DataGridViewRow:
@@ -610,7 +593,7 @@ class DataGridView(AutomationElement):
             self.element.Header
         )  #   Gets the header element or null if the header is disabled.
         self.rows: List[DataGridViewRow] = [
-            DataGridViewRow(_) for _ in TypeConverter.cast_to_py_list(self.element.Rows)
+            DataGridViewRow(_) for _ in TypeCast.py_list(self.element.Rows)
         ]  #   Gets all the data rows.
 
 
@@ -648,20 +631,20 @@ class Grid(AutomationElement):
         self.row_count: int = self.element.RowCount  #   Gets the total row count.
         self.column_count: int = self.element.ColumnCount  #   Gets the total column count.
         self.column_headers: List[AutomationElement] = [
-            self.return_automation_element(_) for _ in TypeConverter.cast_to_py_list(self.element.ColumnHeaders)
+            self.return_automation_element(_) for _ in TypeCast.py_list(self.element.ColumnHeaders)
         ]  #   Gets all column header elements.
         self.row_headers: List[AutomationElement] = [
-            self.return_automation_element(_) for _ in TypeConverter.cast_to_py_list(self.element.RowHeaders)
+            self.return_automation_element(_) for _ in TypeCast.py_list(self.element.RowHeaders)
         ]  #   Gets all row header elements.
         self.row_or_column_major: Any = (
             self.element.RowOrColumnMajor
         )  #   Gets whether the data should be read primarily by row or by column.
         self.header: Any = self.element.Header  #   Gets the header item
         self.rows: List[Any] = [
-            _ for _ in TypeConverter.cast_to_py_list(self.element.Rows)
+            _ for _ in TypeCast.py_list(self.element.Rows)
         ]  #   Returns the rows which are currently visible to UIA. Might not be the full list (eg. in virtualized lists)! Use GetRowByIndex to make sure to get the correct row.
         self.selected_items: List[Any] = [
-            _ for _ in TypeConverter.cast_to_py_list(self.element.SelectedItems)
+            _ for _ in TypeCast.py_list(self.element.SelectedItems)
         ]  #   Gets all selected items.
         self.selected_item: Any = self.element.SelectedItem  #   Gets the first selected item or null otherwise.
 
@@ -728,7 +711,7 @@ class Grid(AutomationElement):
         :param max_items: Maximum numbers of items to return, 0 for all, defaults to 0
         :return: List of found rows.
         """
-        return TypeConverter.cast_to_py_list(self.element.GetRowsByValue(column_index, value, max_items))
+        return TypeCast.py_list(self.element.GetRowsByValue(column_index, value, max_items))
 
 
 class Label(AutomationElement):
@@ -760,9 +743,7 @@ class ListBox(AutomationElement):
         """
         super().__init__(element)
         self.element = AutomationElementExtensions.as_list_box(element)
-        self.items: List[ListBoxItem] = TypeConverter.cast_to_py_list(
-            self.element.Items
-        )  #   Returns all the list box items
+        self.items: List[ListBoxItem] = TypeCast.py_list(self.element.Items)  #   Returns all the list box items
         self.selected_item: ListBoxItem = self.element.SelectedItem  #   Gets the first selected item or null otherwise.
         self.selected_items: ListBoxItem = self.element.SelectedItems  #   Gets all selected items.
 

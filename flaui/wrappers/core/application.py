@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional, Union
+from typing import Any, List, Optional
 
 from FlaUI.Core import Application as CSApplication  # pyright: ignore
-from flaui.lib.cast_type_converter import TypeConverter
+from flaui.lib.collections import TypeCast
+from flaui.wrappers.core.automation_elements import AutomationElement
 
 
 class Application:
@@ -30,9 +31,16 @@ class Application:
         self.main_window_handle: int = (
             self.application.MainWindowHandle
         )  # The current handle (Win32) of the application's main window. Can be IntPtr.Zero if no main window is currently available.
-        self.exit_code: int = (
-            self.application.ExitCode
-        )  # Gets the value that the associated process specified when it terminated.
+        self.exit_code: Optional[int] = None  # Exit code is only available once the application is closed/terminated.
+
+    @property
+    def get_exit_code(self) -> int:
+        """Gets the value that the associated process specified when it terminated.
+
+        :return: Exit code
+        """
+        self.exit_code = self.application.ExitCode
+        return self.exit_code
 
     @classmethod
     def return_application(cls, application: Any) -> Application:
@@ -44,34 +52,17 @@ class Application:
         """
         return Application(application)
 
-    def launch(self, executable: str, arguments: Optional[str] = None) -> Application:
-        """Launches the given executable.
-
-        :param executable: The executable to launch.
-        :param arguments: Arguments to executable, defaults to None
-        :return: An application instance which is launched to the process.
-        """
-        return self.return_application(self.application.Launch(executable, arguments))
-
-    def get_all_top_level_windows(self) -> Any:  # TODO: Update this to return Element object
+    def get_all_top_level_windows(self, automation: Any) -> List[AutomationElement]:
         """Gets all top level windows from the application.
 
         :param automation: The automation object to use.
         :return: Get's all top level windows form the application
         """
-        # return element
-        return TypeConverter.cast_to_py_list(self.application.GetAllTopLevelWindows())
+        return TypeCast.py_list(self.application.GetAllTopLevelWindows(automation))
 
-    def launch_store_app(self, app_user_model_ltd: str, arguments: Optional[str] = None) -> Application:
-        """Launches a store application.
-
-        :param app_user_model_ltd: The app id of the application to launch.
-        :param arguments: The arguments to pass to the application., defaults to None
-        :return: An application instance which is launched to the process.
-        """
-        return self.application.LaunchStoreApp(app_user_model_ltd, arguments)
-
-    def get_main_window(self) -> Any:  # TODO: Update this to return Element object
+    def get_main_window(
+        self, automation: Any
+    ) -> AutomationElement:  # TODO: Update this to return Window Element object
         """Gets the main window of the applications process.
 
         :param automation: The automation object to use.
@@ -79,23 +70,7 @@ class Application:
         """
 
         # return element
-        return self.application.GetMainWindow()
-
-    def attach(self, process: Union[str, int]) -> Application:
-        """Attaches to a given process id.
-
-        :param process: The id/process/path of executable of the process to attach to.
-        :return: An application instance which is attached to the process.
-        """
-        return self.return_application(self.application.Attach(process))
-
-    def attach_or_launch(self, process: Union[str, int]) -> Application:
-        """Attaches or launches the given process.
-
-        :param process: The id/process/path of executable of the process to attach to.
-        :return: An application instance which is attached to the process.
-        """
-        return self.return_application(self.application.AttachOrLaunch(process))
+        return self.application.GetMainWindow(automation)
 
     def kill(self) -> None:
         """Kills the applications and waits until it is closed."""
