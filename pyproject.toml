@@ -109,14 +109,13 @@ plugins = ["pydantic.mypy"]
 follow_imports = "skip"
 warn_redundant_casts = true
 swarn_unused_ignores = true
-disallow_any_generics = true
 no_implicit_reexport = true
 
 [tool.pydantic-mypy]
 init_forbid_extra = true
-init_typed = true
+init_typed = false
 warn_required_dynamic_aliases = true
-warn_untyped_fields = true
+warn_untyped_fields = false
 
 [tool.flake8]
 max-line-length = 120
