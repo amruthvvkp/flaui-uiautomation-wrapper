@@ -5,8 +5,8 @@ from __future__ import annotations
 from typing import Any, List, Optional, Union
 
 from FlaUI.Core import Application as CSApplication  # pyright: ignore
+from flaui.core.automation_elements import AutomationElement
 from flaui.lib.collections import TypeCast
-from flaui.wrappers.core.automation_elements import AutomationElement
 
 
 class Application:

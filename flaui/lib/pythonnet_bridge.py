@@ -1,9 +1,8 @@
-import os, pathlib
+import pathlib
 
 import clr
-from loguru import logger
-
 import config
+from loguru import logger
 
 
 def setup_pythonnet_bridge() -> None:
@@ -25,4 +24,5 @@ def setup_pythonnet_bridge() -> None:
             logger.info(f"Added {_.name} DLL from {_} to Python.NET bridge")
     except Exception as err:
         logger.exception(f"{err}")
+        raise err
         raise err

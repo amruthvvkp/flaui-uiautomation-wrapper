@@ -5,10 +5,10 @@ class TestTypeCast:
     def test_py_list(self):
         from System.Collections.Generic import List  # pyright: ignore
 
-        test_object = List[str]()
+        test_object = List[str]()  # This is a C# List object
         test_dict = {0: "A", 1: "B", 2: "C"}
 
-        for k, v in test_dict.items():
+        for v in test_dict.values():
             test_object.Add(v)
 
         converted = TypeCast.py_list(test_object)
@@ -20,7 +20,8 @@ class TestTypeCast:
             assert converted[k] == v
 
     def test_py_dict(self):
-        from System.Collections.Generic import Dictionary, IDictionary  # pyright: ignore
+        from System.Collections.Generic import Dictionary  # pyright: ignore
+        from System.Collections.Generic import IDictionary  # pyright: ignore
 
         test_object = IDictionary[str, str](Dictionary[str, str]())
         test_dict = {"0": "A", "1": "B", "2": "C"}

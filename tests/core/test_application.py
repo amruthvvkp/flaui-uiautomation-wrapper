@@ -1,12 +1,14 @@
 from time import sleep
-from typing import Any, Generator, List, Optional
+from typing import Any
+from typing import Generator
+from typing import List
+from typing import Optional
 
+from flaui.core.application import Application
+from flaui.core.automation_elements import AutomationElement
+from flaui.modules.automation import Automation
 import pytest
 from System import InvalidOperationException  # pyright: ignore
-
-from flaui.modules.automation import Automation
-from flaui.wrappers.core.application import Application
-from flaui.wrappers.core.automation_elements import AutomationElement
 
 
 @pytest.fixture(scope="module")
@@ -115,7 +117,7 @@ class TestApplication:
         app.close()
 
         timer = 0
-        while app.has_exited == False or timer != 10:
+        while app.has_exited is False or timer != 10:
             sleep(10)
             timer = timer + 10
 

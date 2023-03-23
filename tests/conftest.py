@@ -1,17 +1,22 @@
 import os
-from typing import Any, Generator, Literal
-
-import psutil, pytest
+from typing import Any
+from typing import Generator
+from typing import Literal
 
 from config import settings
-from flaui.lib.enums import UIAutomationTypes
 from flaui.lib.pythonnet_bridge import setup_pythonnet_bridge
+import psutil
+import pytest
+
+# isort: off
 
 setup_pythonnet_bridge()
 
+from flaui.core.automation_elements import AutomationElement
 from flaui.lib.enums import UIAutomationTypes
 from flaui.modules.automation import Automation
-from flaui.wrappers.core.automation_elements import AutomationElement
+
+# isort: on
 
 
 def close_test_application_process():

@@ -32,6 +32,7 @@ black = "^22.10.0"
 mypy = "^0.991"
 jupyter = "^1.0.0"
 isort = "^5.10.1"
+ruff = "^0.0.259"
 
 [tool.poetry.group.dev]
 optional = true
@@ -72,13 +73,12 @@ repository = "https://github.com/amruthvvkp/flaui-uiautomation-wrapper"
 
 [tool.isort]
 profile = "black"
-known_third_party = ["fastapi", "pydantic", "starlette"]
+known_third_party = ["pydantic"]
 skip = [".gitignore", ".dockerignore"]
 extend_skip = [".md", ".json"]
 line_length = 120
 skip_gitignore = true
 length_sort_straight = true
-combine_straight_imports = true
 multi_line_output = 3
 include_trailing_comma = true
 force_grid_wrap = 0
@@ -121,3 +121,51 @@ warn_untyped_fields = false
 max-line-length = 120
 extend-ignore = ["E203"]
 max-complexity = 10
+
+
+[tool.ruff]
+select = [
+  "E", # pycodestyle errors
+  "W", # pycodestyle warnings
+  "F", # pyflakes
+  # "I",  # isort
+  "B", # flake8-bugbear
+]
+ignore = [
+  "E501", # line too long, handled by black
+  "B904", # Within an except clause, raise exceptions with raise ... from err or raise ... from None to distinguish them from errors in exception handling
+  "B008", # Do not perform function call {name} in argument defaults
+  "B006", # Do not use mutable data structures for argument defaults
+  "C901", # too complex
+  "E402", # Module level import not at top of file
+]
+
+# Group violations by containing file.
+format = "grouped"
+respect-gitignore = true
+src = ["aws_client"]
+
+# Same as Black.
+line-length = 120
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# Assume Python 3.10.
+target-version = "py310"
+
+[tool.ruff.mccabe]
+# Unlike Flake8, default to a complexity level of 10.
+max-complexity = 10
+
+[tool.ruff.flake8-quotes]
+docstring-quotes = "double"
+
+[tool.ruff.isort]
+order-by-type = true
+combine-as-imports = true
+force-sort-within-sections = true
+lines-after-imports = 1
+force-single-line = true
+split-on-trailing-comma = false
+known-third-party = ["pydantic"]

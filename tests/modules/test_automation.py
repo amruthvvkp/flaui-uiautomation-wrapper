@@ -1,12 +1,8 @@
-from typing import Any, Generator
-
-import pytest
+from typing import Any
 
 from FlaUI.Core import ITreeWalker  # pyright: ignore
 from FlaUI.Core.Conditions import ConditionFactory  # pyright: ignore
-from flaui.lib.enums import UIAutomationTypes
 from flaui.modules.automation import Automation
-from flaui.wrappers.core.application import Application
 
 
 class TestAutomation:

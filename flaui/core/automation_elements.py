@@ -5,13 +5,20 @@ Wrapper objects for AutomationElement class.
 from __future__ import annotations
 
 import abc
-from typing import Any, List, Optional, Union
+from typing import Any
+from typing import List
+from typing import Optional
+from typing import Tuple
 
-import arrow
-from pydantic import BaseModel, Field, parse_obj_as, validator
+from pydantic import BaseModel
+from pydantic import Field
 
+from flaui.core.automation_type import AutomationType
+from flaui.core.condition_factory import ConditionFactory
+from flaui.core.condition_factory import PropertyCondition
+from flaui.core.definitions import ControlType
+from flaui.core.framework_types import FrameworkType
 from flaui.lib.collections import TypeCast
-from flaui.wrappers.core.automation_element_extensions import AutomationElementExtensions
 
 
 class ElementBase(BaseModel, abc.ABC):
@@ -46,12 +53,12 @@ class ElementBase(BaseModel, abc.ABC):
         return self.raw_element.AutomationId
 
     @property
-    def automation_type(self) -> Any:
+    def automation_type(self) -> AutomationType:
         """The current AutomationType for this element
 
         :return: Automation Type
         """
-        return self.raw_element.AutomationType
+        return AutomationType[self.raw_element.AutomationType.ToString()]
 
     @property
     def bounding_rectangle(self) -> Any:
@@ -86,20 +93,20 @@ class ElementBase(BaseModel, abc.ABC):
         return self.raw_element.ClassName
 
     @property
-    def condition_factory(self) -> Any:
+    def condition_factory(self) -> ConditionFactory:
         """Shortcut to the condition factory for the current automation, Returns condition factory object
 
         :return: Condition Factory
         """
-        return self.raw_element.ConditionFactory
+        return ConditionFactory(raw_cf=self.raw_element.ConditionFactory)
 
     @property
-    def control_type(self) -> str:
+    def control_type(self) -> ControlType:
         """The control type of the element
 
         :return: Control type
         """
-        return self.raw_element.ControlType
+        return ControlType[self.raw_element.ControlType.ToString()]
 
     @property
     def framework_automation_element(self) -> Any:
@@ -110,12 +117,13 @@ class ElementBase(BaseModel, abc.ABC):
         return self.raw_element.FrameworkAutomationElement
 
     @property
-    def framework_type(self) -> Any:
+    def framework_type(self):
         """The direct framework type of the element. Results in 'FrameworkType.Unknown' if it couldn't be resolved
 
         :return: Framework Type
         """
-        return self.raw_element.FrameworkType
+        raw = self.raw_element.FrameworkType  # type: ignore
+        return FrameworkType.none if raw.ToString() == "None" else FrameworkType[raw.ToString()]
 
     @property
     def help_text(self) -> str:
@@ -158,12 +166,12 @@ class ElementBase(BaseModel, abc.ABC):
         return self.raw_element.Name
 
     @property
-    def parent(self) -> Any:
+    def parent(self) -> AutomationElement:
         """Get the parent AutomationElement
 
         :return: Parent
         """
-        return self.raw_element.Parent
+        return AutomationElement(raw_element=self.raw_element.Parent)
 
     @property
     def patterns(self) -> Any:
@@ -186,6 +194,22 @@ class ElementBase(BaseModel, abc.ABC):
 
 class AutomationElement(ElementBase):
     """UI element which can be used in automation"""
+
+    @property
+    def automation(self) -> Any:
+        """The current used automation object.
+
+        :return: Automation object
+        """
+        return self.raw_element.Automation
+
+    @property
+    def item_status(self) -> str:
+        """The item status of this element.
+
+        :return: Item status value
+        """
+        return self.raw_element.ItemStatus
 
     def capture(self) -> Any:
         """Captures the object as screenshot in Bitmap format.
@@ -216,14 +240,31 @@ class AutomationElement(ElementBase):
         """
         self.raw_element.DoubleClick(move_mouse)
 
-    def find_all(self, tree_scope: Any, condition: Optional[Any]) -> List[AutomationElement]:
+    def equals(self, another_element: AutomationElement) -> bool:
+        """Compares two elements.
+
+        :param other_element: Another element
+        :return: True/False
+        """
+        return self.raw_element.Equals(another_element.raw_element)
+
+    def find_all(self, tree_scope: Any, condition: PropertyCondition) -> List[AutomationElement]:
         """Finds all children with the condition.
 
         :aram tree_scope: Treescope object
         :param condition: The search condition.
         :return: The found elements or an empty list if no elements were found.
         """
-        return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAll(tree_scope, condition)]
+        return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAll(tree_scope, condition.condition)]
+
+    # TODO: See if you can use this example to parse list of Pydantic objects
+    #     from pydantic import parse_obj_as
+    #     users = [
+    #     {"name": "user1", "age": 15},
+    #     {"name": "user2", "age": 28}
+    # ]
+
+    #     m = parse_obj_as(List[User], users)
 
     def find_all_by_x_path(self, x_path: str) -> List[AutomationElement]:
         """Finds all items which match the given xpath.
@@ -233,32 +274,32 @@ class AutomationElement(ElementBase):
         """
         return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllByXPath(x_path)]
 
-    def find_all_children(self, condition: Optional[Any]) -> List[AutomationElement]:
+    def find_all_children(self, condition: PropertyCondition) -> List[AutomationElement]:
         """Finds all children with the condition.
 
         :param condition: The search condition.
         :return: The found elements or an empty list if no elements were found.
         """
-        return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllChildren(condition)]
+        return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllChildren(condition.condition)]
 
-    def find_all_descendants(self, condition: Optional[Any]) -> List[AutomationElement]:
+    def find_all_descendants(self, condition: PropertyCondition) -> List[AutomationElement]:
         """Finds all descendants with the condition.
 
         :param condition: The search condition.
         :return: The found elements or an empty list if no elements were found.
         """
-        return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllDescendants(condition)]
+        return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllDescendants(condition.condition)]
 
-    def find_all_nested(self, condition: Optional[Any]) -> List[AutomationElement]:
+    def find_all_nested(self, condition: PropertyCondition) -> List[AutomationElement]:
         """Finds all elements by iterating thru all conditions.
 
         :param condition: The search condition.
         :return: The found elements or an empty list if no elements were found.
         """
-        return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllNested(condition)]
+        return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllNested(condition.condition)]
 
     def find_all_with_options(
-        self, tree_scope: Any, condition: Optional[Any], traversal_options: Any, root: Any
+        self, tree_scope: Any, condition: PropertyCondition, traversal_options: Any, root: Any
     ) -> List[AutomationElement]:
         """Find all matching elements in the specified order.
 
@@ -270,10 +311,10 @@ class AutomationElement(ElementBase):
         """
         return [
             AutomationElement(raw_element=_)
-            for _ in self.raw_element.FindAllWithOptions(tree_scope, condition, traversal_options, root)
+            for _ in self.raw_element.FindAllWithOptions(tree_scope, condition.condition, traversal_options, root)
         ]
 
-    def find_at(self, tree_scope: Any, index: int, condition: Optional[Any]) -> AutomationElement:
+    def find_at(self, tree_scope: Any, index: int, condition: PropertyCondition) -> AutomationElement:
         """Finds the element with the given index with the given condition.
 
         :param tree_scope: The scope to search.
@@ -281,25 +322,25 @@ class AutomationElement(ElementBase):
         :param condition: The condition to use.
         :return: The found element or null if no element was found.
         """
-        return AutomationElement(raw_element=self.raw_element.FindAt(tree_scope, index, condition))
+        return AutomationElement(raw_element=self.raw_element.FindAt(tree_scope, index, condition.condition))
 
-    def find_child_at(self, index: int, condition: Optional[Any]) -> AutomationElement:
+    def find_child_at(self, index: int, condition: PropertyCondition) -> AutomationElement:
         """Finds the child at the given position with the condition.
 
         :param index: The index of the child to find.
         :param condition: The condition.
         :return: The found element or null if no element was found.
         """
-        return AutomationElement(raw_element=self.raw_element.FindChildAt(index, condition))
+        return AutomationElement(raw_element=self.raw_element.FindChildAt(index, condition.condition))
 
-    def find_first(self, tree_scope: Any, condition: Optional[Any]) -> AutomationElement:
+    def find_first(self, tree_scope: Any, condition: PropertyCondition) -> AutomationElement:
         """Finds the first element in the given scope with the given condition.
 
         :param tree_scope: The scope to search.
         :param condition: The condition to use.
         :return: The found element or null if no element was found.
         """
-        return AutomationElement(raw_element=self.raw_element.FindFirst(tree_scope, condition))
+        return AutomationElement(raw_element=self.raw_element.FindFirst(tree_scope, condition.condition))
 
     def find_first_by_x_path(self, x_path: str) -> AutomationElement:
         """Finds for the first item which matches the given xpath.
@@ -309,21 +350,21 @@ class AutomationElement(ElementBase):
         """
         return AutomationElement(raw_element=self.raw_element.FindFirstByXPath(x_path))
 
-    def find_first_child(self, condition: Optional[Any]) -> AutomationElement:
+    def find_first_child(self, condition: PropertyCondition) -> AutomationElement:
         """Finds the first child.
 
         :param condition: The condition to use.
         :return: The found element or null if no element was found.
         """
-        return AutomationElement(raw_element=self.raw_element.FindFirstChild(condition))
+        return AutomationElement(raw_element=self.raw_element.FindFirstChild(condition.condition))
 
-    def find_first_descendant(self, condition: Optional[Any]) -> AutomationElement:
+    def find_first_descendant(self, condition: PropertyCondition) -> AutomationElement:
         """Finds the first descendant.
 
         :param condition: The condition to use.
         :return: The found element or null if no element was found.
         """
-        return AutomationElement(raw_element=self.raw_element.FindFirstDescendant(condition))
+        return AutomationElement(raw_element=self.raw_element.FindFirstDescendant(condition.condition))
 
     def find_first_nested(self, conditions: Optional[Any]) -> AutomationElement:
         """Finds the first element by iterating thru all conditions.
@@ -331,10 +372,12 @@ class AutomationElement(ElementBase):
         :param conditions: The conditions to use.
         :return: The found element or null if no element was found.
         """
-        return AutomationElement(raw_element=self.raw_element.FindFirstNested(conditions))
+        return AutomationElement(
+            raw_element=self.raw_element.FindFirstNested(conditions.raw_cf)  # type: ignore # pyright: ignore
+        )
 
     def find_first_with_options(
-        self, tree_scope: Any, condition: Optional[Any], traversal_options: Any, root: Any
+        self, tree_scope: Any, condition: PropertyCondition, traversal_options: Any, root: Any
     ) -> AutomationElement:
         """Find first matching element in the specified order.
 
@@ -345,7 +388,7 @@ class AutomationElement(ElementBase):
         :return: The found element or null if no element was found.
         """
         return AutomationElement(
-            raw_element=self.raw_element.FindFirstWithOptions(tree_scope, condition, traversal_options, root)
+            raw_element=self.raw_element.FindFirstWithOptions(tree_scope, condition.condition, traversal_options, root)
         )
 
     def focus(self) -> None:
@@ -371,6 +414,13 @@ class AutomationElement(ElementBase):
         :return: The metadata.
         """
         return self.raw_element.GetCurrentMetadataValue(property_id, meta_data_id)
+
+    def get_hash_code(self) -> int:
+        """Fetches the hash code of the current element
+
+        :return: Hash code
+        """
+        return self.raw_element.GetHashCode()
 
     def get_supported_patterns(self) -> Any:
         """Gets the available patterns for an element via properties.
@@ -499,12 +549,27 @@ class AutomationElement(ElementBase):
         """
         return self.raw_element.ToString()
 
-    # def as_button(self) -> Button:
-    #     """Returns element as Button
+    def try_get_clickable_point(self) -> Tuple[bool, Any]:  # TODO: Return C# Point class
+        """Tries to get a clickable point of the element.
 
-    #     :return: Button object
-    #     """
-    #     return Button(element=self.element)
+        :return: Tuple[flag, Point] - True if a point was found, false otherwise; The clickable point or null, if no point was found
+        """
+        return self.raw_element.TryGetClickablePoint()
+
+
+# TODO: Next things to do
+# 1. Build other classes
+# 2. Finally add AutomationElementExtensions
+# 3. Write unit tests
+# 4. Fix return class types for certain functions which use system libraries
+# 5. See if List of Pydantic can be parsed with the function parse_as_obj
+
+# def as_button(self) -> Button:
+#     """Returns element as Button
+
+#     :return: Button object
+#     """
+#     return Button(element=self.element)
 
 
 # class Button(AutomationElement):
@@ -1217,11 +1282,4 @@ class AutomationElement(ElementBase):
 
 #         :return: Button
 #         """
-#         self.element.GetDecreaseButton()
-#         self.element.GetDecreaseButton()
-#         self.element.GetDecreaseButton()
-#         :return: Button
-#         """
-#         self.element.GetDecreaseButton()
-#         self.element.GetDecreaseButton()
 #         self.element.GetDecreaseButton()
