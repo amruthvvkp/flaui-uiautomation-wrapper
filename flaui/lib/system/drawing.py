@@ -10,7 +10,6 @@ from pydantic import Field
 from System.Drawing import Color as CSColor  # pyright: ignore
 from System.Drawing import KnownColor as CSKnownColor  # pyright: ignore
 
-
 class KnownColor(Enum):
     """Specifies the known system colors"""
 
@@ -218,8 +217,8 @@ class Color(BaseSettings):
         """Gets a value indicating whether this System.Drawing.Color structure is a named
         color or a member of the System.Drawing.KnownColor enumeration.
 
-        :return: true if this System.Drawing.Color was created by using either the System.Drawing.Color.FromName(System.String)
-        method or the System.Drawing.Color.FromKnownColor(System.Drawing.KnownColor) method; otherwise, false.
+        :return: True if this System.Drawing.Color was created by using either the System.Drawing.Color.FromName(System.String)
+        method or the System.Drawing.Color.FromKnownColor(System.Drawing.KnownColor) method; otherwise, False.
         """
         return self.cs_object.IsNamedColor
 
@@ -229,9 +228,9 @@ class Color(BaseSettings):
         color. Predefined colors are represented by the elements of the System.Drawing.KnownColor
         enumeration.
 
-        :return: true if this System.Drawing.Color was created from a predefined color by using
+        :return: True if this System.Drawing.Color was created from a predefined color by using
         either the System.Drawing.Color.FromName(System.String) method or the System.Drawing.Color.FromKnownColor(System.Drawing.KnownColor)
-        method; otherwise, false.
+        method; otherwise, False.
         """
         return self.cs_object.IsKnownColor
 
@@ -239,7 +238,7 @@ class Color(BaseSettings):
     def is_empty(self) -> bool:
         """Specifies whether this System.Drawing.Color structure is uninitialized.
 
-        :return: This property returns true if this color is uninitialized; otherwise, false.
+        :return: This property returns True if this color is uninitialized; otherwise, False.
         """
         return self.cs_object.IsEmpty
 
@@ -249,9 +248,9 @@ class Color(BaseSettings):
         color. A system color is a color that is used in a Windows display element. System
         colors are represented by elements of the System.Drawing.KnownColor enumeration.
 
-        :return: true if this System.Drawing.Color was created from a system color by using either
+        :return: True if this System.Drawing.Color was created from a system color by using either
         the System.Drawing.Color.FromName(System.String) method or the System.Drawing.Color.FromKnownColor(System.Drawing.KnownColor)
-        method; otherwise, false.
+        method; otherwise, False.
         """
         return self.cs_object.IsSystemColor
 
@@ -299,7 +298,7 @@ class Color(BaseSettings):
         """Indicates whether the current object is equal to another object of the same type.
 
         :param another_color: An object to compare with this object.
-        :return: true if the current object is equal to other; otherwise, false.
+        :return: True if the current object is equal to other; otherwise, False.
         """
         return self.cs_object.Equals(another_color)
 

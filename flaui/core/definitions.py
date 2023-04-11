@@ -1,7 +1,9 @@
 from enum import Enum
 
-
 from FlaUI.Core.Definitions import ControlType as CSControlType  # pyright: ignore
+from FlaUI.Core.Definitions import ExpandCollapseState as CSExpandCollapseState  # pyright: ignore
+from FlaUI.Core.Definitions import ToggleState as CSToggleState  # pyright: ignore
+from FlaUI.Core.Definitions import RowOrColumnMajor as CSRowOrColumnMajor  # pyright: ignore
 
 
 class PropertyConditionFlags(Enum):
@@ -77,3 +79,24 @@ class ControlType(Enum):
     TryParse = CSControlType.TryParse
     Unknown = CSControlType.Unknown
     Window = CSControlType.Window
+
+
+class ToggleState(Enum):
+    """Contains values that specify the toggle state of a Microsoft UI Automation element that implements the TogglePattern"""
+
+    Off = CSToggleState.Off
+    On = CSToggleState.On
+    Indeterminate = CSToggleState.Indeterminate
+
+
+class ExpandCollapseState(Enum):
+    Collapsed = CSExpandCollapseState.Collapsed
+    Expanded = CSExpandCollapseState.Expanded
+    PartiallyExpanded = CSExpandCollapseState.PartiallyExpanded
+    LeafNode = CSExpandCollapseState.LeafNode
+
+
+class RowOrColumnMajor(Enum):
+    RowMajor = CSRowOrColumnMajor.RowMajor
+    ColumnMajor = CSRowOrColumnMajor.ColumnMajor
+    Indeterminate = CSRowOrColumnMajor.Indeterminate
