@@ -44,6 +44,14 @@ pytest-cov = "^4.0.0"
 [tool.poetry.group.unit_test]
 optional = true
 
+[tool.poetry.group.docs.dependencies]
+mkdocs-material = "^9.1.17"
+mkdocs-markdownextradata-plugin = "^0.2.5"
+mkdocs-jupyter = "^0.24.1"
+
+[tool.poetry.group.docs]
+optional = true
+
 [build-system]
 requires = ["poetry-core>=1.0.0", "setuptools", "wheel"]
 build-backend = "poetry.core.masonry.api"
