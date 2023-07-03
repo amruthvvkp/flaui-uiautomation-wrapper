@@ -165,3 +165,6 @@ junit/*
 # PYPI Secrets
 .pypirc
 flaui_arch
+
+# Test Applications
+test_applications

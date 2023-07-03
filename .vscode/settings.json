@@ -25,9 +25,14 @@
     "python.formatting.yapfArgs": [
         "COLUMN_LIMIT=120"
     ],
-    "python.formatting.provider": "black",
     "python.linting.mypyEnabled": true,
     "python.analysis.extraPaths": [
         "typings"
-    ]
+    ],
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll": true
+        }
+    }
 }

@@ -1,10 +1,12 @@
 import os
+from pathlib import Path
 from typing import Any
 from typing import Generator
 from typing import Literal
 
 from config import settings
 from flaui.lib.pythonnet_bridge import setup_pythonnet_bridge
+from loguru import logger
 import psutil
 import pytest
 
@@ -42,7 +44,11 @@ def automation(ui_automation_type: UIAutomationTypes) -> Generator[Any, None, No
 @pytest.fixture(scope="package")
 def test_application(ui_automation_type: UIAutomationTypes) -> Generator[Automation, None, None]:
     automation = Automation(ui_automation_type)
-    automation.application.launch(settings.WPF_TEST_APP)
+
+    # We want to download the test application only once per test run if the downloaded executable does not exist on local folder.
+    if not settings.WPF_TEST_APP.exists():
+        download_test_application_from_github(settings.WPF_TEST_APP)
+    automation.application.launch(settings.WPF_TEST_APP.as_posix())
     yield automation
 
     automation.application.kill()
@@ -62,3 +68,22 @@ def wordpad(ui_automation_type: UIAutomationTypes):
 @pytest.fixture(scope="package")
 def test_app_main_window(test_application: Automation, automation: Any) -> Generator[AutomationElement, None, None]:
     yield test_application.application.get_main_window(automation)
+
+
+def download_test_application_from_github(application_path: Path):
+    """This downloads a test application .exe file from github to run the unit tests against.
+
+    :param application_path: Local application path to download the test application to.
+    """
+    import urllib.request
+
+    mapped_application_url = {
+        "WpfApplication.exe": "https://raw.githubusercontent.com/GDATASoftwareAG/robotframework-flaui/main/atests/apps/WpfApplication.exe",
+    }
+
+    if application_path.name not in mapped_application_url:
+        raise ValueError(f"Application {application_path.name} is not mapped to a URL.")
+
+    url = mapped_application_url[application_path.name]
+    urllib.request.urlretrieve(url, application_path)
+    logger.debug(f"Downloaded test application from {url} to {application_path}")

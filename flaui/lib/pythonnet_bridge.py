@@ -1,8 +1,7 @@
-import pathlib
-
 import clr
-import config
 from loguru import logger
+
+import config
 
 
 def setup_pythonnet_bridge() -> None:
@@ -18,7 +17,7 @@ def setup_pythonnet_bridge() -> None:
     BIN_HOME = config.settings.BIN_HOME
     logger.info(f"Looking for valid binaries at - {BIN_HOME}")
     try:
-        for _ in pathlib.Path(BIN_HOME).glob("*.dll"):
+        for _ in BIN_HOME.glob("*.dll"):
             clr.AddReference(str(_))  # pyright: ignore
             clr.AddReference(_.stem)  # pyright: ignore
             logger.info(f"Added {_.name} DLL from {_} to Python.NET bridge")
