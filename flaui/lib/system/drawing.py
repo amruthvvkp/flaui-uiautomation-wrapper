@@ -5,8 +5,8 @@ from enum import Enum
 from typing import Any
 from typing import Optional
 
-from pydantic import BaseSettings
 from pydantic import Field
+from pydantic_settings import BaseSettings
 from System.Drawing import Color as CSColor  # pyright: ignore
 from System.Drawing import KnownColor as CSKnownColor  # pyright: ignore
 
@@ -415,8 +415,18 @@ class Color(BaseSettings):
         """
         return Color(cs_object=self.cs_object.FromName(name))
 
-
-class ColorCollection(Enum):
+# Treating this as an Enum class is resulting in the below error -
+# Unhandled Exception: System.ArgumentException: We should never receive instances of other managed types
+#    at Python.Runtime.Converter.ToManagedValue(BorrowedReference value, Type obType, Object& result, Boolean setError)
+#    at Python.Runtime.MethodBinder.TryConvertArgument(BorrowedReference op, Type parameterType, Object& arg, Boolean& isOut)
+#    at Python.Runtime.MethodBinder.TryConvertArguments(ParameterInfo[] pi, Boolean paramsArray, BorrowedReference args, Int32 pyArgCount, Dictionary`2 kwargDict, ArrayList defaultArgList, Int32& outs)
+#    at Python.Runtime.MethodBinder.Bind(BorrowedReference inst, BorrowedReference args, Dictionary`2 kwargDict, MethodBase[] methods, Boolean matchGenerics)
+#    at Python.Runtime.MethodBinder.Bind(BorrowedReference inst, BorrowedReference args, BorrowedReference kw, MethodBase info, MethodBase[] methodinfo)
+#    at Python.Runtime.MethodBinder.Invoke(BorrowedReference inst, BorrowedReference args, BorrowedReference kw, MethodBase info, MethodBase[] methodinfo)
+#    at Python.Runtime.MethodObject.Invoke(BorrowedReference target, BorrowedReference args, BorrowedReference kw, MethodBase info)
+#    at Python.Runtime.MethodObject.Invoke(BorrowedReference inst, BorrowedReference args, BorrowedReference kw)
+#    at Python.Runtime.ClassBase.tp_richcompare(BorrowedReference ob, BorrowedReference other, Int32 op)
+class ColorCollection:
     """Represents an ARGB (alpha, red, green, blue) color"""
 
     AliceBlue = Color(cs_object=CSColor.AliceBlue)

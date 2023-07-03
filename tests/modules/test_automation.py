@@ -1,9 +1,8 @@
 from typing import Any
 
 from FlaUI.Core import ITreeWalker  # pyright: ignore
-from FlaUI.Core.Conditions import ConditionFactory  # pyright: ignore
+from flaui.core.condition_factory import ConditionFactory
 from flaui.modules.automation import Automation
-
 
 class TestAutomation:
     def test_class_properties(self, wordpad: Automation, automation: Any):

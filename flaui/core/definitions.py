@@ -2,16 +2,15 @@ from enum import Enum
 
 from FlaUI.Core.Definitions import ControlType as CSControlType  # pyright: ignore
 from FlaUI.Core.Definitions import ExpandCollapseState as CSExpandCollapseState  # pyright: ignore
-from FlaUI.Core.Definitions import ToggleState as CSToggleState  # pyright: ignore
+from FlaUI.Core.Definitions import PropertyConditionFlags as CSPropertyConditionFlags  # pyright: ignore
 from FlaUI.Core.Definitions import RowOrColumnMajor as CSRowOrColumnMajor  # pyright: ignore
-
+from FlaUI.Core.Definitions import ToggleState as CSToggleState  # pyright: ignore
 
 class PropertyConditionFlags(Enum):
-    # Note = We cannot import from FlaUI.Core.Definitions import PropertyConditionFlags and
-    # use them to build enum here since the first value is None which throws an error on Python
-    none = 0
-    ignore_case = 1
-    match_substring = 2
+    """Optional flags that are used when checking the property."""
+    none = getattr(CSPropertyConditionFlags, "None") # We need to use getattr here because Python.Net doesn't like the None value
+    ignore_case = CSPropertyConditionFlags.IgnoreCase
+    match_substring = CSPropertyConditionFlags.MatchSubstring
 
 
 class ControlType(Enum):

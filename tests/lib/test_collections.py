@@ -1,6 +1,5 @@
 from flaui.lib.collections import TypeCast
 
-
 class TestTypeCast:
     def test_py_list(self):
         from System.Collections.Generic import List  # pyright: ignore

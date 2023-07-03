@@ -1,11 +1,9 @@
 from FlaUI.UIA2 import UIA2Automation  # pyright: ignore
 from FlaUI.UIA3 import UIA3Automation  # pyright: ignore
-from pydantic import validate_arguments
 
 from flaui.core.application import Application
 from flaui.core.condition_factory import ConditionFactory
 from flaui.lib.enums import UIAutomationTypes
-
 
 class Automation:
     """UIAutomation constructed wrapper for FlaUI usage.
@@ -16,7 +14,6 @@ class Automation:
     This class is designed to overcome those challenges by providing Python compatible workstream.
     """
 
-    @validate_arguments
     def __init__(self, ui_automation_type: UIAutomationTypes, timeout: int = 1000) -> None:
         self._ui_automation_types = ui_automation_type
         self.timeout = timeout

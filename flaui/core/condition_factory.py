@@ -1,16 +1,13 @@
 # Helper class with some commonly used conditions.
 from __future__ import annotations
 
-from typing import Any
-from typing import Union
+from typing import Any, Union
+
+from pydantic import BaseModel
 
 from FlaUI.Core.Conditions import ConditionFactory as CSConditionFactory  # pyright: ignore
 from FlaUI.Core.Conditions import PropertyCondition as CSPropertyCondition  # pyright: ignore
-from pydantic import BaseModel
-from pydantic import validate_arguments
-
-from flaui.core.definitions import ControlType
-from flaui.core.definitions import PropertyConditionFlags
+from flaui.core.definitions import ControlType, PropertyConditionFlags
 from flaui.core.framework_types import FrameworkType
 
 
@@ -61,12 +58,12 @@ class PropertyCondition(BaseModel):
         return self.condition.Property
 
     @property
-    def PropertyConditionFlags(self):
+    def PropertyConditionFlags(self) -> PropertyConditionFlags:
         """Optional flags that are used when checking the property.
 
         :return: Property Condition Flags
         """
-        return PropertyConditionFlags
+        return PropertyConditionFlags(self.condition.PropertyConditionFlags)
 
     def ToString(self) -> str:
         """Converts element to string
@@ -87,9 +84,9 @@ class PropertyCondition(BaseModel):
 class ConditionFactory(BaseModel):
     raw_cf: CSConditionFactory
 
-    @validate_arguments
+
     def by_automation_id(
-        self, automation_id: str, condition_flags_property_condition_flags=PropertyConditionFlags.none
+        self, automation_id: str, condition_flags_property_condition_flags: PropertyConditionFlags=PropertyConditionFlags.none
     ):
         """Creates a condition to search by an automation id.
 
@@ -98,10 +95,10 @@ class ConditionFactory(BaseModel):
         :return: Property Condition
         """
         return PropertyCondition(
-            condition=self.raw_cf.ByAutomationId(automation_id, condition_flags_property_condition_flags)
+            condition=self.raw_cf.ByAutomationId(automation_id, condition_flags_property_condition_flags.value)
         )
 
-    @validate_arguments
+
     def by_control_type(self, control_type: ControlType):
         """Creates a condition to search by a ControlType.
 
@@ -110,8 +107,8 @@ class ConditionFactory(BaseModel):
         """
         return PropertyCondition(condition=self.raw_cf.ByControlType(control_type.value))
 
-    @validate_arguments
-    def by_class_name(self, class_name: str, condition_flags_property_condition_flags=PropertyConditionFlags.none):
+
+    def by_class_name(self, class_name: str, condition_flags_property_condition_flags: PropertyConditionFlags=PropertyConditionFlags.none):
         """Creates a condition to search by a class name.
 
         :param class_name: Class Name
@@ -119,31 +116,31 @@ class ConditionFactory(BaseModel):
         :return: Property Condition
         """
         return PropertyCondition(
-            condition=self.raw_cf.ByClassName(class_name, condition_flags_property_condition_flags)
+            condition=self.raw_cf.ByClassName(class_name, condition_flags_property_condition_flags.value)
         )
 
-    @validate_arguments
-    def by_name(self, name: str, condition_flags_property_condition_flags=PropertyConditionFlags.none):
+
+    def by_name(self, name: str, condition_flags_property_condition_flags: PropertyConditionFlags=PropertyConditionFlags.none):
         """Creates a condition to search by a name.
 
         :param name: Name
         :param condition_flags_property_condition_flags: Contains values used in creating property conditions, defaults to PropertyConditionFlags.none
         :return: Property Condition
         """
-        return PropertyCondition(condition=self.raw_cf.ByName(name, condition_flags_property_condition_flags))
+        return PropertyCondition(condition=self.raw_cf.ByName(name, condition_flags_property_condition_flags.value))
 
-    @validate_arguments
-    def by_text(self, text: str, condition_flags_property_condition_flags=PropertyConditionFlags.none):
+
+    def by_text(self, text: str, condition_flags_property_condition_flags: PropertyConditionFlags=PropertyConditionFlags.none):
         """Creates a condition to search by a text.
 
         :param text: Text value
         :param condition_flags_property_condition_flags: Contains values used in creating property conditions, defaults to PropertyConditionFlags.none
         :return: Property Condition
         """
-        return PropertyCondition(condition=self.raw_cf.ByText(text, condition_flags_property_condition_flags))
+        return PropertyCondition(condition=self.raw_cf.ByText(text, condition_flags_property_condition_flags.value))
 
-    @validate_arguments
-    def by_framework_id(self, framework_id: str, condition_flags_property_condition_flags=PropertyConditionFlags.none):
+
+    def by_framework_id(self, framework_id: str, condition_flags_property_condition_flags: PropertyConditionFlags=PropertyConditionFlags.none):
         """Creates a condition to search by a Framework Id.
 
         :param framework_id: Framework ID
@@ -151,10 +148,10 @@ class ConditionFactory(BaseModel):
         :return: Property Condition
         """
         return PropertyCondition(
-            condition=self.raw_cf.ByFrameworkId(framework_id, condition_flags_property_condition_flags)
+            condition=self.raw_cf.ByFrameworkId(framework_id, condition_flags_property_condition_flags.value)
         )
 
-    @validate_arguments
+
     def by_framework_type(self, framework_type: FrameworkType):
         """Creates a condition to search by a Framework Type.
 
@@ -163,7 +160,7 @@ class ConditionFactory(BaseModel):
         """
         return PropertyCondition(condition=self.raw_cf.ByFrameworkType(framework_type.value))
 
-    @validate_arguments
+
     def by_process_id(self, process_id: int):
         """Creates a condition to search by a process id.
 
@@ -172,9 +169,9 @@ class ConditionFactory(BaseModel):
         """
         return PropertyCondition(condition=self.raw_cf.ByProcessId(process_id))
 
-    @validate_arguments
+
     def by_localized_control_type(
-        self, localized_control_type: str, condition_flags_property_condition_flags=PropertyConditionFlags.none
+        self, localized_control_type: str, condition_flags_property_condition_flags: PropertyConditionFlags=PropertyConditionFlags.none
     ):
         """Creates a condition to search by a localized control type.
 
@@ -188,27 +185,27 @@ class ConditionFactory(BaseModel):
             )
         )
 
-    @validate_arguments
-    def by_help_text(self, help_text: str, condition_flags_property_condition_flags=PropertyConditionFlags.none):
+
+    def by_help_text(self, help_text: str, condition_flags_property_condition_flags: PropertyConditionFlags=PropertyConditionFlags.none):
         """Creates a condition to search by a help text.
 
         :param help_text: Help text
         :param condition_flags_property_condition_flags: Contains values used in creating property conditions, defaults to PropertyConditionFlags.none
         :return: Property Condition
         """
-        return PropertyCondition(condition=self.raw_cf.ByHelpText(help_text, condition_flags_property_condition_flags))
+        return PropertyCondition(condition=self.raw_cf.ByHelpText(help_text, condition_flags_property_condition_flags.value))
 
-    @validate_arguments
-    def by_value(self, value: str, condition_flags_property_condition_flags=PropertyConditionFlags.none):
+
+    def by_value(self, value: str, condition_flags_property_condition_flags: PropertyConditionFlags=PropertyConditionFlags.none):
         """Creates a condition to search by a value.
 
         :param value: Value
         :param condition_flags_property_condition_flags: Contains values used in creating property conditions, defaults to PropertyConditionFlags.none
         :return: Property Condition
         """
-        return PropertyCondition(condition=self.raw_cf.ByValue(value, condition_flags_property_condition_flags))
+        return PropertyCondition(condition=self.raw_cf.ByValue(value, condition_flags_property_condition_flags.value))
 
-    @validate_arguments
+
     def menu(self):
         """Searches for a Menu/MenuBar.
 
@@ -216,7 +213,7 @@ class ConditionFactory(BaseModel):
         """
         return PropertyCondition(condition=self.raw_cf.Menu())
 
-    @validate_arguments
+
     def grid(self):
         """Searches for a DataGrid/List.
 
@@ -224,7 +221,7 @@ class ConditionFactory(BaseModel):
         """
         return PropertyCondition(condition=self.raw_cf.Grid())
 
-    @validate_arguments
+
     def horizontal_scroll_bar(self):
         """Searches for a horizontal scrollbar.
 
@@ -232,7 +229,7 @@ class ConditionFactory(BaseModel):
         """
         return PropertyCondition(condition=self.raw_cf.HorizontalScrollBar())
 
-    @validate_arguments
+
     def vertical_scroll_bar(self):
         """Searches for a vertical scrollbar.
 

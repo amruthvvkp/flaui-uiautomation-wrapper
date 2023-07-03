@@ -1,4 +1,3 @@
-from pathlib import Path
 
 import pytest
 from loguru import logger
@@ -13,4 +12,4 @@ def test_setup_pythonnet_bridge() -> None:
         setup_pythonnet_bridge()
     except Exception as err:
         logger.exception(f"{err}")
-        pytest.fail("Failed to setup Pythonnet bridge for FlaUI dependencies")
+        pytest.fail("Failed to setup Python.NET bridge for FlaUI dependencies")

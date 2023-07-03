@@ -27,6 +27,7 @@ from flaui.core.definitions import RowOrColumnMajor
 from flaui.core.definitions import ToggleState
 from flaui.core.framework_types import FrameworkType
 from flaui.lib.collections import TypeCast
+from flaui.lib.system.drawing import Color
 from flaui.lib.system.drawing import ColorCollection
 
 # ================================================================================
@@ -344,7 +345,7 @@ class AutomationElement(ElementBase):
         """
         self.raw_element.DoubleClick(move_mouse)
 
-    def draw_highlight(self, color: ColorCollection = ColorCollection.Red, duration: int = 2000) -> None:
+    def draw_highlight(self, color: Color = ColorCollection.Red, duration: int = 2000) -> None:
         self.raw_element.Automation.OverlayManager.Show(
             self.raw_element.Properties.BoundingRectangle.Value, color, duration
         )
@@ -466,14 +467,14 @@ class AutomationElement(ElementBase):
         """
         return AutomationElement(raw_element=self.raw_element.FindFirstDescendant(condition.condition))
 
-    def find_first_nested(self, conditions: Optional[Any]) -> AutomationElement:
+    def find_first_nested(self, condition: Optional[PropertyCondition]) -> AutomationElement:
         """Finds the first element by iterating thru all conditions.
 
-        :param conditions: The conditions to use.
+        :param condition: The condition to use.
         :return: The found element or null if no element was found.
         """
         return AutomationElement(
-            raw_element=self.raw_element.FindFirstNested(conditions.raw_cf)  # type: ignore # pyright: ignore
+            raw_element=self.raw_element.FindFirstNested(condition.condition)  # type: ignore # pyright: ignore
         )
 
     def find_first_with_options(
