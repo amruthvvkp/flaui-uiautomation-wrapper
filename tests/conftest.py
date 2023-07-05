@@ -1,5 +1,5 @@
+# This file consists of fixtures that are used in the unit tests.
 import os
-from pathlib import Path
 from typing import Any
 from typing import Generator
 from typing import Literal
@@ -8,6 +8,7 @@ from config import test_settings
 from flaui.lib.pythonnet_bridge import setup_pythonnet_bridge
 from loguru import logger
 import psutil
+from pydantic import FilePath
 import pytest
 
 # # isort: off
@@ -15,6 +16,7 @@ import pytest
 setup_pythonnet_bridge()
 
 from flaui.core.automation_elements import AutomationElement
+from flaui.core.condition_factory import ConditionFactory
 from flaui.lib.enums import UIAutomationTypes
 from flaui.modules.automation import Automation
 
@@ -95,8 +97,17 @@ def test_app_main_window(test_application: Automation, automation: Any) -> Gener
     """
     yield test_application.application.get_main_window(automation)
 
+@pytest.fixture(scope="package")
+def condition_factory(automation: Any) -> Generator[ConditionFactory, None, None]:
+    """Generates FlaUI ConditionFactory class.
 
-def download_test_application_from_github(application_path: Path):
+    :param automation: Automation class to use for the tests.
+    :yield: FlaUI ConditionFactory class.
+    """
+    yield ConditionFactory(raw_cf=automation.condition_factory)
+
+
+def download_test_application_from_github(application_path: FilePath):
     """This downloads a test application .exe file from github to run the unit tests against.
 
     :param application_path: Local application path to download the test application to.

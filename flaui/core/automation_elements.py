@@ -16,7 +16,6 @@ from typing import Union
 import arrow
 from pydantic import BaseModel
 from pydantic import Field
-from pydantic import ValidationError
 from pydantic import field_validator
 from System import TimeSpan  # pyright: ignore
 
@@ -29,6 +28,7 @@ from flaui.core.definitions import RowOrColumnMajor
 from flaui.core.definitions import ToggleState
 from flaui.core.framework_types import FrameworkType
 from flaui.lib.collections import TypeCast
+from flaui.lib.exceptions import ElementNotFoundError
 from flaui.lib.system.drawing import Color
 from flaui.lib.system.drawing import ColorCollection
 
@@ -37,24 +37,24 @@ from flaui.lib.system.drawing import ColorCollection
 # ================================================================================
 
 
-class ElementModel(BaseModel, abc.ABC):
+class ElementModel(BaseModel, abc.ABC): # pragma: no cover
     raw_element: Any = Field(
         ..., title="Automation Element", description="Contains the C# automation element in raw form"
     )  # Consider making this a private property
 
     @field_validator("raw_element")
-    def validate_element_exists(cls, v: Any) -> Any:
+    def validate_element_exists(cls, v: Any) -> Any: # pragma: no cover
         """Validate the element exists
 
         :param v: Raw Element
         :return: Raw Element
         """
         if v is None:
-            raise ValidationError("Element does not exist")
+            raise ElementNotFoundError("Element does not exist")
         return v
 
 
-class ElementBase(ElementModel, abc.ABC):
+class ElementBase(ElementModel, abc.ABC): # pragma: no cover
     """Automation Element base abstract class"""
 
     @property
@@ -907,13 +907,6 @@ class AutomationElement(ElementBase):
         """
         from FlaUI.Core.AutomationElements import Window as CSWindow  # pyright: ignore
         return Window(raw_element=CSWindow(self.framework_automation_element))
-
-
-# TODO: Next things to do
-# 1. Build other classes
-# 2. Finally add AutomationElementExtensions
-# 3. Write unit tests
-# 4. Fix return class types for certain functions which use system libraries
 
 
 class Button(AutomationElement, InvokeAutomationElement):

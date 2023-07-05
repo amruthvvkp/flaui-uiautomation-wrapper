@@ -6,3 +6,13 @@
 - Update README.md to reflect FlaUI, credits, inspirations.
 - Add shell scripts to download test .exe builds - Python scripts do the job
 - Add Mouse, Keyboard interface
+
+# TODO: Next things to do for AutomationClass
+
+# 1. Build other classes
+
+# 2. Finally add AutomationElementExtensions
+
+# 3. Write unit tests
+
+# 4. Fix return class types for certain functions which use system libraries

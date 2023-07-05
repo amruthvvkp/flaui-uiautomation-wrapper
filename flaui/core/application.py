@@ -7,11 +7,13 @@ from typing import List
 from typing import Optional
 from typing import Union
 
-from FlaUI.Core import Application as CSApplication  # pyright: ignore
-
 from flaui.core.automation_elements import AutomationElement
 from flaui.core.automation_elements import Window
 from flaui.lib.collections import TypeCast
+
+# isort: off
+from FlaUI.Core import Application as CSApplication  # pyright: ignore
+# isort: on
 
 class Application:
     """
