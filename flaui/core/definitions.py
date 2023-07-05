@@ -1,3 +1,4 @@
+# Wrapper class for the C# namespace FlaUI.Core.Definitions
 from enum import Enum
 
 from FlaUI.Core.Definitions import ControlType as CSControlType  # pyright: ignore

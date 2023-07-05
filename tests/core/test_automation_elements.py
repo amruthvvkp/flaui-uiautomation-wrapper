@@ -1,7 +1,6 @@
+# Unit tests for the module automation_elements.py
 import os
 from pathlib import Path
-
-import pytest
 
 from config import test_settings
 from flaui.core.automation_elements import AutomationElement
@@ -10,8 +9,8 @@ from flaui.core.condition_factory import ConditionFactory
 from FlaUI.Core.Definitions import TreeScope  # pyright: ignore
 from FlaUI.Core.Definitions import TreeTraversalOptions  # pyright: ignore
 from flaui.core.definitions import ControlType
-from flaui.lib.element_classes import ElementClasses
-
+from flaui.lib.enums import KnownClassNames
+import pytest
 
 @pytest.fixture(scope="module")
 def condition_factory(test_app_main_window: AutomationElement):
@@ -22,6 +21,8 @@ def condition_factory(test_app_main_window: AutomationElement):
 def generic_element(test_app_main_window: AutomationElement):
     return test_app_main_window.find_first_by_x_path("/Tab/TabItem[@Name='Simple Controls']")
 
+# @pytest.fixture(scope="module")
+# def
 
 class TestAutomationElement:
     def test_class_properties(self, test_app_main_window: AutomationElement, automation):
@@ -87,68 +88,68 @@ class TestAutomationElement:
             assert _.class_name == "TabItem"
 
     def test_find_all_children(self, test_app_main_window: AutomationElement, condition_factory: ConditionFactory):
-        elements = test_app_main_window.find_all_children(condition_factory.by_class_name(class_name=ElementClasses.TabControl))
+        elements = test_app_main_window.find_all_children(condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
         assert len(elements) == 1
-        assert elements[0].class_name == ElementClasses.TabControl
+        assert elements[0].class_name == KnownClassNames.TabControl.value
 
     def test_find_all_descendants(self, test_app_main_window: AutomationElement, condition_factory: ConditionFactory):
-        elements = test_app_main_window.find_all_descendants(condition_factory.by_class_name(class_name=ElementClasses.TabControl))
+        elements = test_app_main_window.find_all_descendants(condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
         assert len(elements) == 1
-        assert elements[0].class_name == ElementClasses.TabControl
+        assert elements[0].class_name == KnownClassNames.TabControl.value
 
     def test_find_all_nested(self, test_app_main_window: AutomationElement, condition_factory: ConditionFactory):
-        elements = test_app_main_window.find_all_nested(condition_factory.by_class_name(class_name=ElementClasses.TabControl))
+        elements = test_app_main_window.find_all_nested(condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
         assert len(elements) == 1
-        assert elements[0].class_name == ElementClasses.TabControl
+        assert elements[0].class_name == KnownClassNames.TabControl.value
 
     def test_find_all_with_options(self, test_app_main_window: AutomationElement, condition_factory: ConditionFactory):
         elements = test_app_main_window.find_all_with_options(
             TreeScope.Descendants,
-            condition_factory.by_class_name(class_name=ElementClasses.TabControl),
+            condition_factory.by_class_name(class_name=KnownClassNames.TabControl),
             TreeTraversalOptions.Default,
             test_app_main_window.raw_element,
         )
         assert len(elements) == 1
-        assert elements[0].class_name == ElementClasses.TabControl
+        assert elements[0].class_name == KnownClassNames.TabControl.value
 
     def test_find_at(self, test_app_main_window: AutomationElement, condition_factory: ConditionFactory):
-        element = test_app_main_window.find_at(TreeScope.Descendants, 0, condition_factory.by_class_name(class_name=ElementClasses.TabControl))
-        assert element.class_name == ElementClasses.TabControl
+        element = test_app_main_window.find_at(TreeScope.Descendants, 0, condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
+        assert element.class_name == KnownClassNames.TabControl.value
 
     def test_find_child_at(self, test_app_main_window: AutomationElement, condition_factory: ConditionFactory):
-        element = test_app_main_window.find_child_at(0, condition_factory.by_class_name(class_name=ElementClasses.TabControl))
-        assert element.class_name == ElementClasses.TabControl
+        element = test_app_main_window.find_child_at(0, condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
+        assert element.class_name == KnownClassNames.TabControl.value
 
     def test_find_first(self, test_app_main_window: AutomationElement, condition_factory: ConditionFactory):
-        element = test_app_main_window.find_first(TreeScope.Descendants, condition_factory.by_class_name(class_name=ElementClasses.TabControl))
-        assert element.class_name == ElementClasses.TabControl
+        element = test_app_main_window.find_first(TreeScope.Descendants, condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
+        assert element.class_name == KnownClassNames.TabControl.value
 
     def test_find_first_by_x_path(self, test_app_main_window: AutomationElement):
         element = test_app_main_window.find_first_by_x_path("/Tab/TabItem[@Name='Simple Controls']")
-        assert element.class_name == "TabItem"
+        assert element.class_name == KnownClassNames.TabItem.value
 
     def test_find_first_child(self, test_app_main_window: AutomationElement, condition_factory: ConditionFactory):
-        element = test_app_main_window.find_first_child(condition_factory.by_class_name(class_name=ElementClasses.TabControl))
-        assert element.class_name == ElementClasses.TabControl
+        element = test_app_main_window.find_first_child(condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
+        assert element.class_name == KnownClassNames.TabControl.value
 
     def test_find_first_descendant(self, test_app_main_window: AutomationElement, condition_factory: ConditionFactory):
-        element = test_app_main_window.find_first_descendant(condition_factory.by_class_name(class_name=ElementClasses.TabControl))
-        assert element.class_name == ElementClasses.TabControl
+        element = test_app_main_window.find_first_descendant(condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
+        assert element.class_name == KnownClassNames.TabControl.value
 
     def test_find_first_nested(self, test_app_main_window: AutomationElement, condition_factory: ConditionFactory):
-        element = test_app_main_window.find_first_nested(condition_factory.by_class_name(class_name=ElementClasses.TabControl))
-        assert element.class_name == ElementClasses.TabControl
+        element = test_app_main_window.find_first_nested(condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
+        assert element.class_name == KnownClassNames.TabControl.value
 
     def test_find_first_with_options(
         self, test_app_main_window: AutomationElement, condition_factory: ConditionFactory
     ):
         element = test_app_main_window.find_first_with_options(
             TreeScope.Descendants,
-            condition_factory.by_class_name(class_name=ElementClasses.TabControl),
+            condition_factory.by_class_name(class_name=KnownClassNames.TabControl),
             TreeTraversalOptions.Default,
             test_app_main_window.raw_element,
         )
-        assert element.class_name == ElementClasses.TabControl
+        assert element.class_name == KnownClassNames.TabControl.value
 
     def test_focus(self, generic_element: AutomationElement):
         generic_element.focus()
@@ -192,3 +193,12 @@ class TestAutomationElement:
     def test_to_string(self, generic_element: AutomationElement):
         test_string = generic_element.to_string()
         assert test_string == "AutomationId:, Name:Simple Controls, ControlType:tab item, FrameworkId:WPF"
+
+    def test_try_get_clickable_point(self, generic_element: AutomationElement):
+        found, point = generic_element.try_get_clickable_point()
+        assert found
+        assert point is not None
+
+    # def test_covert_as_calendar(self, generic_element: AutomationElement):
+    #     calendar = generic_element.as_calendar()
+    #     assert calendar is not None

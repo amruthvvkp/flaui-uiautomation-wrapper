@@ -16,6 +16,8 @@ from typing import Union
 import arrow
 from pydantic import BaseModel
 from pydantic import Field
+from pydantic import ValidationError
+from pydantic import field_validator
 from System import TimeSpan  # pyright: ignore
 
 from flaui.core.automation_type import AutomationType
@@ -39,6 +41,17 @@ class ElementModel(BaseModel, abc.ABC):
     raw_element: Any = Field(
         ..., title="Automation Element", description="Contains the C# automation element in raw form"
     )  # Consider making this a private property
+
+    @field_validator("raw_element")
+    def validate_element_exists(cls, v: Any) -> Any:
+        """Validate the element exists
+
+        :param v: Raw Element
+        :return: Raw Element
+        """
+        if v is None:
+            raise ValidationError("Element does not exist")
+        return v
 
 
 class ElementBase(ElementModel, abc.ABC):
@@ -346,8 +359,13 @@ class AutomationElement(ElementBase):
         self.raw_element.DoubleClick(move_mouse)
 
     def draw_highlight(self, color: Color = ColorCollection.Red, duration: int = 2000) -> None:
+        """Draw a highlight around the element with the given settings.
+
+        :param color: Color object, defaults to ColorCollection.Red
+        :param duration: Duration to highlight (in ms), defaults to 2000
+        """
         self.raw_element.Automation.OverlayManager.Show(
-            self.raw_element.Properties.BoundingRectangle.Value, color, duration
+            self.raw_element.Properties.BoundingRectangle.Value, color.cs_object, duration
         )
 
     def equals(self, another_element: AutomationElement) -> bool:
@@ -657,208 +675,238 @@ class AutomationElement(ElementBase):
         """
         return self.raw_element.TryGetClickablePoint()
 
-    def AsCalendar(self) -> Calendar:
+    def as_calendar(self) -> Calendar:
         """Converts the element to a Calendar.
 
         :return: Calendar element
         """
-        return Calendar(raw_element=self.raw_element.AsCalendar())
+        from FlaUI.Core.AutomationElements import Calendar as CSCalendar  # pyright: ignore
+        return Calendar(raw_element=CSCalendar(self.framework_automation_element))
 
-    def AsCheckBox(self) -> CheckBox:
+    def as_check_box(self) -> CheckBox:
         """Converts the element to a CheckBox.
 
         :return: CheckBox element
         """
-        return CheckBox(raw_element=self.raw_element.AsCheckBox())
+        from FlaUI.Core.AutomationElements import CheckBox as CSCheckBox  # pyright: ignore
+        return CheckBox(raw_element=CSCheckBox(self.framework_automation_element))
 
-    def AsComboBox(self) -> ComboBox:
+    def as_combo_box(self) -> ComboBox:
         """Converts the element to a ComboBox.
 
         :return: ComboBox element
         """
-        return ComboBox(raw_element=self.raw_element.AsComboBox())
+        from FlaUI.Core.AutomationElements import ComboBox as CSComboBox  # pyright: ignore
+        return ComboBox(raw_element=CSComboBox(self.framework_automation_element))
 
-    def AsDataGridView(self) -> DataGridView:
+    def as_data_grid_view(self) -> DataGridView:
         """Converts the element to a DataGridView.
 
         :return: DataGridView element
         """
-        return DataGridView(raw_element=self.raw_element.AsDataGridView())
+        from FlaUI.Core.AutomationElements import DataGridView as CSDataGridView  # pyright: ignore
+        return DataGridView(raw_element=CSDataGridView(self.framework_automation_element))
 
-    def AsDateTimePicker(self) -> DateTimePicker:
+    def as_date_time_picker(self) -> DateTimePicker:
         """Converts the element to a DateTimePicker.
 
         :return: DateTimePicker element
         """
-        return DateTimePicker(raw_element=self.raw_element.AsDateTimePicker())
+        from FlaUI.Core.AutomationElements import DateTimePicker as CSDateTimePicker  # pyright: ignore
+        return DateTimePicker(raw_element=CSDateTimePicker(self.framework_automation_element))
 
-    def AsLabel(self) -> Label:
+    def as_label(self) -> Label:
         """Converts the element to a Label.
 
         :return: Label element
         """
-        return Label(raw_element=self.raw_element.AsLabel())
+        from FlaUI.Core.AutomationElements import Label as CSLabel  # pyright: ignore
+        return Label(raw_element=CSLabel(self.framework_automation_element))
 
-    def AsGrid(self) -> Grid:
+    def as_grid(self) -> Grid:
         """Converts the element to a Grid.
 
         :return: Grid element
         """
-        return Grid(raw_element=self.raw_element.AsGrid())
+        from FlaUI.Core.AutomationElements import Grid as CSGrid  # pyright: ignore
+        return Grid(raw_element=CSGrid(self.framework_automation_element))
 
-    def AsGridRow(self) -> GridRow:
+    def as_grid_row(self) -> GridRow:
         """Converts the element to a GridRow.
 
         :return: GridRow element
         """
-        return GridRow(raw_element=self.raw_element.AsGridRow())
+        from FlaUI.Core.AutomationElements import GridRow as CSGridRow  # pyright: ignore
+        return GridRow(raw_element=CSGridRow(self.framework_automation_element))
 
-    def AsGridCell(self) -> GridCell:
+    def as_grid_cell(self) -> GridCell:
         """Converts the element to a GridCell.
 
         :return: GridCell element
         """
-        return GridCell(raw_element=self.raw_element.AsGridCell())
+        from FlaUI.Core.AutomationElements import GridCell as CSGridCell  # pyright: ignore
+        return GridCell(raw_element=CSGridCell(self.framework_automation_element))
 
-    def AsGridHeaderItem(self) -> GridHeaderItem:
+    def as_grid_header_item(self) -> GridHeaderItem:
         """Converts the element to a GridHeaderItem.
 
         :return: GridHeaderItem element
         """
-        return GridHeaderItem(raw_element=self.raw_element.AsGridHeaderItem())
+        from FlaUI.Core.AutomationElements import GridHeaderItem as CSGridHeaderItem  # pyright: ignore
+        return GridHeaderItem(raw_element=CSGridHeaderItem(self.framework_automation_element))
 
-    # def AsHorizontalScrollBar(self) -> HorizontalScrollBar:
+    # def as_horizontal_scroll_bar(self) -> HorizontalScrollBar:
     #     """Converts the element to a HorizontalScrollBar.
 
     #     :return: HorizontalScrollBar element
     #     """
-    #     return HorizontalScrollBar(raw_element=self.raw_element.AsHorizontalScrollBar())# TODO: Put in HorizontalScrollBar element and update this line
+    #     # TODO: Put in HorizontalScrollBar element and update this line
+    #     from FlaUI.Core.AutomationElements import HorizontalScrollBar as CSHorizontalScrollBar  # pyright: ignore
+    #     return HorizontalScrollBar(raw_element=CSHorizontalScrollBar(self.framework_automation_element))
 
-    def AsListBox(self) -> ListBox:
+    def as_list_box(self) -> ListBox:
         """Converts the element to a ListBox.
 
         :return: ListBox element
         """
-        return ListBox(raw_element=self.raw_element.AsListBox())
+        from FlaUI.Core.AutomationElements import ListBox as CSListBox  # pyright: ignore
+        return ListBox(raw_element=CSListBox(self.framework_automation_element))
 
-    def AsListBoxItem(self) -> ListBoxItem:
+    def as_list_box_item(self) -> ListBoxItem:
         """Converts the element to a ListBoxItem.
 
         :return: ListBoxItem element
         """
-        return ListBoxItem(raw_element=self.raw_element.AsListBoxItem())
+        from FlaUI.Core.AutomationElements import ListBoxItem as CSListBoxItem  # pyright: ignore
+        return ListBoxItem(raw_element=CSListBoxItem(self.framework_automation_element))
 
-    def AsMenu(self) -> Menu:
+    def as_menu(self) -> Menu:
         """Converts the element to a Menu.
 
         :return: Menu element
         """
-        return Menu(raw_element=self.raw_element.AsMenu())
+        from FlaUI.Core.AutomationElements import Menu as CSMenu  # pyright: ignore
+        return Menu(raw_element=CSMenu(self.framework_automation_element))
 
-    def AsMenuItem(self) -> MenuItem:
+    def as_menu_item(self) -> MenuItem:
         """Converts the element to a MenuItem.
 
         :return: MenuItem element
         """
-        return MenuItem(raw_element=self.raw_element.AsMenuItem())
+        from FlaUI.Core.AutomationElements import MenuItem as CSMenuItem  # pyright: ignore
+        return MenuItem(raw_element=CSMenuItem(self.framework_automation_element))
 
-    def AsProgressBar(self) -> ProgressBar:
+    def as_progress_bar(self) -> ProgressBar:
         """Converts the element to a ProgressBar.
 
         :return: ProgressBar element
         """
-        return ProgressBar(raw_element=self.raw_element.AsProgressBar())
+        from FlaUI.Core.AutomationElements import ProgressBar as CSProgressBar  # pyright: ignore
+        return ProgressBar(raw_element=CSProgressBar(self.framework_automation_element))
 
-    def AsRadioButton(self) -> RadioButton:
+    def as_radio_button(self) -> RadioButton:
         """Converts the element to a RadioButton.
 
         :return: RadioButton element
         """
-        return RadioButton(raw_element=self.raw_element.AsRadioButton())
+        from FlaUI.Core.AutomationElements import RadioButton as CSRadioButton  # pyright: ignore
+        return RadioButton(raw_element=CSRadioButton(self.framework_automation_element))
 
-    def AsSlider(self) -> Slider:
+    def as_slider(self) -> Slider:
         """Converts the element to a Slider.
 
         :return: Slider element
         """
-        return Slider(raw_element=self.raw_element.AsSlider())
+        from FlaUI.Core.AutomationElements import Slider as CSSlider  # pyright: ignore
+        return Slider(raw_element=CSSlider(self.framework_automation_element))
 
-    def AsSpinner(self) -> Spinner:
+    def as_spinner(self) -> Spinner:
         """Converts the element to a Spinner.
 
         :return: Spinner element
         """
-        return Spinner(raw_element=self.raw_element.AsSpinner())
+        from FlaUI.Core.AutomationElements import Spinner as CSSpinner  # pyright: ignore
+        return Spinner(raw_element=CSSpinner(self.framework_automation_element))
 
-    def AsTab(self) -> Tab:
+    def as_tab(self) -> Tab:
         """Converts the element to a Tab.
 
         :return: Tab element
         """
-        return Tab(raw_element=self.raw_element.AsTab())
+        from FlaUI.Core.AutomationElements import Tab as CSTab  # pyright: ignore
+        return Tab(raw_element=CSTab(self.framework_automation_element))
 
-    def AsTabItem(self) -> TabItem:
+    def as_tab_item(self) -> TabItem:
         """Converts the element to a TabItem.
 
         :return: TabItem element
         """
-        return TabItem(raw_element=self.raw_element.AsTabItem())
+        from FlaUI.Core.AutomationElements import TabItem as CSTabItem  # pyright: ignore
+        return TabItem(raw_element=CSTabItem(self.framework_automation_element))
 
-    def AsTextBox(self) -> TextBox:
+    def as_text_box(self) -> TextBox:
         """Converts the element to a TextBox.
 
         :return: TextBox element
         """
-        return TextBox(raw_element=self.raw_element.AsTextBox())
+        from FlaUI.Core.AutomationElements import TextBox as CSTextBox  # pyright: ignore
+        return TextBox(raw_element=CSTextBox(self.framework_automation_element))
 
-    def AsThumb(self) -> Thumb:
+    def as_thumb(self) -> Thumb:
         """Converts the element to a Thumb.
 
         :return: Thumb element
         """
-        return Thumb(raw_element=self.raw_element.AsThumb())
+        from FlaUI.Core.AutomationElements import Thumb as CSThumb  # pyright: ignore
+        return Thumb(raw_element=CSThumb(self.framework_automation_element))
 
-    def AsTitleBar(self) -> TitleBar:
+    def as_title_bar(self) -> TitleBar:
         """Converts the element to a TitleBar.
 
         :return: TitleBar element
         """
-        return TitleBar(raw_element=self.raw_element.AsTitleBar())
+        from FlaUI.Core.AutomationElements import TitleBar as CSTitleBar  # pyright: ignore
+        return TitleBar(raw_element=CSTitleBar(self.framework_automation_element))
 
-    def AsToggleButton(self) -> ToggleButton:
+    def as_toggle_button(self) -> ToggleButton:
         """Converts the element to a ToggleButton.
 
         :return: ToggleButton element
         """
-        return ToggleButton(raw_element=self.raw_element.AsToggleButton())
+        from FlaUI.Core.AutomationElements import ToggleButton as CSToggleButton  # pyright: ignore
+        return ToggleButton(raw_element=CSToggleButton(self.framework_automation_element))
 
-    def AsTree(self) -> Tree:
+    def as_tree(self) -> Tree:
         """Converts the element to a Tree.
 
         :return: Tree element
         """
-        return Tree(raw_element=self.raw_element.AsTree())
+        from FlaUI.Core.AutomationElements import Tree as CSTree  # pyright: ignore
+        return Tree(raw_element=CSTree(self.framework_automation_element))
 
-    def AsTreeItem(self) -> TreeItem:
+    def as_tree_item(self) -> TreeItem:
         """Converts the element to a TreeItem.
 
         :return: TreeItem element
         """
-        return TreeItem(raw_element=self.raw_element.AsTreeItem())
+        from FlaUI.Core.AutomationElements import TreeItem as CSTreeItem  # pyright: ignore
+        return TreeItem(raw_element=CSTreeItem(self.framework_automation_element))
 
-    # def AsVerticalScrollBar(self) -> VerticalScrollBar:
+    # def as_vertical_scroll_bar(self) -> VerticalScrollBar:
     #     """Converts the element to a VerticalScrollBar.
 
     #     :return: VerticalScrollBar element
     #     """
-    #     return VerticalScrollBar(raw_element=self.raw_element.AsVerticalScrollBar()) # Build VerticalScrollBar class and update this line
+    #     # TODO: Build VerticalScrollBar class and update this line
+    #     return VerticalScrollBar(raw_element=self.raw_element.AsVerticalScrollBar())
 
-    def AsWindow(self) -> Window:
+    def as_window(self) -> Window:
         """Converts the element to a Window.
 
         :return: Window element
         """
-        return Window(raw_element=self.raw_element.AsWindow())
+        from FlaUI.Core.AutomationElements import Window as CSWindow  # pyright: ignore
+        return Window(raw_element=CSWindow(self.framework_automation_element))
 
 
 # TODO: Next things to do

@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
-from typing import Any, List, Optional, Union
+from typing import Any
+from typing import List
+from typing import Optional
+from typing import Union
 
 from FlaUI.Core import Application as CSApplication  # pyright: ignore
-from flaui.core.automation_elements import AutomationElement
-from flaui.lib.collections import TypeCast
 
+from flaui.core.automation_elements import AutomationElement
+from flaui.core.automation_elements import Window
+from flaui.lib.collections import TypeCast
 
 class Application:
     """
@@ -82,7 +86,7 @@ class Application:
         """
         return TypeCast.py_list(self._application.GetAllTopLevelWindows(automation))
 
-    def get_main_window(self, automation: Any) -> AutomationElement:
+    def get_main_window(self, automation: Any) -> Window:
         """Gets the main window of the applications process.
 
         :param automation: The automation object to use.
@@ -90,7 +94,7 @@ class Application:
         """
 
         # TODO: Update this to return Window Element object
-        return AutomationElement(raw_element=self._application.GetMainWindow(automation))
+        return Window(raw_element=self._application.GetMainWindow(automation))
 
     def launch(self, executable: str, arguments: Optional[str] = None) -> None:
         """Launches the given executable.

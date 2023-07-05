@@ -2,13 +2,13 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any
-from typing import Optional
+from typing import Any, Optional
 
 from pydantic import Field
 from pydantic_settings import BaseSettings
 from System.Drawing import Color as CSColor  # pyright: ignore
 from System.Drawing import KnownColor as CSKnownColor  # pyright: ignore
+
 
 class KnownColor(Enum):
     """Specifies the known system colors"""
@@ -294,13 +294,13 @@ class Color(BaseSettings):
         """
         return self.cs_object.G
 
-    def equals(self, another_color: ColorCollection) -> bool:
+    def equals(self, another_color: Color) -> bool:
         """Indicates whether the current object is equal to another object of the same type.
 
         :param another_color: An object to compare with this object.
         :return: True if the current object is equal to other; otherwise, False.
         """
-        return self.cs_object.Equals(another_color)
+        return self.cs_object.Equals(another_color.cs_object)
 
     def get_brightness(self) -> float:
         """Gets the hue-saturation-lightness (HSL) lightness value for this System.Drawing.Color
@@ -403,7 +403,7 @@ class Color(BaseSettings):
         :param known_color: An element of the System.Drawing.KnownColor enumeration.
         :return: The System.Drawing.Color that this method creates.
         """
-        return Color(cs_object=self.cs_object.FromKnownColor(known_color))
+        return Color(cs_object=self.cs_object.FromKnownColor(known_color.value))
 
     def from_name(self, name: str) -> Color:
         """Creates a System.Drawing.Color structure from the specified name of a predefined

@@ -1,19 +1,21 @@
 # Helper class with some commonly used conditions.
 from __future__ import annotations
 
-from typing import Any, Union
-
-from pydantic import BaseModel
+from typing import Any
+from typing import Union
 
 from FlaUI.Core.Conditions import ConditionFactory as CSConditionFactory  # pyright: ignore
 from FlaUI.Core.Conditions import PropertyCondition as CSPropertyCondition  # pyright: ignore
-from flaui.core.definitions import ControlType, PropertyConditionFlags
-from flaui.core.framework_types import FrameworkType
+from pydantic import BaseModel
+from pydantic import ConfigDict
 
+from flaui.core.definitions import ControlType
+from flaui.core.definitions import PropertyConditionFlags
+from flaui.core.framework_types import FrameworkType
+from flaui.lib.enums import KnownClassNames
 
 class PropertyCondition(BaseModel):
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     condition: CSPropertyCondition
 
@@ -82,6 +84,8 @@ class PropertyCondition(BaseModel):
 
 
 class ConditionFactory(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     raw_cf: CSConditionFactory
 
 
@@ -108,7 +112,7 @@ class ConditionFactory(BaseModel):
         return PropertyCondition(condition=self.raw_cf.ByControlType(control_type.value))
 
 
-    def by_class_name(self, class_name: str, condition_flags_property_condition_flags: PropertyConditionFlags=PropertyConditionFlags.none):
+    def by_class_name(self, class_name: Union[str, KnownClassNames], condition_flags_property_condition_flags: PropertyConditionFlags=PropertyConditionFlags.none):
         """Creates a condition to search by a class name.
 
         :param class_name: Class Name
@@ -116,7 +120,7 @@ class ConditionFactory(BaseModel):
         :return: Property Condition
         """
         return PropertyCondition(
-            condition=self.raw_cf.ByClassName(class_name, condition_flags_property_condition_flags.value)
+            condition=self.raw_cf.ByClassName(class_name if isinstance(class_name, str) else class_name.value, condition_flags_property_condition_flags.value)
         )
 
 
@@ -236,6 +240,3 @@ class ConditionFactory(BaseModel):
         :return: Property Condition
         """
         return PropertyCondition(condition=self.raw_cf.VerticalScrollBar())
-
-    class Config:
-        arbitrary_types_allowed = True

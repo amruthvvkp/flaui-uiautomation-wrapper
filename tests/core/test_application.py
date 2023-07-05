@@ -6,10 +6,10 @@ from typing import Optional
 
 from flaui.core.application import Application
 from flaui.core.automation_elements import AutomationElement
+from flaui.core.automation_elements import Window
 from flaui.modules.automation import Automation
 import pytest
 from System import InvalidOperationException  # pyright: ignore
-
 
 @pytest.fixture(scope="module")
 def wordpad_application(wordpad: Automation) -> Generator[Application, None, None]:
@@ -42,6 +42,10 @@ class TestApplication:
     def test_get_main_window(self, wordpad_application: Application, automation: Any):
         window = wordpad_application.get_main_window(automation)
         assert window is not None
+        assert window.title == "Document - WordPad"
+        assert window.class_name == "WordPadClass"
+        assert window.name == "Document - WordPad"
+        assert isinstance(window, Window)
 
     def test_launch(self):
         app = Application()
