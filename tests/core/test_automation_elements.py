@@ -89,7 +89,7 @@ class TestAutomationElement:
         isinstance(generic_element.capture(), Bitmap)
 
     def test_capture_to_file(self, generic_element: AutomationElement):
-        file_path = Path(os.path.join(Path(test_settings.WPF_TEST_APP).parent.resolve(), "test_capture.png"))
+        file_path = Path(os.path.join(Path(test_settings.WPF_TEST_APP_EXE).parent.resolve(), "test_capture.png"))
 
         generic_element.capture_to_file(str(file_path))
 

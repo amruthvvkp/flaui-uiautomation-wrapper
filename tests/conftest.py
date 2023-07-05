@@ -63,9 +63,9 @@ def test_application(ui_automation_type: UIAutomationTypes) -> Generator[Automat
     automation = Automation(ui_automation_type)
 
     # We want to download the test application only once per test run if the downloaded executable does not exist on local folder.
-    if not test_settings.WPF_TEST_APP.exists():
-        download_test_application_from_github(test_settings.WPF_TEST_APP)
-    automation.application.launch(test_settings.WPF_TEST_APP.as_posix())
+    if not test_settings.WPF_TEST_APP_EXE.exists():
+        download_test_application_from_github(test_settings.WPF_TEST_APP_EXE)
+    automation.application.launch(test_settings.WPF_TEST_APP_EXE.as_posix())
     yield automation
 
     automation.application.kill()
