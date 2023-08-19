@@ -1,7 +1,11 @@
-from typing import Any, Dict, List
-
+"""This module contains collections which can effective handle data transition between C# and Python."""
+from typing import Any
+from typing import Dict
+from typing import List
 
 class TypeCast:
+    """A class that provides methods to convert C# objects to Python objects"""
+
     @staticmethod
     def py_list(raw: Any) -> List[Any]:
         """Converts C# Lists to Python lists

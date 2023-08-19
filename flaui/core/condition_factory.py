@@ -1,20 +1,29 @@
-# Helper class with some commonly used conditions.
+"""
+This module contains a helper class with some commonly used conditions for FlaUI automation framework.
+It defines two classes: PropertyCondition and ConditionFactory.
+
+PropertyCondition is a Pydantic BaseModel that wraps a PropertyCondition object from FlaUI.Core.Conditions module.
+It provides methods to create and combine conditions, compare values, and get property and value of the condition.
+
+ConditionFactory is also a Pydantic BaseModel that wraps a ConditionFactory object from FlaUI.Core.Conditions module.
+It provides methods to create PropertyConditions based on automation id, control type, class name, name, and text.
+"""
+
 from __future__ import annotations
 
-from typing import Any
-from typing import Union
+from typing import Any, Union
+
+from pydantic import BaseModel, ConfigDict
 
 from FlaUI.Core.Conditions import ConditionFactory as CSConditionFactory  # pyright: ignore
 from FlaUI.Core.Conditions import PropertyCondition as CSPropertyCondition  # pyright: ignore
-from pydantic import BaseModel
-from pydantic import ConfigDict
-
-from flaui.core.definitions import ControlType
-from flaui.core.definitions import PropertyConditionFlags
+from flaui.core.definitions import ControlType, PropertyConditionFlags
 from flaui.core.framework_types import FrameworkType
 from flaui.lib.enums import KnownClassNames
 
+
 class PropertyCondition(BaseModel):
+    """PropertyCondition wraps a PropertyCondition object from FlaUI.Core.Conditions module. This class provides methods to create and combine conditions, compare values, and get property and value of the condition."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     condition: CSPropertyCondition
@@ -84,6 +93,7 @@ class PropertyCondition(BaseModel):
 
 
 class ConditionFactory(BaseModel):
+    """ConditionFactory wraps a ConditionFactory object from FlaUI.Core.Conditions module. This class provides methods to create PropertyConditions based on automation id, control type, class name, name, and text."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     raw_cf: CSConditionFactory

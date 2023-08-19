@@ -20,7 +20,7 @@
                 "cwd": "${workspaceFolder}"
             },
             "windows": {
-                "command": "python -m twine upload --repository testpypi dist/*"                
+                "command": "python -m twine upload --repository testpypi dist/*"
             }
         },
         {

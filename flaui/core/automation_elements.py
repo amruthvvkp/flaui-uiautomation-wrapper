@@ -1,36 +1,26 @@
 """
-Wrapper objects for AutomationElement class.
+This module contains wrapper objects for AutomationElement class.
+It defines two abstract classes, ElementModel and ElementBase, which are used as base classes for other classes that wrap AutomationElement objects.
+ElementBase provides properties to access various attributes of the wrapped AutomationElement object.
 """
 
 from __future__ import annotations
 
 import abc
-from datetime import date
-from datetime import datetime
-from typing import Any
-from typing import List
-from typing import Optional
-from typing import Tuple
-from typing import Union
+from datetime import date, datetime
+from typing import Any, List, Optional, Tuple, Union
 
 import arrow
-from pydantic import BaseModel
-from pydantic import Field
-from pydantic import field_validator
+from pydantic import BaseModel, Field, field_validator
 from System import TimeSpan  # pyright: ignore
 
 from flaui.core.automation_type import AutomationType
-from flaui.core.condition_factory import ConditionFactory
-from flaui.core.condition_factory import PropertyCondition
-from flaui.core.definitions import ControlType
-from flaui.core.definitions import ExpandCollapseState
-from flaui.core.definitions import RowOrColumnMajor
-from flaui.core.definitions import ToggleState
+from flaui.core.condition_factory import ConditionFactory, PropertyCondition
+from flaui.core.definitions import ControlType, ExpandCollapseState, RowOrColumnMajor, ToggleState
 from flaui.core.framework_types import FrameworkType
 from flaui.lib.collections import TypeCast
 from flaui.lib.exceptions import ElementNotFoundError
-from flaui.lib.system.drawing import Color
-from flaui.lib.system.drawing import ColorCollection
+from flaui.lib.system.drawing import Color, ColorCollection
 
 # ================================================================================
 #   Element base Pydantic abstract class
@@ -228,6 +218,8 @@ class InvokeAutomationElement(ElementModel, abc.ABC):
     """An element that supports the InvokePattern"""
 
     def invoke(self) -> None:
+        """Invokes the element.
+        """
         self.raw_element.Invoke()
 
 
@@ -1379,6 +1371,10 @@ class GridHeaderItem(AutomationElement):
 
     @property
     def text(self) -> str:
+        """Gets the text of the header item.
+
+        :return: Text of the header item
+        """
         return self.raw_element.Text
 
 

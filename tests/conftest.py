@@ -1,13 +1,22 @@
-# This file consists of fixtures that are used in the unit tests.
+"""
+This file contains fixtures that are used in the unit tests. The fixtures include:
+- ui_automation_type: Sets the UIAutomation type to use for the tests.
+- automation: Sets the Automation class to use for the tests.
+- test_application: Generates FlaUI Automation class with the test application.
+- wordpad: Generates FlaUI Automation class with the Wordpad application.
+- notepad: Generates FlaUI Automation class with the Notepad application.
+- test_app_main_window: Fetches the main window of the test application.
+- condition_factory: Generates FlaUI ConditionFactory class.
+This file consists of fixtures that are used in the unit tests."""
+
 import os
-from typing import Any
-from typing import Generator
-from typing import Literal
+from typing import Any, Generator, Literal
+
+import psutil
+import pytest
 
 from config import test_settings
 from flaui.lib.pythonnet_bridge import setup_pythonnet_bridge
-import psutil
-import pytest
 
 # # isort: off
 
@@ -71,16 +80,29 @@ def test_application(ui_automation_type: UIAutomationTypes) -> Generator[Automat
 
 @pytest.fixture(scope="package")
 def wordpad(ui_automation_type: UIAutomationTypes):
-    """Generates FlaUI Automation class with the wordpad application.
+    """Generates FlaUI Automation class with the Wordpad application.
 
     :param ui_automation_type: UIAutomation type to use for the tests.
     :yield: FlaUI Automation class with the wordpad application.
     """
-    test_automation = Automation(ui_automation_type)
-    test_automation.application.launch("wordpad.exe")
-    yield test_automation
+    automation = Automation(ui_automation_type)
+    automation.application.launch("wordpad.exe")
+    yield automation
 
-    test_automation.application.kill()
+    automation.application.kill()
+
+@pytest.fixture(scope="package")
+def notepad(ui_automation_type: UIAutomationTypes):
+    """Generates FlaUI Automation class with the Notepad application.
+
+    :param ui_automation_type: UIAutomation type to use for the tests.
+    :yield: FlaUI Automation class with the wordpad application.
+    """
+    automation = Automation(ui_automation_type)
+    automation.application.launch("notepad.exe")
+    yield automation
+
+    automation.application.kill()
 
 
 @pytest.fixture(scope="package")

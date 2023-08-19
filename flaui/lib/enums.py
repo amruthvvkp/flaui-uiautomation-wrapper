@@ -1,4 +1,6 @@
+"""This module contains enums which are used in the FlaUI library."""
 from enum import Enum
+
 
 class UIAutomationTypes(Enum):
     """Lists down UIAutomation types."""

@@ -1,4 +1,4 @@
-# Contains exceptions used in the framework
+"""This module contains the set of custom FlaUi's exceptions."""
 
 class FlaUiException(ValueError):
     """Base class for exceptions in this module."""

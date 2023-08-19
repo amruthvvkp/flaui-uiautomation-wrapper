@@ -1,14 +1,14 @@
-"""Wrapper class for System.Drawing namespace objects"""
+"""This module provides a wrapper class for System.Drawing namespace objects. It also defines an Enum class KnownColor that specifies the known system colors. Wrapper class for System.Drawing namespace objects"""
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
+from typing import Optional
 
 from pydantic import Field
 from pydantic_settings import BaseSettings
 from System.Drawing import Color as CSColor  # pyright: ignore
 from System.Drawing import KnownColor as CSKnownColor  # pyright: ignore
-
 
 class KnownColor(Enum):
     """Specifies the known system colors"""
@@ -210,6 +210,7 @@ class KnownColor(Enum):
 
 
 class Color(BaseSettings):
+    """Represents an ARGB (alpha, red, green, blue) color."""
     cs_object: Any = Field(...)
 
     @property

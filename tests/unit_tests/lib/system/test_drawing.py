@@ -1,22 +1,23 @@
-# Pytest unit tests for drawing.py
+"""
+This module contains unit tests for the drawing.py module. It tests the following classes and functions:
+- KnownColor
+- Color
+- ColorCollection
+"""
 
 
-from flaui.lib.system.drawing import Color
-from flaui.lib.system.drawing import ColorCollection
-from flaui.lib.system.drawing import KnownColor
 from System.Drawing import Color as CSColor  # pyright: ignore
 from System.Drawing import KnownColor as CSKnownColor  # pyright: ignore
 
+from flaui.lib.system.drawing import Color, ColorCollection, KnownColor
+
+
 def test_known_color():
     """Unit tests for the class KnownColor"""
-
-
     assert all([_ in KnownColor.__members__ for _ in list(vars(CSKnownColor).keys()) if "_" not in _])
 
 def test_color_model():
     """Unit tests for the Pydantic model Color"""
-
-
     color = Color(cs_object=CSColor.AliceBlue)
     assert color.name == "AliceBlue"
     assert color.r == 240

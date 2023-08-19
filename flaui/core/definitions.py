@@ -1,11 +1,26 @@
-# Wrapper class for the C# namespace FlaUI.Core.Definitions
+"""
+This module contains wrapper classes for the C# namespace FlaUI.Core.Definitions.
+It defines several enums for different types of controls in Microsoft UI Automation.
+
+Enums:
+    - PropertyConditionFlags: Optional flags that are used when checking the property.
+    - ControlType: Types of controls in Microsoft UI Automation.
+    - ToggleState: Contains values that specify the toggle state of a Microsoft UI Automation element that implements the TogglePattern.
+    - ExpandCollapseState: Contains values that specify the expand/collapse state of a Microsoft UI Automation element that implements the ExpandCollapsePattern.
+    - RowOrColumnMajor: Contains values that specify the row/column major order of items in a container.
+This module contains wrapper classes for the C# namespace FlaUI.Core.Definitions.
+It defines several enums for different types of controls in Microsoft UI Automation.
+"""
+
 from enum import Enum
 
+# Wrapper class for the C# namespace FlaUI.Core.Definitions
 from FlaUI.Core.Definitions import ControlType as CSControlType  # pyright: ignore
 from FlaUI.Core.Definitions import ExpandCollapseState as CSExpandCollapseState  # pyright: ignore
 from FlaUI.Core.Definitions import PropertyConditionFlags as CSPropertyConditionFlags  # pyright: ignore
 from FlaUI.Core.Definitions import RowOrColumnMajor as CSRowOrColumnMajor  # pyright: ignore
 from FlaUI.Core.Definitions import ToggleState as CSToggleState  # pyright: ignore
+
 
 class PropertyConditionFlags(Enum):
     """Optional flags that are used when checking the property."""
@@ -90,6 +105,7 @@ class ToggleState(Enum):
 
 
 class ExpandCollapseState(Enum):
+    """Contains values that specify the expand/collapse state of a Microsoft UI Automation element that implements the ExpandCollapsePattern."""
     Collapsed = CSExpandCollapseState.Collapsed
     Expanded = CSExpandCollapseState.Expanded
     PartiallyExpanded = CSExpandCollapseState.PartiallyExpanded
@@ -97,6 +113,7 @@ class ExpandCollapseState(Enum):
 
 
 class RowOrColumnMajor(Enum):
+    """Contains values that specify the row/column major order of items in a container."""
     RowMajor = CSRowOrColumnMajor.RowMajor
     ColumnMajor = CSRowOrColumnMajor.ColumnMajor
     Indeterminate = CSRowOrColumnMajor.Indeterminate

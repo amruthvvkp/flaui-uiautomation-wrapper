@@ -1,4 +1,7 @@
-# Wrapper for Application class from the object <class 'FlaUI.Core.Application'> from the module - FlaUI.Core
+"""
+This module provides a wrapper for the Application class from the object <class 'FlaUI.Core.Application'> from the module - FlaUI.Core.
+It contains methods to launch, attach, kill, dispose, and close an application. It also provides properties to get the name, process ID, exit code, and main window handle of the application.
+"""
 
 from __future__ import annotations
 

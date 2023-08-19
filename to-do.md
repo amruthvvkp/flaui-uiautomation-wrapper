@@ -16,3 +16,10 @@
 # 3. Write unit tests
 
 # 4. Fix return class types for certain functions which use system libraries
+
+## GitHub actions
+
+Use PR labeler - https://github.com/actions/labeler
+https://github.com/actions/starter-workflows/blob/main/automation/label.yml
+https://github.com/actions/starter-workflows/blob/main/automation/stale.yml
+https://github.com/actions/starter-workflows/blob/main/.github/auto_assign.yml

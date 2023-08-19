@@ -7,17 +7,11 @@
         "uiautomation",
         "versioneer"
     ],
-    "python.testing.pytestArgs": [
-        "tests"
-    ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "files.exclude": {
         "**/*.egg-info": true
     },
-    "pythonTestExplorer.testFramework": "testplan",
-    "pythonTestExplorer.testplanEnabled": true,
-    "pythonTestExplorer.testplanPath": "src\\integration_tests\\test_plan.py",
     "testExplorer.mergeSuites": true,
     "testExplorer.hideWhen": "noTests",
     "testExplorer.showOnRun": true,
@@ -36,5 +30,8 @@
         "editor.codeActionsOnSave": {
             "source.fixAll": true
         }
-    }
+    },
+    "python.testing.pytestArgs": [
+        "tests/unit_tests"
+    ]
 }
