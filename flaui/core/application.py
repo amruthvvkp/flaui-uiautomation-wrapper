@@ -10,7 +10,6 @@ from typing import List
 from typing import Optional
 from typing import Union
 
-from flaui.core.automation_elements import AutomationElement
 from flaui.core.automation_elements import Window
 from flaui.lib.collections import TypeCast
 
@@ -83,13 +82,14 @@ class Application:
         """
         return self._application.CloseTimeout
 
-    def get_all_top_level_windows(self, automation: Any) -> List[AutomationElement]:
+    def get_all_top_level_windows(self, automation: Any) -> List[Window]:
         """Gets all top level windows from the application.
 
         :param automation: The automation object to use.
         :return: Get's all top level windows form the application
         """
-        return TypeCast.py_list(self._application.GetAllTopLevelWindows(automation))
+        parsed = TypeCast.py_list(self._application.GetAllTopLevelWindows(automation))
+        return [Window(raw_element=element) for element in parsed]
 
     def get_main_window(self, automation: Any) -> Window:
         """Gets the main window of the applications process.

@@ -667,6 +667,14 @@ class AutomationElement(ElementBase):
         """
         return self.raw_element.TryGetClickablePoint()
 
+    def as_button(self) -> Button:
+        """Converts the element to a Button.
+
+        :return: Button element
+        """
+        from FlaUI.Core.AutomationElements import Button as CSButton  # pyright: ignore
+        return Button(raw_element=CSButton(self.framework_automation_element))
+
     def as_calendar(self) -> Calendar:
         """Converts the element to a Calendar.
 

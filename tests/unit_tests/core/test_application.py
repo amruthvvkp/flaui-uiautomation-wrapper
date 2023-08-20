@@ -4,64 +4,75 @@ The Application class is responsible for launching, attaching, and interacting w
 It also provides methods for getting information about the application, such as its process ID and main window handle.
 """
 from time import sleep
-from typing import Any, Generator, List, Optional
+from typing import Any
+from typing import List
+from typing import Optional
 
+from flaui.core.application import Application
+from flaui.core.automation_elements import Window
+from flaui.lib.enums import UIAutomationTypes
+from flaui.modules.automation import Automation
 import pytest
 from System import InvalidOperationException  # pyright: ignore
 
-from flaui.core.application import Application
-from flaui.core.automation_elements import AutomationElement, Window
-from flaui.modules.automation import Automation
+@pytest.fixture(scope="package")
+def wordpad(ui_automation_type: UIAutomationTypes):
+    """Generates FlaUI Automation class with the Wordpad application.
 
-
-@pytest.fixture(scope="module")
-def wordpad_application(wordpad: Automation) -> Generator[Application, None, None]:
-    """Fixture to launch wordpad application.
-
-    :param wordpad: The wordpad automation instance.
-    :yield: The wordpad application instance.
+    :param ui_automation_type: UIAutomation type to use for the tests.
+    :yield: FlaUI Automation class with the wordpad application.
     """
-    yield wordpad.application
+    wordpad = Automation(ui_automation_type)
+    wordpad.application.launch("wordpad.exe")
+    yield wordpad
 
+    wordpad.application.kill()
 
 class TestApplication:
     """Tests for the Application class in the flaui.core.application module."""
-    def test_class_properties(self, wordpad_application: Application):
-        """Test the class properties of the Application class.
 
-        :param wordpad_application: The wordpad application instance.
+    @pytest.fixture(autouse=True)
+    def _wordpad_application(self, wordpad: Automation):
+        """Fixture to launch wordpad application.
+
+        :param wordpad: The wordpad automation instance.
         """
-        assert wordpad_application.process_id is not None
-        assert wordpad_application.name == "wordpad"
-        assert wordpad_application.has_exited is False
-        assert wordpad_application.main_window_handle is not None
-        assert wordpad_application.close_timeout is not None
+        self.application: Application = wordpad.application
 
-    def test_get_all_top_level_windows(self, wordpad_application: Application, automation: Any):
+
+    def test_class_properties(self):
+        """Test the class properties of the Application class."""
+        assert self.application.process_id is not None
+        assert self.application.name == "wordpad"
+        assert self.application.has_exited is False
+        assert self.application.main_window_handle is not None
+        assert self.application.close_timeout is not None
+
+    def test_get_all_top_level_windows(self, automation: Any):
         """Test the get_all_top_level_windows method of the Application class.
 
-        :param wordpad_application: The wordpad application instance.
         :param automation: The automation instance.
         """
         timeout = 30
         timer = 0
-        windows: Optional[List[AutomationElement]] = []
+        windows: Optional[List[Window]] = []
         while timer != timeout and windows == []:
-            windows = wordpad_application.get_all_top_level_windows(automation)
+            windows = self.application.get_all_top_level_windows(automation)
             if windows != []:
                 break
             timer = timer + 10
             sleep(10)
         assert len(windows) == 1  # type: ignore
-        # TODO: assert return type is window element and validate title
+        window = windows[0]
+        assert window.title == "Document - WordPad"
+        assert isinstance(window, Window)
 
-    def test_get_main_window(self, wordpad_application: Application, automation: Any):
+    def test_get_main_window(self, automation: Any):
         """Test the get_main_window method of the Application class.
 
-        :param wordpad_application: The wordpad application instance.
         :param automation: The automation instance.
         """
-        window = wordpad_application.get_main_window(automation)
+        window = self.application.get_main_window(automation)
         assert window is not None
         assert window.title == "Document - WordPad"
         assert window.class_name == "WordPadClass"
@@ -69,8 +80,7 @@ class TestApplication:
         assert isinstance(window, Window)
 
     def test_launch(self):
-        """Test the launch method of the Application class.
-        """
+        """Test the launch method of the Application class."""
         app = Application()
         app.launch("wordpad.exe")
 
@@ -103,32 +113,25 @@ class TestApplication:
 
         app.kill()
 
-    def test_attach(self, wordpad_application: Application):
-        """Test the attach method of the Application class.
-
-        :param wordpad_application: The wordpad application instance.
-        """
+    def test_attach(self):
+        """Test the attach method of the Application class."""
         app = Application()
-        for _ in [f"{wordpad_application.name}.exe", wordpad_application.process_id]:
+        for _ in [f"{self.application.name}.exe", self.application.process_id]:
             app.attach(_)
 
-            assert wordpad_application.name == app.name
-            assert wordpad_application.process_id == app.process_id
+            assert self.application.name == app.name
+            assert self.application.process_id == app.process_id
 
-    def test_attach_or_launch(self, wordpad_application: Application):
-        """Test the attach_or_launch method of the Application class.
-
-        :param wordpad_application: The wordpad application instance.
-        """
+    def test_attach_or_launch(self):
+        """Test the attach_or_launch method of the Application class."""
         app = Application()
-        app.attach_or_launch(f"{wordpad_application.name}.exe")
+        app.attach_or_launch(f"{self.application.name}.exe")
 
-        assert wordpad_application.name == app.name
-        assert wordpad_application.process_id == app.process_id
+        assert self.application.name == app.name
+        assert self.application.process_id == app.process_id
 
     def test_kill(self):
-        """Test the kill method of the Application class.
-        """
+        """Test the kill method of the Application class."""
         app = Application()
         app.launch("wordpad.exe")
         app.kill()
@@ -138,13 +141,10 @@ class TestApplication:
         assert app.has_exited is True
         assert app.exit_code == -1
 
-    def test_dispose(self, wordpad_application: Application):
-        """Test the dispose method of the Application class.
-
-        :param wordpad_application: The wordpad application instance.
-        """
+    def test_dispose(self):
+        """Test the dispose method of the Application class."""
         app = Application()
-        app.attach(wordpad_application.process_id)
+        app.attach(self.application.process_id)
         app.dispose()
 
         attrs = ["name", "exit_code", "has_exited", "main_window_handle", "process_id"]
@@ -155,8 +155,7 @@ class TestApplication:
         assert app.is_store_app is False
 
     def test_close(self):
-        """Test the close method of the Application class.
-        """
+        """Test the close method of the Application class."""
         app = Application()
         app.launch("wordpad.exe")
         app.close()
@@ -170,8 +169,7 @@ class TestApplication:
         assert app.exit_code in [0, -1]
 
     def test_wait_while_main_handle_is_missing(self):
-        """Test the wait_while_main_handle_is_missing method of the Application class.
-        """
+        """Test the wait_while_main_handle_is_missing method of the Application class."""
         app = Application()
         app.launch("wordpad.exe")
 
@@ -186,8 +184,7 @@ class TestApplication:
         app.kill()
 
     def test_wait_while_busy(self):
-        """Test the wait_while_busy method of the Application class.
-        """
+        """Test the wait_while_busy method of the Application class."""
         app = Application()
         app.launch("wordpad.exe")
 

@@ -45,78 +45,105 @@ The tests cover the following methods:
 
 import os
 from pathlib import Path
-
-import pytest
-from pydantic import ValidationError
+from typing import Any
+from typing import Generator
 
 from config import test_settings
-from flaui.core.automation_elements import (
-    AutomationElement,
-    Calendar,
-    CheckBox,
-    ComboBox,
-    DataGridView,
-    DateTimePicker,
-    Grid,
-    GridCell,
-    GridHeaderItem,
-    GridRow,
-    Label,
-    ListBox,
-    ListBoxItem,
-    Menu,
-    MenuItem,
-    ProgressBar,
-    RadioButton,
-    Slider,
-    Spinner,
-    Tab,
-    TabItem,
-    TextBox,
-    Thumb,
-    TitleBar,
-    ToggleButton,
-    Tree,
-    TreeItem,
-    Window,
-)
+from flaui.core.automation_elements import AutomationElement
+from flaui.core.automation_elements import Calendar
+from flaui.core.automation_elements import CheckBox
+from flaui.core.automation_elements import ComboBox
+from flaui.core.automation_elements import DataGridView
+from flaui.core.automation_elements import DateTimePicker
+from flaui.core.automation_elements import Grid
+from flaui.core.automation_elements import GridCell
+from flaui.core.automation_elements import GridHeaderItem
+from flaui.core.automation_elements import GridRow
+from flaui.core.automation_elements import Label
+from flaui.core.automation_elements import ListBox
+from flaui.core.automation_elements import ListBoxItem
+from flaui.core.automation_elements import Menu
+from flaui.core.automation_elements import MenuItem
+from flaui.core.automation_elements import ProgressBar
+from flaui.core.automation_elements import RadioButton
+from flaui.core.automation_elements import Slider
+from flaui.core.automation_elements import Spinner
+from flaui.core.automation_elements import Tab
+from flaui.core.automation_elements import TabItem
+from flaui.core.automation_elements import TextBox
+from flaui.core.automation_elements import Thumb
+from flaui.core.automation_elements import TitleBar
+from flaui.core.automation_elements import ToggleButton
+from flaui.core.automation_elements import Tree
+from flaui.core.automation_elements import TreeItem
+from flaui.core.automation_elements import Window
 from flaui.core.automation_type import AutomationType
 from flaui.core.condition_factory import ConditionFactory
 from FlaUI.Core.Definitions import TreeScope  # pyright: ignore
 from FlaUI.Core.Definitions import TreeTraversalOptions  # pyright: ignore
 from flaui.core.definitions import ControlType
 from flaui.lib.enums import KnownClassNames
+from flaui.lib.enums import UIAutomationTypes
+from flaui.modules.automation import Automation
+from pydantic import ValidationError
+import pytest
+
+@pytest.fixture(scope="class")
+def wpf_application(ui_automation_type: UIAutomationTypes) -> Generator[Automation, None, None]:
+    """Generates FlaUI Automation class with the test application.
+
+    :param ui_automation_type: UIAutomation type to use for the tests.
+    :yield: FlaUI Automation class with the test application.
+    """
+    wpf_application = Automation(ui_automation_type)
+
+    # We want to download the test application only once per test run if the downloaded executable does not exist on local folder.
+    wpf_application.application.launch(test_settings.WPF_TEST_APP_EXE.as_posix() if ui_automation_type == UIAutomationTypes.UIA3 else test_settings.WINFORMS_TEST_APP_EXE.as_posix())
+    yield wpf_application
+
+    wpf_application.application.kill()
 
 
-@pytest.fixture(scope="module")
-def condition_factory(test_app_main_window: AutomationElement):
+@pytest.fixture(scope="class")
+def main_window(wpf_application: Automation, automation: Any) -> Generator[Window, None, None]:
+    """Fetches the main window of the test application.
+
+    :param wpf_application: Test application to fetch the main window from.
+    :param automation: Automation class to use for the tests.
+    :yield: Main window element of the test application.
+    """
+    yield wpf_application.application.get_main_window(automation)
+
+
+@pytest.fixture(scope="class")
+def condition_factory(main_window: Window):
     """Fixture for the ConditionFactory class.
 
-    :param test_app_main_window: The main window of the test application.
+    :param main_window: The main window of the test application.
     :return: The ConditionFactory class.
     """
-    return test_app_main_window.condition_factory
+    return main_window.condition_factory
 
 
-@pytest.fixture(scope="module")
-def generic_element(test_app_main_window: AutomationElement):
+@pytest.fixture(scope="class")
+def generic_element(main_window: Window):
     """Fixture for the generic element.
 
-    :param test_app_main_window: The main window of the test application.
+    :param main_window: The main window of the test application.
     :return: The generic element.
     """
-    return test_app_main_window.find_first_by_x_path("/Tab/TabItem[@Name='Simple Controls']")
+    return main_window.find_first_by_x_path("/Tab/TabItem[@Name='Simple Controls']")
 
 
 class TestAutomationElement:
     """Unit tests for the AutomationElement class."""
-    def test_class_properties(self, test_app_main_window: AutomationElement, automation):
+    def test_class_properties(self, main_window: Window, automation):
         """Test the class properties of the AutomationElement class.
 
-        :param test_app_main_window: The main window of the test application.
+        :param main_window: The main window of the test application.
         :param automation: The automation object.
         """
-        element = test_app_main_window
+        element = main_window
 
         assert element.actual_height != 0
         assert element.actual_width != 0
@@ -138,14 +165,14 @@ class TestAutomationElement:
         assert element.patterns is not None
         assert element.properties is not None
 
-    def test_no_element_exists(self, test_app_main_window: Window, condition_factory: ConditionFactory):
+    def test_no_element_exists(self, main_window: Window, condition_factory: ConditionFactory):
         """Test the no_element_exists method of the AutomationElement class.
 
-        :param test_app_main_window: The main window of the test application.
+        :param main_window: The main window of the test application.
         :param condition_factory: The condition factory.
         """
         with pytest.raises(ValidationError):
-            test_app_main_window.find_first_child(condition_factory.by_class_name(class_name="NoSuchClass"))
+            main_window.find_first_child(condition_factory.by_class_name(class_name="NoSuchClass"))
 
 
     def test_capture(self, generic_element: AutomationElement):
@@ -191,147 +218,147 @@ class TestAutomationElement:
             except Exception:
                 pytest.fail("Unable to click on the test element")
 
-    def test_find_all(self, test_app_main_window: AutomationElement, condition_factory: ConditionFactory):
+    def test_find_all(self, main_window: Window, condition_factory: ConditionFactory):
         """Test the find_all method of the AutomationElement class.
 
-        :param test_app_main_window: The main window of the test application.
+        :param main_window: The main window of the test application.
         :param condition_factory: The condition factory.
         """
-        elements = test_app_main_window.find_all(
+        elements = main_window.find_all(
             TreeScope.Descendants, condition_factory.by_control_type(ControlType.TabItem)
         )
         for _ in elements:
             assert _.class_name == "TabItem"
 
-    def test_find_all_by_x_path(self, test_app_main_window: AutomationElement):
+    def test_find_all_by_x_path(self, main_window: Window):
         """Test the find_all_by_x_path method of the AutomationElement class.
 
-        :param test_app_main_window: The main window of the test application.
+        :param main_window: The main window of the test application.
         """
-        elements = test_app_main_window.find_all_by_x_path("/Tab/TabItem[@Name='Simple Controls']")
+        elements = main_window.find_all_by_x_path("/Tab/TabItem[@Name='Simple Controls']")
         for _ in elements:
             assert _.class_name == "TabItem"
 
-    def test_find_all_children(self, test_app_main_window: AutomationElement, condition_factory: ConditionFactory):
+    def test_find_all_children(self, main_window: Window, condition_factory: ConditionFactory):
         """Test the find_all_children method of the AutomationElement class.
 
-        :param test_app_main_window: The main window of the test application.
+        :param main_window: The main window of the test application.
         :param condition_factory: The condition factory.
         """
-        elements = test_app_main_window.find_all_children(condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
+        elements = main_window.find_all_children(condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
         assert len(elements) == 1
         assert elements[0].class_name == KnownClassNames.TabControl.value
 
-    def test_find_all_descendants(self, test_app_main_window: AutomationElement, condition_factory: ConditionFactory):
+    def test_find_all_descendants(self, main_window: Window, condition_factory: ConditionFactory):
         """Test the find_all_descendants method of the AutomationElement class.
 
-        :param test_app_main_window: The main window of the test application.
+        :param main_window: The main window of the test application.
         :param condition_factory: The condition factory.
         """
-        elements = test_app_main_window.find_all_descendants(condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
+        elements = main_window.find_all_descendants(condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
         assert len(elements) == 1
         assert elements[0].class_name == KnownClassNames.TabControl.value
 
-    def test_find_all_nested(self, test_app_main_window: AutomationElement, condition_factory: ConditionFactory):
+    def test_find_all_nested(self, main_window: Window, condition_factory: ConditionFactory):
         """Test the find_all_nested method of the AutomationElement class.
 
-        :param test_app_main_window: The main window of the test application.
+        :param main_window: The main window of the test application.
         :param condition_factory: The condition factory.
         """
-        elements = test_app_main_window.find_all_nested(condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
+        elements = main_window.find_all_nested(condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
         assert len(elements) == 1
         assert elements[0].class_name == KnownClassNames.TabControl.value
 
-    def test_find_all_with_options(self, test_app_main_window: AutomationElement, condition_factory: ConditionFactory):
+    def test_find_all_with_options(self, main_window: Window, condition_factory: ConditionFactory):
         """Test the find_all_with_options method of the AutomationElement class.
 
-        :param test_app_main_window: The main window of the test application.
+        :param main_window: The main window of the test application.
         :param condition_factory: The condition factory.
         """
-        elements = test_app_main_window.find_all_with_options(
+        elements = main_window.find_all_with_options(
             TreeScope.Descendants,
             condition_factory.by_class_name(class_name=KnownClassNames.TabControl),
             TreeTraversalOptions.Default,
-            test_app_main_window.raw_element,
+            main_window.raw_element,
         )
         assert len(elements) == 1
         assert elements[0].class_name == KnownClassNames.TabControl.value
 
-    def test_find_at(self, test_app_main_window: AutomationElement, condition_factory: ConditionFactory):
+    def test_find_at(self, main_window: Window, condition_factory: ConditionFactory):
         """Test the find_at method of the AutomationElement class.
 
-        :param test_app_main_window: The main window of the test application.
+        :param main_window: The main window of the test application.
         :param condition_factory: The condition factory.
         """
-        element = test_app_main_window.find_at(TreeScope.Descendants, 0, condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
+        element = main_window.find_at(TreeScope.Descendants, 0, condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
         assert element.class_name == KnownClassNames.TabControl.value
 
-    def test_find_child_at(self, test_app_main_window: AutomationElement, condition_factory: ConditionFactory):
+    def test_find_child_at(self, main_window: Window, condition_factory: ConditionFactory):
         """Test the find_child_at method of the AutomationElement class.
 
-        :param test_app_main_window: The main window of the test application.
+        :param main_window: The main window of the test application.
         :param condition_factory: The condition factory.
         """
-        element = test_app_main_window.find_child_at(0, condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
+        element = main_window.find_child_at(0, condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
         assert element.class_name == KnownClassNames.TabControl.value
 
-    def test_find_first(self, test_app_main_window: AutomationElement, condition_factory: ConditionFactory):
+    def test_find_first(self, main_window: Window, condition_factory: ConditionFactory):
         """Test the find_first method of the AutomationElement class.
 
-        :param test_app_main_window: The main window of the test application.
+        :param main_window: The main window of the test application.
         :param condition_factory: The condition factory.
         """
-        element = test_app_main_window.find_first(TreeScope.Descendants, condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
+        element = main_window.find_first(TreeScope.Descendants, condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
         assert element.class_name == KnownClassNames.TabControl.value
 
-    def test_find_first_by_x_path(self, test_app_main_window: AutomationElement):
+    def test_find_first_by_x_path(self, main_window: Window):
         """Test the find_first_by_x_path method of the AutomationElement class.
 
-        :param test_app_main_window: The main window of the test application.
+        :param main_window: The main window of the test application.
         """
-        element = test_app_main_window.find_first_by_x_path("/Tab/TabItem[@Name='Simple Controls']")
+        element = main_window.find_first_by_x_path("/Tab/TabItem[@Name='Simple Controls']")
         assert element.class_name == KnownClassNames.TabItem.value
 
-    def test_find_first_child(self, test_app_main_window: AutomationElement, condition_factory: ConditionFactory):
+    def test_find_first_child(self, main_window: Window, condition_factory: ConditionFactory):
         """Test the find_first_child method of the AutomationElement class.
 
-        :param test_app_main_window: The main window of the test application.
+        :param main_window: The main window of the test application.
         :param condition_factory: The condition factory.
         """
-        element = test_app_main_window.find_first_child(condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
+        element = main_window.find_first_child(condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
         assert element.class_name == KnownClassNames.TabControl.value
 
-    def test_find_first_descendant(self, test_app_main_window: AutomationElement, condition_factory: ConditionFactory):
+    def test_find_first_descendant(self, main_window: Window, condition_factory: ConditionFactory):
         """Test the find_first_descendant method of the AutomationElement class.
 
-        :param test_app_main_window: The main window of the test application.
+        :param main_window: The main window of the test application.
         :param condition_factory: The condition factory.
         """
-        element = test_app_main_window.find_first_descendant(condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
+        element = main_window.find_first_descendant(condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
         assert element.class_name == KnownClassNames.TabControl.value
 
-    def test_find_first_nested(self, test_app_main_window: AutomationElement, condition_factory: ConditionFactory):
+    def test_find_first_nested(self, main_window: Window, condition_factory: ConditionFactory):
         """Test the find_first_nested method of the AutomationElement class.
 
-        :param test_app_main_window: The main window of the test application.
+        :param main_window: The main window of the test application.
         :param condition_factory: The condition factory.
         """
-        element = test_app_main_window.find_first_nested(condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
+        element = main_window.find_first_nested(condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
         assert element.class_name == KnownClassNames.TabControl.value
 
     def test_find_first_with_options(
-        self, test_app_main_window: AutomationElement, condition_factory: ConditionFactory
+        self, main_window: Window, condition_factory: ConditionFactory
     ):
         """Test the find_first_with_options method of the AutomationElement class.
 
-        :param test_app_main_window: The main window of the test application.
+        :param main_window: The main window of the test application.
         :param condition_factory: The condition factory.
         """
-        element = test_app_main_window.find_first_with_options(
+        element = main_window.find_first_with_options(
             TreeScope.Descendants,
             condition_factory.by_class_name(class_name=KnownClassNames.TabControl),
             TreeTraversalOptions.Default,
-            test_app_main_window.raw_element,
+            main_window.raw_element,
         )
         assert element.class_name == KnownClassNames.TabControl.value
 
