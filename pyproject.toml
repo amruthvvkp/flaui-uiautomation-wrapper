@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "flaui-uiautomation-wrapper"
-version = "0.1.0"
+version = "0.0.8"
 description = "Tool to perform UI Automation on Windows desktop applications using an underlying FlaUI wrapper."
 authors = ["Amruth VVKP <amruthvvkp@gmail.com>"]
 license = "LGPL-3.0-or-later"
@@ -14,13 +14,40 @@ keywords = [
   "windows automation",
   "windows testing",
   "desktop automation",
+  "flaui",
+  "qa",
 ]
 packages = [{ include = "flaui" }]
 include = [{ path = "flaui/bin/*.dll" }]
+repository = "https://github.com/amruthvvkp/flaui-uiautomation-wrapper"
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
+  "Operating System :: Microsoft :: Windows",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Software Development :: Testing",
+  "Topic :: Software Development :: Quality Assurance",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Utilities",
+  "Typing :: Typed",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
+  "Operating System :: MacOS :: MacOS X",
+  "Topic :: Software Development :: Testing",
+  "Intended Audience :: Developers",
+]
+
 
 [tool.poetry.dependencies]
-python = ">=3.7,<3.11"
-pydantic = "^1.10.2"
+python = ">=3.7, <3.12"
+pydantic = "^1"
 loguru = "^0.6.0"
 pillow = "^9.3.0"
 arrow = "^1.2.3"
@@ -47,21 +74,6 @@ minversion = "6.0"
 addopts = "-ra -q"
 testpaths = ["tests/"]
 
-
-classifiers = [
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.7",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
-  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-  "Operating System :: Microsoft :: Windows",
-  "Operating System :: POSIX :: Linux",
-  "Operating System :: MacOS :: MacOS X",
-  "Topic :: Software Development :: Developers",
-  "Topic :: Software Development :: Testing",
-  "Intended Audience :: Developers",
-]
 
 repository = "https://github.com/amruthvvkp/flaui-uiautomation-wrapper"
 
