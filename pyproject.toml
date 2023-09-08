@@ -19,6 +19,7 @@ keywords = [
 ]
 packages = [{ include = "flaui" }]
 include = [{ path = "flaui/bin/*.dll" }]
+exclude = ["tests", "docs"]
 repository = "https://github.com/amruthvvkp/flaui-uiautomation-wrapper"
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -30,7 +31,6 @@ classifiers = [
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3 :: Only",
   "Topic :: Software Development :: Testing",
   "Topic :: Software Development :: Quality Assurance",
@@ -44,38 +44,70 @@ classifiers = [
   "Intended Audience :: Developers",
 ]
 
-
 [tool.poetry.dependencies]
-python = ">=3.7, <3.12"
-pydantic = "^1"
+python = ">=3.7,<3.11"
 loguru = "^0.6.0"
 pillow = "^9.3.0"
 arrow = "^1.2.3"
 pythonnet = "^3.0.1"
+pydantic = "^2.0.0"
+pydantic-settings = "^2.0.0"
+pydantic-extra-types = "^2.0.0"
 
 [tool.poetry.group.dev.dependencies]
-black = "^22.10.0"
 mypy = "^0.991"
 jupyter = "^1.0.0"
 isort = "^5.10.1"
+ruff = "^0.0.259"
+pre-commit = { version = "^3.3.3", python = ">=3.8,<3.11" }
+interrogate = "^1.5.0"
 
+[tool.poetry.group.dev]
+optional = true
 
 [tool.poetry.group.unit_test.dependencies]
 pytest = "^7.2.0"
 pytest-cov = "^4.0.0"
 
-[build-system]
-requires = ["poetry-core", "setuptools", "wheel"]
-build-backend = "poetry.core.masonry.api"
+[tool.poetry.group.unit_test]
+optional = true
 
+[tool.poetry.group.docs.dependencies]
+mkdocs-material = "^9.1.17"
+mkdocs-markdownextradata-plugin = "^0.2.5"
+mkdocs-jupyter = "^0.24.1"
+
+[tool.poetry.group.docs]
+optional = true
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "setuptools", "wheel"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-ra -q"
-testpaths = ["tests/"]
+testpaths = ["tests/unit_tests/"]
 
-
-repository = "https://github.com/amruthvvkp/flaui-uiautomation-wrapper"
+[tool.interrogate]
+ignore-init-method = true
+ignore-init-module = true
+ignore-magic = false
+ignore-semiprivate = false
+ignore-private = false
+ignore-property-decorators = false
+ignore-module = false
+ignore-nested-functions = false
+ignore-nested-classes = true
+ignore-setters = false
+fail-under = 95
+exclude = ["docs", "build"]
+ignore-regex = ["^get$", "^mock_.*", ".*BaseClass.*"]
+verbose = 2
+quiet = false
+whitelist-regex = []
+color = true
+omit-covered-files = false
 
 
 [tool.isort]
@@ -86,15 +118,16 @@ extend_skip = [".md", ".json"]
 line_length = 120
 skip_gitignore = true
 length_sort_straight = true
-combine_straight_imports = true
 multi_line_output = 3
 include_trailing_comma = true
 force_grid_wrap = 0
+ensure_newline_before_comments = true
+use_parentheses = true
 
 [tool.black]
 # https://github.com/psf/black
 line-length = 120
-target_version = ['py38']
+target_version = ['py310']
 exclude = '''
 (
   /(
@@ -112,23 +145,66 @@ exclude = '''
 strict = false
 plugins = ["pydantic.mypy"]
 
-follow_imports = "silent"
+follow_imports = "skip"
 warn_redundant_casts = true
-warn_unused_ignores = true
-disallow_any_generics = true
-check_untyped_defs = true
+swarn_unused_ignores = true
 no_implicit_reexport = true
-
-# for strict mypy: (this is the tricky one :-))
-disallow_untyped_defs = true
 
 [tool.pydantic-mypy]
 init_forbid_extra = true
-init_typed = true
+init_typed = false
 warn_required_dynamic_aliases = true
-warn_untyped_fields = true
+warn_untyped_fields = false
 
 [tool.flake8]
 max-line-length = 120
 extend-ignore = ["E203"]
 max-complexity = 10
+
+
+[tool.ruff]
+select = [
+  "E", # pycodestyle errors
+  "W", # pycodestyle warnings
+  "F", # pyflakes
+  # "I",  # isort
+  "B", # flake8-bugbear
+]
+ignore = [
+  "E501", # line too long, handled by black
+  "B904", # Within an except clause, raise exceptions with raise ... from err or raise ... from None to distinguish them from errors in exception handling
+  "B008", # Do not perform function call {name} in argument defaults
+  "B006", # Do not use mutable data structures for argument defaults
+  "C901", # too complex
+  "E402", # Module level import not at top of file
+]
+
+# Group violations by containing file.
+format = "grouped"
+respect-gitignore = true
+src = ["aws_client"]
+
+# Same as Black.
+line-length = 120
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# Assume Python 3.10.
+target-version = "py310"
+
+[tool.ruff.mccabe]
+# Unlike Flake8, default to a complexity level of 10.
+max-complexity = 10
+
+[tool.ruff.flake8-quotes]
+docstring-quotes = "double"
+
+[tool.ruff.isort]
+order-by-type = true
+combine-as-imports = true
+force-sort-within-sections = true
+lines-after-imports = 1
+force-single-line = true
+split-on-trailing-comma = false
+known-third-party = ["pydantic"]
