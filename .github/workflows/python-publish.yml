@@ -46,9 +46,12 @@ jobs:
 
       - name: Build and Publish distribution 📦 to PyPI
         if: startsWith(github.ref, 'refs/tags')
-        run: |
-          poetry config pypi-token.pypi ${{ secrets.PYPI_API_TOKEN }}
-          poetry publish --build
+        uses: JRubics/poetry-publish@v1.17
+        with:
+          pypi_token: ${{ secrets.PYPI_API_TOKEN  }}
+          allow_poetry_pre_release: "yes"
+          ignore_dev_requirements: "yes"
+          repository_name: flaui-uiautomation-wrapper
 
       - name: Commit changes
         if: success()

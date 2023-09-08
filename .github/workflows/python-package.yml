@@ -13,13 +13,8 @@ permissions:
 jobs:
   build_test_apps:
     name: Build Test WPF Applications
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
-      - name: Install PowerShell
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y powershell
-
       - uses: actions/checkout@v4
         with:
           repository: "FlaUI/FlaUI"
@@ -72,20 +67,18 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies for Python 3.7
-        if: matrix.python-version == '3.7'
+      - name: Install dependencies for Python ${{ matrix.python-version }}
         run: |
-          pip install -r requirements.txt
-          pip install pytest-github-actions-annotate-failures
-
-      - name: Install dependencies for Python 3.8 and above
-        if: matrix.python-version != '3.7'
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-          poetry config virtualenvs.in-project true
-          poetry install --with unit_test,dev
-          poetry run pip install pytest-github-actions-annotate-failures
+          if [ "${{ matrix.python-version }}" == "3.7" ]; then
+            pip install -r requirements.txt
+            pip install pytest-github-actions-annotate-failures
+          else
+            curl -sSL https://install.python-poetry.org | python3 -
+            echo "$HOME/.local/bin" >> $GITHUB_PATH
+            poetry config virtualenvs.in-project true
+            poetry install --with unit_test,dev
+            poetry run pip install pytest-github-actions-annotate-failures
+          fi
 
       - name: Download WPF application
         uses: actions/download-artifact@v3
@@ -233,11 +226,13 @@ jobs:
           git commit -m "Bump version to $(poetry version | cut -d' ' -f2)"
 
       - name: Build and publish distribution 📦 to Test PyPI
-        run: |
-          $POETRY_TEST_PYPI_TOKEN = ${{ secrets.TEST_PYPI_API_TOKEN }}
-          poetry config repositories.testpypi https://test.pypi.org/legacy/
-          poetry config pypi-token.pypi $POETRY_TEST_PYPI_TOKEN
-          poetry publish --build
+        uses: JRubics/poetry-publish@v1.17
+        with:
+          pypi_token: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          allow_poetry_pre_release: "yes"
+          ignore_dev_requirements: "yes"
+          repository_url: https://test.pypi.org/legacy/
+          repository_name: flaui-uiautomation-wrapper
 
       - name: Push changes
         if: success()
