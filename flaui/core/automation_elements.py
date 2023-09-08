@@ -7,20 +7,33 @@ ElementBase provides properties to access various attributes of the wrapped Auto
 from __future__ import annotations
 
 import abc
-from datetime import date, datetime
-from typing import Any, List, Optional, Tuple, Union
+from datetime import date
+from datetime import datetime
+from typing import Any
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
 import arrow
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel
+from pydantic import Field
+from pydantic import field_validator
+from System import DateTime as SystemDateTime  # pyright: ignore
 from System import TimeSpan  # pyright: ignore
 
 from flaui.core.automation_type import AutomationType
-from flaui.core.condition_factory import ConditionFactory, PropertyCondition
-from flaui.core.definitions import ControlType, ExpandCollapseState, RowOrColumnMajor, ToggleState
+from flaui.core.condition_factory import ConditionFactory
+from flaui.core.condition_factory import PropertyCondition
+from flaui.core.definitions import ControlType
+from flaui.core.definitions import ExpandCollapseState
+from flaui.core.definitions import RowOrColumnMajor
+from flaui.core.definitions import ToggleState
 from flaui.core.framework_types import FrameworkType
 from flaui.lib.collections import TypeCast
 from flaui.lib.exceptions import ElementNotFoundError
-from flaui.lib.system.drawing import Color, ColorCollection
+from flaui.lib.system.drawing import Color
+from flaui.lib.system.drawing import ColorCollection
 
 # ================================================================================
 #   Element base Pydantic abstract class
@@ -214,7 +227,7 @@ class ElementBase(ElementModel, abc.ABC): # pragma: no cover
 # =====================================================================================================
 #   Pattern Elements Pydantic abstract models from FlaUI.Core.AutomationElements.PatternElements
 # =====================================================================================================
-class InvokeAutomationElement(ElementModel, abc.ABC):
+class InvokeAutomationElement(ElementModel, abc.ABC): # pragma: no cover
     """An element that supports the InvokePattern"""
 
     def invoke(self) -> None:
@@ -223,7 +236,7 @@ class InvokeAutomationElement(ElementModel, abc.ABC):
         self.raw_element.Invoke()
 
 
-class ToggleAutomationElement(ElementModel, abc.ABC):
+class ToggleAutomationElement(ElementModel, abc.ABC): # pragma: no cover
     """Class for an element that supports the TogglePattern"""
 
     @property
@@ -254,7 +267,7 @@ class ToggleAutomationElement(ElementModel, abc.ABC):
         return self.toggle() if self.is_toggled() == required_state else None
 
 
-class SelectionItemAutomationElement(ElementModel, abc.ABC):
+class SelectionItemAutomationElement(ElementModel, abc.ABC): # pragma: no cover
     """An element which supports the SelectionItemPattern"""
 
     @property
@@ -287,7 +300,7 @@ class SelectionItemAutomationElement(ElementModel, abc.ABC):
         return SelectionItemAutomationElement(raw_element=self.raw_element.RemoveFromSelection())
 
 
-class ComboBoxItem(SelectionItemAutomationElement, abc.ABC):
+class ComboBoxItem(SelectionItemAutomationElement, abc.ABC): # pragma: no cover
     """Class to interact with a combobox item element."""
 
     @property
@@ -909,7 +922,7 @@ class AutomationElement(ElementBase):
         return Window(raw_element=CSWindow(self.framework_automation_element))
 
 
-class Button(AutomationElement, InvokeAutomationElement):
+class Button(AutomationElement, InvokeAutomationElement): # pragma: no cover
     """Class to interact with a button element"""
 
     pass
@@ -918,21 +931,31 @@ class Button(AutomationElement, InvokeAutomationElement):
 class Calendar(AutomationElement):
     """Class to interact with a calendar element. Not supported for Windows Forms calendar"""
 
+    @staticmethod
+    def _parse_date(py_date: date) -> SystemDateTime:
+        """Parses a Python date object to a C# DateTime object
+
+        :param py_date: Python date object
+        :return: SystemDateTime object
+        """
+        # Use DateTime(*date.timetuple()[:6] + (date.microsecond/1000,)) for datetime objects
+        return SystemDateTime(*arrow.get(py_date).date().timetuple()[:6])
+
     @property
-    def selected_dates(self) -> date:
+    def selected_dates(self) -> List[date]:
         """Gets the selected dates in the calendar. For Win32 multiple selection calendar the returned array has two dates,
         the first date and the last date of the selected range. For WPF calendar the returned array contains all selected dates
 
         :return: Selected dates
         """
-        return arrow.get(self.raw_element.SelectedDates).date()
+        return [arrow.get(_.ToString("o")).date() for _ in self.raw_element.SelectedDates]
 
     def select_date(self, date: date) -> None:
         """Deselects other selected dates and selects the specified date.
 
         :param date: Date object
         """
-        self.raw_element.SelectDate(arrow.get(date).date())
+        self.raw_element.SelectDate(self._parse_date(date))
 
     def select_range(self, dates: List[date]) -> None:
         """For WPF calendar with SelectionMode="MultipleRange" this method deselects other selected dates and selects the specified range.
@@ -943,7 +966,7 @@ class Calendar(AutomationElement):
 
         :param dates: Date ranges
         """
-        self.raw_element.SelectRange(dates)
+        self.raw_element.SelectRange([self._parse_date(_) for _ in dates])
 
     def add_to_selection(self, date: date) -> None:
         """For WPF calendar with SelectionMode="MultipleRange" this method adds the specified date to current selection.
@@ -952,7 +975,7 @@ class Calendar(AutomationElement):
 
         :param date: Date object
         """
-        self.raw_element.AddToSelection(arrow.get(date).date())
+        self.raw_element.AddToSelection(self._parse_date(date))
 
     def add_range_to_selection(self, dates: List[date]) -> None:
         """For WPF calendar with SelectionMode="MultipleRange" this method adds the specified range to current selection.
@@ -961,7 +984,7 @@ class Calendar(AutomationElement):
 
         :param dates: Date ranges
         """
-        self.raw_element.AddRangeToSelection(dates)
+        self.raw_element.AddRangeToSelection([self._parse_date(_) for _ in dates])
 
 
 class CheckBox(AutomationElement, ToggleAutomationElement):
@@ -1884,7 +1907,7 @@ class Tab(AutomationElement):
 
         :return: TabItem element
         """
-        return TabItem(raw_element=self.raw_element.SelectedTabItem())
+        return TabItem(raw_element=self.raw_element.SelectedTabItem)
 
     @property
     def selected_tab_item_index(self) -> int:
@@ -1901,21 +1924,16 @@ class Tab(AutomationElement):
         """
         return [TabItem(raw_element=_) for _ in self.raw_element.TabItems()]
 
-    def select_tab_item(self, index: Optional[int] = None, value: Optional[str] = None) -> TabItem:
+    def select_tab_item(self, index: Optional[int] = None, value: Optional[str] = None):
         """Selects a TabItem by index
 
         :param index: Selects by index value
         :param value: Selects by tab value
-        :return: Selected TabItem element
         """
-        return (
-            TabItem(raw_element=self.raw_element.SelectTabItem(index))
-            if index
-            else TabItem(raw_element=self.raw_element.SelectTabItem(value))
-        )
+        self.raw_element.SelectTabItem(index) if index else self.raw_element.SelectTabItem(value)
 
 
-class TabItem(SelectionItemAutomationElement):
+class TabItem(AutomationElement, SelectionItemAutomationElement):
     """Class to interact with a tabitem element."""
 
     pass

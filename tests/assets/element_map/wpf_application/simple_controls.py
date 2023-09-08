@@ -1,42 +1,38 @@
 """This module maps up all the elements in Simple Controls tab for the WPF application."""
 
-from flaui.core.automation_elements import AutomationElement
-from flaui.core.automation_elements import Button
-from flaui.core.automation_elements import CheckBox
-from flaui.core.automation_elements import ComboBox
-from flaui.core.automation_elements import Label
-from flaui.core.automation_elements import ListBox
-from flaui.core.automation_elements import ProgressBar
-from flaui.core.automation_elements import RadioButton
-from flaui.core.automation_elements import Slider
-from flaui.core.automation_elements import TextBox
-from flaui.core.automation_elements import Window
-from flaui.core.definitions import ControlType
-from pydantic_settings import BaseSettings
 
-class SimpleControlsElements(BaseSettings):
+from flaui.core.automation_elements import (
+    AutomationElement,
+    Button,
+    CheckBox,
+    ComboBox,
+    Label,
+    ListBox,
+    ProgressBar,
+    RadioButton,
+    Slider,
+    TabItem,
+    TextBox,
+)
+from flaui.core.definitions import ControlType
+from tests.assets.element_map.wpf_application.common import AbtstractControlCollection
+from tests.assets.element_map.wpf_application.constants import ApplicationTabIndex
+
+
+class SimpleControlsElements(AbtstractControlCollection):
     """This class is used to store the Simple Controls element locators for the WPF application."""
 
-    main_window: Window
-
-    def _condition_factory(self):
-        """Returns the condition factory for the Simple Controls.
-
-        :return: The condition factory for the Simple Controls.
-        """
-        return self.main_window.condition_factory
-
     @property
-    def parent_element(self) -> AutomationElement:
+    def parent_element(self) -> TabItem:
         """Returns the Simple Controls element.
 
         :return: The Simple Controls element.
         """
         tab = self.main_window.find_first_child(condition=self._condition_factory().by_control_type(ControlType.Tab)).as_tab()
-        element = tab.find_first_child(condition=self._condition_factory().by_name("Simple Controls"))
-        element.as_tab_item()
-        if tab.selected_tab_item() != 0:
-            tab.select_tab_item(0)
+        element = tab.find_first_child(condition=self._condition_factory().by_name("Simple Controls")).as_tab_item()
+
+        if not element.is_selected:
+            tab.select_tab_item(ApplicationTabIndex.SIMPLE_CONTROLS.value)
         return element
 
     @property
