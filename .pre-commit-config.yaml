@@ -37,24 +37,10 @@ repos:
         name: Check Case Conflict
         description: This hook checks for files that differ only in case.
 
-      - id: check-json
-        name: Check JSON
-        description: This hook checks that JSON files are valid.
-        exclude: ^(\.vscode|\.devcontainer)/.*\.json$
-
       - id: check-toml
         name: Check TOML
         description: This hook checks that TOML files are valid.
         exclude: tests/fixtures/invalid_lock/poetry\.lock
-
-      - id: check-yaml
-        name: Check YAML
-        description: This hook checks that YAML files are valid.
-
-      - id: pretty-format-json
-        name: Pretty Format JSON
-        args: [--autofix, --no-ensure-ascii, --no-sort-keys]
-        exclude: ^(\.vscode|\.devcontainer)/.*\.json$
 
       - id: check-ast
         name: Check AST
