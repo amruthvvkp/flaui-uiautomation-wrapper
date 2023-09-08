@@ -35,3 +35,11 @@ If you would like to contribute or request a feature, feel free to join the disc
 ## Release Notes
 
 Check out the release notes on [GitHub releases](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/releases).
+
+## Project Roadmap
+
+Check out the project roadmap on [GitHub milestones](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone)
+
+Active development is targetted towards the first major release of the project. The first major release is expected to be released by the end of 2023. The project roadmap is subject to change based on the project's progress.
+
+You can track the project's progress on this [v1.0.0 roadmap](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/1) page.

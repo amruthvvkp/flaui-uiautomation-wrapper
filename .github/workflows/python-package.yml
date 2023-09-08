@@ -11,7 +11,42 @@ permissions:
   id-token: write
 
 jobs:
+  build_test_apps:
+    name: Build Test WPF Applications
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: "FlaUI/FlaUI"
+          ref: "master"
+
+      - name: Install .NET 5.0 SDK
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.x
+
+      - name: Build Test WPF Applications
+        run: |
+          cd .\FlaUI
+          .\build.ps1
+
+      - name: Upload WPF application
+        uses: actions/upload-artifact@v3
+        with:
+          name: wpf-application
+          path: .\FlaUI\src\TestApplications\WpfApplication\bin\*
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload WinForms applications
+        uses: actions/upload-artifact@v3
+        with:
+          name: winforms-application
+          path: .\FlaUI\src\TestApplications\WinFormsApplication\bin\*
+          if-no-files-found: error
+          retention-days: 1
   test:
+    name: Test with pytest
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -38,18 +73,29 @@ jobs:
           curl -sSL https://install.python-poetry.org | python3 -
           echo "$HOME/.local/bin" >> $GITHUB_PATH
           poetry config virtualenvs.in-project true
-          poetry install --with unit_test
+          poetry install --with unit_test,dev
           poetry run pip install pytest-github-actions-annotate-failures
+
+      - name: Download WPF application
+        uses: actions/download-artifact@v3
+        with:
+          name: wpf-application
+          path: test_applications\WPFApplication
+
+      - name: Download WinForms application
+        uses: actions/download-artifact@v3
+        with:
+          name: winforms-application
+          path: test_applications\WinFormsApplication
 
       - name: Test with pytest
         id: pytest
         run: |
           if [ "${{ matrix.python-version }}" == "3.7" ]; then
-            pytest --junitxml=junit/test-results.xml .
+            pytest . --junitxml=junit/test-results.xml
           else
-            poetry run pytest --junitxml=junit/test-results.xml .
+            poetry run pytest . --junitxml=junit/test-results.xml
           fi
-        continue-on-error: true
 
       - name: Upload test results
         uses: actions/upload-artifact@v3
@@ -57,7 +103,87 @@ jobs:
           name: test-results
           path: junit/test-results.xml
 
+      - name: Update PR with PyTest result summary
+        uses: actions/github-script@v6
+        env:
+          PYTEST_OUTCOME: ${{ steps.pytest.outcome }}
+          PYTEST_RESULTS: ${{ steps.pytest.outputs.stdout }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // 1. Retrieve existing bot comments for the PR
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            })
+            const botComment = comments.find(comment => {
+              return comment.user.type === 'Bot' && comment.body.includes('Pytest results summary - Python ${{ matrix.python-version }}')
+            })
+
+            // 2. Prepare format of the comment
+            const output = `#### Pytest results summary - Python ${{ matrix.python-version }} 🧪\`${process.env.PYTEST_OUTCOME}\`
+
+            <details><summary>Show Details</summary>
+
+            \`\`\`\n
+            ${process.env.PYTEST_RESULTS}
+            \`\`\`
+
+            </details>
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ github.workspace }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+            // 3. If we have a comment, update it, otherwise create a new one
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              })
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              })
+            }
+
+  linting_checks:
+    name: Validations with Ruff, Interrogate
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Run Ruff checks
+        run: |
+          echo "Ruff checks results summary:"
+          echo ""
+          ruff check . --all --no-color --format=github --output=stdout | sed 's/^/  /'
+
+      - name: Python Interrogate Check
+        uses: JackMcKew/python-interrogate-check@v0.1.1
+        with:
+          path: flaui
+          badge-location: "badges/interrogate_badge.svg"
+
+      - name: Commit files
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add badges/interrogate_badge.svg
+          git diff --exit-code || git commit -m "Update interrogate_badge.svg" -a
+
+      - name: Push changes
+        if: success()
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
   publish:
+    name: Publish to Test PyPI
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -72,19 +198,6 @@ jobs:
           curl -sSL https://install.python-poetry.org | python3 -
           echo "$HOME/.local/bin" >> $GITHUB_PATH
           poetry config virtualenvs.in-project true
-
-      - name: Install pre-commit
-        run: |
-          poetry install --with dev
-          poetry run pre-commit install
-
-      - name: Summarize Pre-Commit results
-        id: summarize_pre_commit
-        run: |
-          echo "Pre-Commit results summary:"
-          echo ""
-          poetry run pre-commit run --all-files --show-diff-on-failure
-        continue-on-error: true
 
       - name: Comment Pre-Commit summary on pull request
         uses: actions/github-script@v6
@@ -181,72 +294,6 @@ jobs:
 
             The package version \`${process.env.UPGRADED_POETRY_VERSION}\` has been published to Test PyPI. Please test and verify the package before publishing to PyPI.`;
             URL = `https://test.pypi.org/project/flaui-uiautomation-wrapper/${process.env.UPGRADED_POETRY_VERSION}/`
-
-            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ github.workspace }}\`, Workflow: \`${{ github.workflow }}\`*`;
-
-            // 3. If we have a comment, update it, otherwise create a new one
-            if (botComment) {
-              github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: botComment.id,
-                body: output
-              })
-            } else {
-              github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: output
-              })
-            }
-
-  summarize:
-    needs: test
-    runs-on: ubuntu-latest
-    if: always()
-    steps:
-      - name: Summarize Pytest results
-        id: pytest_summary
-        run: |
-          echo "Pytest results summary:"
-          echo ""
-          for version in 3.7 3.8 3.9 3.10 3.11; do
-            echo "Python $version:"
-            echo ""
-            cat ${{ steps.test.pytest.outputs.test-results }} | grep -oP 'failures="\K[^"]+' | sed 's/^/  /'
-            cat ${{ steps.test.pytest.outputs.test-results }} | grep -oP 'errors="\K[^"]+' | sed 's/^/  /'
-            cat ${{ steps.test.pytest.outputs.test-results }} | grep -oP 'skips="\K[^"]+' | sed 's/^/  /'
-            echo ""
-          done
-      - name: Comment on pull request
-        uses: actions/github-script@v6
-        env:
-          PYTEST_OUTCOME: ${{ steps.pytest_summary.outcome }}
-          PYTEST_RESULTS: ${{ steps.pytest_summary.outputs.stdout }}
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            // 1. Retrieve existing bot comments for the PR
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            })
-            const botComment = comments.find(comment => {
-              return comment.user.type === 'Bot' && comment.body.includes('Pytest results summary')
-            })
-
-            // 2. Prepare format of the comment
-            const output = `#### Pytest results summary 🧪\`${process.env.PYTEST_OUTCOME}\`
-
-            <details><summary>Show Details</summary>
-
-            \`\`\`\n
-            ${process.env.PYTEST_RESULTS}
-            \`\`\`
-
-            </details>
 
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ github.workspace }}\`, Workflow: \`${{ github.workflow }}\`*`;
 
