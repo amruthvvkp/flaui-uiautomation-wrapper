@@ -168,3 +168,4 @@ flaui_arch
 
 # Test Applications
 test_applications
+pytest.xml

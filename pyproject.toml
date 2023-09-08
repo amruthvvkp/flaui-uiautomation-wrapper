@@ -45,7 +45,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.7,<3.11"
+python = ">=3.7,<3.12"
 loguru = "^0.6.0"
 pillow = "^9.3.0"
 arrow = "^1.2.3"

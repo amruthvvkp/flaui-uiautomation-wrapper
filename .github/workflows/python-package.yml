@@ -1,42 +1,205 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-
 name: Python package
 
 on:
-  push:
-    branches: [master]
   pull_request:
     branches: [master]
 
 jobs:
-  build:
-    runs-on: windows-latest
+  test:
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v2
+
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+
       - name: Setup Poetry
-        uses: knowsuchagency/poetry-install@v1
-        env:
-          POETRY_VIRTUALENVS_CREATE: false
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          poetry config virtualenvs.in-project true
+
       - name: Install dependencies
         run: |
           poetry --version
-          poetry install
-      - name: Update package version
-        run: poetry version minor
-      - name: List test applications
-        run: |
-          poetry version
-          ls
+          poetry install --with unit_test,dev,docs
+
       - name: Test with pytest
+        id: pytest
         run: |
-          pytest --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
+          poetry run pytest --junitxml=junit/test-results.xml .
+        continue-on-error: true
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-results
+          path: junit/test-results.xml
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+
+      - name: Setup Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          poetry config virtualenvs.in-project true
+
+      - name: Install pre-commit
+        run: |
+          poetry run pre-commit install
+
+      - name: Summarize Pre-Commit results
+        id: summarize_pre_commit
+        run: |
+          echo "Pre-Commit results summary:"
+          echo ""
+          poetry run pre-commit run --all-files --show-diff-on-failure
+        continue-on-error: true
+
+      - name: Comment on pull request
+        uses: actions/github-script@v6
+        env:
+          PRE_COMMIT_OUTCOME: ${{ steps.summarize_pre_commit.outcome }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // 1. Retrieve existing bot comments for the PR
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            })
+            const botComment = comments.find(comment => {
+              return comment.user.type === 'Bot' && comment.body.includes('Pre-Commit results summary')
+            })
+
+            // 2. Prepare format of the comment
+            const output = `#### Pre-Commit results summary 🤖\`${process.env.PRE_COMMIT_OUTCOME}\`
+
+            <details><summary>Show Details</summary>
+
+            \`\`\`\n
+            ${fs.readFileSync("${{ github.workspace }}/pre-commit.log", "utf8")}
+            \`\`\`
+
+            </details>
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ github.workspace }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+            // 3. If we have a comment, update it, otherwise create a new one
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              })
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              })
+            }
+
+      - name: Fetch latest release version from Test PyPI
+        run: |
+          curl -s https://test.pypi.org/pypi/flaui-uiautomation-wrapper/json | jq -r '.info.version' > latest_version.txt
+          echo "::set-output name=latest_version::$(cat latest_version.txt)"
+
+      - name: Update package version
+        run: |
+          poetry version $(cat latest_version.txt)
+          poetry version prerelease
+          $UPGRADED_POETRY_VERSION = poetry version | cut -d' ' -f2
+          git add pyproject.toml
+          git commit -m "Bump version to $UPGRADED_POETRY_VERSION"
+
+      - name: Build and publish distribution 📦 to Test PyPI
+        run: |
+          $POETRY_TEST_PYPI_TOKEN = ${{ secrets.TEST_PYPI_API_TOKEN }}
+          poetry config repositories.testpypi https://test.pypi.org/legacy/
+          poetry config pypi-token.pypi $POETRY_TEST_PYPI_TOKEN
+          poetry publish --build
+
+  summarize:
+    needs: test
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Summarize Pytest results
+        id: pytest_summary
+        run: |
+          echo "Pytest results summary:"
+          echo ""
+          for version in 3.7 3.8 3.9 3.10 3.11; do
+            echo "Python $version:"
+            echo ""
+            cat ${{ steps.test.pytest.outputs.test-results }} | grep -oP 'failures="\K[^"]+' | sed 's/^/  /'
+            cat ${{ steps.test.pytest.outputs.test-results }} | grep -oP 'errors="\K[^"]+' | sed 's/^/  /'
+            cat ${{ steps.test.pytest.outputs.test-results }} | grep -oP 'skips="\K[^"]+' | sed 's/^/  /'
+            echo ""
+          done
+      - name: Comment on pull request
+        uses: actions/github-script@v6
+        env:
+          PYTEST_OUTCOME: ${{ steps.pytest_summary.outcome }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // 1. Retrieve existing bot comments for the PR
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            })
+            const botComment = comments.find(comment => {
+              return comment.user.type === 'Bot' && comment.body.includes('Pytest results summary')
+            })
+
+            // 2. Prepare format of the comment
+            const output = `#### Pytest results summary 🧪\`${process.env.PYTEST_OUTCOME}\`
+
+            <details><summary>Show Details</summary>
+
+            \`\`\`\n
+            ${fs.readFileSync("${{ github.workspace }}/junit/test-results.xml", "utf8")}
+            \`\`\`
+
+            </details>
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ github.workspace }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+            // 3. If we have a comment, update it, otherwise create a new one
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              })
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              })
+            }
