@@ -67,6 +67,7 @@ jobs:
 
       - name: Install pre-commit
         run: |
+          poetry install --only dev
           poetry run pre-commit install
 
       - name: Summarize Pre-Commit results
@@ -100,7 +101,7 @@ jobs:
             <details><summary>Show Details</summary>
 
             \`\`\`\n
-            ${fs.readFileSync("${{ github.workspace }}/pre-commit.log", "utf8")}
+            $(cat ${{ github.workspace }}/pre-commit.log)
             \`\`\`
 
             </details>
