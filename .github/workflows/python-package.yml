@@ -5,6 +5,11 @@ on:
     branches: [master]
     types: [opened, synchronize, reopened, edited]
 
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
 jobs:
   test:
     runs-on: ubuntu-latest

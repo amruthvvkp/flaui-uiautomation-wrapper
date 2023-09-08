@@ -13,7 +13,9 @@ on:
     types: [published]
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
+  id-token: write
 
 jobs:
   deploy:
