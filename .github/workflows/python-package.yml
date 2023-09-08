@@ -13,7 +13,7 @@ permissions:
 jobs:
   build_test_apps:
     name: Build Test WPF Applications
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -29,14 +29,13 @@ jobs:
 
       - name: Build Test WPF Applications
         run: |
-          cd .\FlaUI
           .\build.ps1
 
       - name: Upload WPF application
         uses: actions/upload-artifact@v3
         with:
           name: wpf-application
-          path: .\FlaUI\src\TestApplications\WpfApplication\bin\*
+          path: src\TestApplications\WpfApplication\bin\*
           if-no-files-found: error
           retention-days: 1
 
@@ -44,9 +43,10 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: winforms-application
-          path: .\FlaUI\src\TestApplications\WinFormsApplication\bin\*
+          path: src\TestApplications\WinFormsApplication\bin\*
           if-no-files-found: error
           retention-days: 1
+
   test:
     name: Test with pytest
     needs: build_test_apps
@@ -57,7 +57,11 @@ jobs:
         python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -189,7 +193,11 @@ jobs:
     name: Publish to Test PyPI
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up Python 3.x
         uses: actions/setup-python@v4
@@ -202,57 +210,11 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
           poetry config virtualenvs.in-project true
 
-      - name: Comment Pre-Commit summary on pull request
-        uses: actions/github-script@v6
-        env:
-          PRE_COMMIT_OUTCOME: ${{ steps.summarize_pre_commit.outcome }}
-          PRE_COMMIT_LOG_CONTENT: ${{ steps.summarize_pre_commit.outputs.stdout }}
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            // 1. Retrieve existing bot comments for the PR
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            })
-            const botComment = comments.find(comment => {
-              return comment.user.type === 'Bot' && comment.body.includes('Pre-Commit results summary')
-            })
-
-            // 2. Prepare format of the comment
-            const output = `#### Pre-Commit results summary 🤖\`${process.env.PRE_COMMIT_OUTCOME}\`
-
-            <details><summary>Show Details</summary>
-
-            \`\`\`\n
-            ${process.env.PRE_COMMIT_LOG_CONTENT}
-            \`\`\`
-
-            </details>
-
-            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ github.workspace }}\`, Workflow: \`${{ github.workflow }}\`*`;
-
-            // 3. If we have a comment, update it, otherwise create a new one
-            if (botComment) {
-              github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: botComment.id,
-                body: output
-              })
-            } else {
-              github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: output
-              })
-            }
-
-      - name: Fetch latest release version from Test PyPI
+      - name: Get latest version
+        id: get_latest_version
         run: |
-          curl -s https://test.pypi.org/pypi/flaui-uiautomation-wrapper/json | jq -r '.info.version' > latest_version.txt
+          git fetch --tags
+          echo $(git describe --abbrev=0 --tags) > latest_version.txt
           echo "{latest_version}=$(cat latest_version.txt)" >> $GITHUB_OUTPUT
 
       - name: Update package version
@@ -265,7 +227,6 @@ jobs:
           echo "{version}=$(poetry version | cut -d' ' -f2)" >> $GITHUB_OUTPUT
           git add pyproject.toml
           git commit -m "Bump version to $(poetry version | cut -d' ' -f2)"
-          git push
 
       - name: Build and publish distribution 📦 to Test PyPI
         run: |
@@ -273,6 +234,12 @@ jobs:
           poetry config repositories.testpypi https://test.pypi.org/legacy/
           poetry config pypi-token.pypi $POETRY_TEST_PYPI_TOKEN
           poetry publish --build
+
+      - name: Push changes
+        if: success()
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Comment on pull request
         if: startsWith(github.ref, 'refs/tags')
