@@ -20,21 +20,26 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Setup Poetry
+      - name: Install dependencies for Python 3.7
+        if: matrix.python-version == '3.7'
+        run: pip install -r requirements.txt
+
+      - name: Install dependencies for Python 3.8 and above
+        if: matrix.python-version != '3.7'
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
           echo "$HOME/.local/bin" >> $GITHUB_PATH
           poetry config virtualenvs.in-project true
-
-      - name: Install dependencies
-        run: |
-          poetry --version
           poetry install --with unit_test,dev,docs
 
       - name: Test with pytest
         id: pytest
         run: |
-          poetry run pytest --junitxml=junit/test-results.xml .
+          if [ "${{ matrix.python-version }}" == "3.7" ]; then
+            pytest --junitxml=junit/test-results.xml .
+          else
+            poetry run pytest --junitxml=junit/test-results.xml .
+          fi
         continue-on-error: true
 
       - name: Upload test results
@@ -45,7 +50,6 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
-    needs: test
     steps:
       - uses: actions/checkout@v4
 
@@ -72,7 +76,7 @@ jobs:
           poetry run pre-commit run --all-files --show-diff-on-failure
         continue-on-error: true
 
-      - name: Comment on pull request
+      - name: Comment Pre-Commit summary on pull request
         uses: actions/github-script@v6
         env:
           PRE_COMMIT_OUTCOME: ${{ steps.summarize_pre_commit.outcome }}
@@ -125,12 +129,14 @@ jobs:
           echo "::set-output name=latest_version::$(cat latest_version.txt)"
 
       - name: Update package version
+        id: update_version
         run: |
           poetry version $(cat latest_version.txt)
           poetry version prerelease
-          $UPGRADED_POETRY_VERSION = poetry version | cut -d' ' -f2
+          echo "::set-output name=version::$(poetry version | cut -d' ' -f2)"
           git add pyproject.toml
-          git commit -m "Bump version to $UPGRADED_POETRY_VERSION"
+          git commit -m "Bump version to $(poetry version | cut -d' ' -f2)"
+          git push
 
       - name: Build and publish distribution 📦 to Test PyPI
         run: |
@@ -138,6 +144,49 @@ jobs:
           poetry config repositories.testpypi https://test.pypi.org/legacy/
           poetry config pypi-token.pypi $POETRY_TEST_PYPI_TOKEN
           poetry publish --build
+
+      - name: Comment on pull request
+        if: startsWith(github.ref, 'refs/tags')
+        uses: actions/github-script@v6
+        env:
+          UPGRADED_POETRY_VERSION: ${{ steps.update_version.outputs.version }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // 1. Retrieve existing bot comments for the PR
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            })
+            const botComment = comments.find(comment => {
+              return comment.user.type === 'Bot' && comment.body.includes('Deployed to Test PyPI')
+            })
+
+            // 2. Prepare format of the comment
+            const output = `#### Deployed to Test PyPI 🚀
+
+            The package version \`${process.env.UPGRADED_POETRY_VERSION}\` has been published to Test PyPI. Please test and verify the package before publishing to PyPI.`;
+            URL = `https://test.pypi.org/project/flaui-uiautomation-wrapper/${process.env.UPGRADED_POETRY_VERSION}/`
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ github.workspace }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+            // 3. If we have a comment, update it, otherwise create a new one
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              })
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              })
+            }
 
   summarize:
     needs: test
