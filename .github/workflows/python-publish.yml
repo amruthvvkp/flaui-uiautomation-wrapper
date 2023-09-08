@@ -20,7 +20,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Get release tag
+        id: get_tag
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
+
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.get_tag.outputs.tag }}
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -33,8 +39,19 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
           poetry config virtualenvs.in-project true
 
+      - name: Update version
+        run: poetry version $(echo ${{ steps.get_tag.outputs.tag }} | cut -d "v" -f 2)
+
       - name: Build and Publish distribution 📦 to PyPI
         if: startsWith(github.ref, 'refs/tags')
         run: |
           poetry config pypi-token.pypi ${{ secrets.PYPI_API_TOKEN }}
           poetry publish --build
+
+      - name: Commit changes
+        if: success()
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Update Poetry version to ${{ github.ref }}"
+          commit_options: "--no-verify"
+          branch: "master"
