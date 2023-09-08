@@ -898,9 +898,9 @@ typed-ast==1.5.5 ; python_version >= "3.7" and python_version < "3.8" \
 typing-extensions==4.7.1 ; python_version >= "3.7" and python_version < "3.12" \
     --hash=sha256:440d5dd3af93b060174bf433bccd69b0babc3b15b1a8dca43789fd7f61514b36 \
     --hash=sha256:b75ddc264f0ba5615db7ba217daeb99701ad295353c45f9e95963337ceeeffb2
-virtualenv==20.24.4 ; python_version >= "3.8" and python_version < "3.12" \
-    --hash=sha256:29c70bb9b88510f6414ac3e55c8b413a1f96239b6b789ca123437d5e892190cb \
-    --hash=sha256:772b05bfda7ed3b8ecd16021ca9716273ad9f4467c801f27e83ac73430246dca
+virtualenv==20.24.5 ; python_version >= "3.8" and python_version < "3.12" \
+    --hash=sha256:b80039f280f4919c77b30f1c23294ae357c4c8701042086e3fc005963e4e537b \
+    --hash=sha256:e8361967f6da6fbdf1426483bfe9fca8287c242ac0bc30429905721cefbff752
 wcwidth==0.2.6 ; python_version >= "3.7" and python_version < "3.12" \
     --hash=sha256:795b138f6875577cd91bba52baf9e445cd5118fd32723b460e30a0af30ea230e \
     --hash=sha256:a5220780a404dbe3353789870978e472cfe477761f06ee55077256e509b156d0

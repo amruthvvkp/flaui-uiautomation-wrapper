@@ -84,13 +84,17 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: wpf-application
-          path: test_applications\WPFApplication
+          path: test_applications/WPFApplication
 
       - name: Download WinForms application
         uses: actions/download-artifact@v3
         with:
           name: winforms-application
-          path: test_applications\WinFormsApplication
+          path: test_applications/WinFormsApplication
+
+      - name: List all files
+        run: |
+          ls -R
 
       - name: Test with pytest
         id: pytest
@@ -185,6 +189,7 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
 
   publish:
     name: Publish to Test PyPI
@@ -239,6 +244,7 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
 
       - name: Comment on pull request
         if: startsWith(github.ref, 'refs/tags')
