@@ -137,14 +137,16 @@ jobs:
       - name: Fetch latest release version from Test PyPI
         run: |
           curl -s https://test.pypi.org/pypi/flaui-uiautomation-wrapper/json | jq -r '.info.version' > latest_version.txt
-          echo "::set-output name=latest_version::$(cat latest_version.txt)"
+          echo "{latest_version}=$(cat latest_version.txt)" >> $GITHUB_OUTPUT
 
       - name: Update package version
         id: update_version
         run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
           poetry version $(cat latest_version.txt)
           poetry version prerelease
-          echo "::set-output name=version::$(poetry version | cut -d' ' -f2)"
+          echo "{version}=$(poetry version | cut -d' ' -f2)" >> $GITHUB_OUTPUT
           git add pyproject.toml
           git commit -m "Bump version to $(poetry version | cut -d' ' -f2)"
           git push
