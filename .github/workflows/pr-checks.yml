@@ -39,7 +39,7 @@ jobs:
         shell: pwsh
         run: |
           $json = ${{ steps.list_artifacts.outputs.artifacts }}
-          $artifacts = ConvertFrom-Json $json | Select-Object -ExpandProperty artifacts | Where-Object { $_.name -eq "winforms-application" -and $_.expired -eq $false }
+          $artifacts = Select-Object -ExpandProperty artifacts | Where-Object { $_.name -eq "winforms-application" -and $_.expired -eq $false }
 
           if ($artifacts) {
               Write-Host "Artifacts found for WinForms Application"
