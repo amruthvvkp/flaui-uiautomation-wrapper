@@ -282,7 +282,7 @@ jobs:
             const output = `#### Deployed to Test PyPI 🚀
 
             The package version \`${process.env.UPGRADED_POETRY_VERSION}\` has been published to Test PyPI. Please test and verify the package before publishing to PyPI.`;
-            URL = `https://test.pypi.org/project/flaui-uiautomation-wrapper/${process.env.UPGRADED_POETRY_VERSION}/`
+            const URL = `https://test.pypi.org/project/flaui-uiautomation-wrapper/${process.env.UPGRADED_POETRY_VERSION}/`
 
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ github.workspace }}\`, Workflow: \`${{ github.workflow }}\`*`;
 
