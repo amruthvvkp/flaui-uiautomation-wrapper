@@ -7,7 +7,9 @@
         "uiautomation",
         "versioneer"
     ],
-    "python.testing.pytestArgs": [],
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "files.exclude": {
@@ -19,15 +21,7 @@
     "testExplorer.mergeSuites": true,
     "testExplorer.hideWhen": "noTests",
     "testExplorer.showOnRun": true,
-    "python.linting.pylintEnabled": false,
-    "python.linting.enabled": true,
-    "python.linting.flake8Enabled": false,
-    "python.formatting.yapfArgs": [
-        "COLUMN_LIMIT=120"
-    ],
-    "python.formatting.provider": "black",
-    "python.linting.mypyEnabled": true,
     "python.analysis.extraPaths": [
         "typings"
-    ]
+    ],
 }
