@@ -11,30 +11,6 @@ permissions:
   id-token: write
 
 jobs:
-  check_artifacts:
-    name: Check for artifacts
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download artifact 1
-        id: download-artifact-1
-        uses: actions/download-artifact@v3
-        with:
-          name: wpf-application
-      - name: Download artifact 2
-        id: download-artifact-2
-        uses: actions/download-artifact@v3
-        with:
-          name: winforms-application
-      - name: Check if artifacts exist
-        run: |
-          if [ -z "${{ steps.download-artifact-1.outputs.artifact_path }}" ] && [ -z "${{ steps.download-artifact-2.outputs.artifact_path }}" ]; then
-            echo "Artifacts do not exist"
-            exit 0
-          else
-            echo "Artifacts exist"
-            exit 1
-          fi
-
   build_test_apps:
     name: Build Test WPF Applications
     runs-on: windows-latest
@@ -235,8 +211,9 @@ jobs:
       - name: Get latest version from Test PyPI
         id: get_latest_version
         run: |
-          current_version=$(curl -s https://test.pypi.org/pypi/flaui-uiautomation-wrapper/json | jq -r '.releases | keys | sort_by(.) | .[-1]')
-          echo "current_version=$current_version" >> "$GITHUB_OUTPUT"
+          git fetch --tags
+          echo $(git describe --abbrev=0 --tags) > latest_version.txt
+          echo "{latest_version}=$(cat latest_version.txt)" >> $GITHUB_OUTPUT
 
       - name: Update package version
         id: update_version
