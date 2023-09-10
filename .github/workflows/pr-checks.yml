@@ -15,32 +15,50 @@ jobs:
     name: Build Test WPF Applications and publish to Artifacts
     runs-on: windows-latest
     steps:
-      - name: Download WPF Application
-        id: download-wpf-application
-        uses: actions/download-artifact@v3
-        with:
-          name: wpf-application
-          path: test_applications/WPFApplication
-        continue-on-error: true
+      - name: Get all artifacts
+        uses: MichaelMelena/list-artifacts@v1
+        id: list_artifacts
 
-      - name: Download WinForms Application
-        id: download-winforms-application
-        uses: actions/download-artifact@v3
-        with:
-          name: winforms-application
-          path: test_applications/WinFormsApplication
-        continue-on-error: true
+      - name: Check if WPF Application artifact is already available
+        id: wpf_app_artifacts
+        shell: pwsh
+        run: |
+          $json = ${{ steps.list_artifacts.outputs.artifacts }}
+          $artifacts = ConvertFrom-Json $json | Select-Object -ExpandProperty artifacts | Where-Object { $_.name -eq "wpf-application" -and $_.expired -eq $false }
 
-      - name: Check if artifacts exist
+          if ($artifacts) {
+              Write-Host "Artifacts found for WPF Application"
+              "ARTIFACTS_AVAILABLE=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          } else {
+              Write-Host "Artifacts not found or expired for WPF Application"
+              "ARTIFACTS_AVAILABLE=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          }
+
+      - name: Check if WinForms Application artifact is already available
+        id: winforms_app_artifacts
+        shell: pwsh
+        run: |
+          $json = ${{ steps.list_artifacts.outputs.artifacts }}
+          $artifacts = ConvertFrom-Json $json | Select-Object -ExpandProperty artifacts | Where-Object { $_.name -eq "winforms-application" -and $_.expired -eq $false }
+
+          if ($artifacts) {
+              Write-Host "Artifacts found for WinForms Application"
+              "ARTIFACTS_AVAILABLE=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          } else {
+              Write-Host "Artifacts not found or expired for WinForms Application"
+              "ARTIFACTS_AVAILABLE=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          }
+
+      - name: Check if artifacts are already available
         id: check_artifacts
         shell: pwsh
         run: |
-          if ((Test-Path -Path "test_applications\WPFApplication" -PathType Container) -and (Test-Path -Path "test_applications\WinFormsApplication" -PathType Container)) {
-              Write-Host "Artifacts exist, skipping build"
-              echo "ARTIFACTS_FOUND=true" >> $ENV:GITHUB_OUTPUT
+          if (${{ steps.wpf_app_artifacts.outputs.ARTIFACTS_AVAILABLE }} -eq "true" -and ${{ steps.winforms_app_artifacts.outputs.ARTIFACTS_AVAILABLE }} -eq "true") {
+              Write-Host "Artifacts found for WPF and WinForms Application"
+              "ARTIFACTS_FOUND=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           } else {
-              Write-Host "Artifacts do not exist, building them using .NET 6.0 SDK"
-              echo "ARTIFACTS_FOUND=false" >> $ENV:GITHUB_OUTPUT
+              Write-Host "Artifacts not found or expired for WPF or WinForms Application"
+              "ARTIFACTS_FOUND=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           }
 
       - uses: actions/checkout@v4
@@ -101,13 +119,13 @@ jobs:
         run: |
           if [ "${{ matrix.python-version }}" == "3.7" ]; then
             pip install -r requirements.txt
-            pip install pytest-github-actions-annotate-failures
+            pip install pytest-github-actions-annotate-failures pytest-cov
           else
             curl -sSL https://install.python-poetry.org | python3 -
             echo "$HOME/.local/bin" >> $GITHUB_PATH
             poetry config virtualenvs.in-project true
-            poetry install --with unit_test,dev
-            poetry run pip install pytest-github-actions-annotate-failures
+            poetry install --with unit_test
+            poetry run pip install pytest-github-actions-annotate-failures pytest-cov
           fi
 
       - name: Download WPF application
@@ -158,7 +176,6 @@ jobs:
         uses: chartboost/ruff-action@v1
         with:
           src: "."
-          args: --all --no-color --format=github --output=stdout
 
       - name: Python Interrogate Check
         uses: JackMcKew/python-interrogate-check@main
