@@ -236,10 +236,10 @@ jobs:
             status=$(curl -s -o /dev/null -w "%{http_code}" $url)
             if [ $status -eq 200 ]; then
               echo "Package found on Test PyPI for version $updated_version"
-              break
             elif [ $status -eq 404 ]; then
               echo "Package not found on Test PyPI for version $updated_version"
               echo "updated_version=$updated_version" >> $GITHUB_OUTPUT
+              break
             else
               echo "Error checking Test PyPI status: $status"
               exit 1
