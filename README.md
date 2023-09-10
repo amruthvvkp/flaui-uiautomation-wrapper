@@ -22,6 +22,8 @@
 ![GitHub pull requests](https://img.shields.io/github/issues-pr/amruthvvkp/flaui-uiautomation-wrapper)
 ![GitHub milestone details](https://img.shields.io/github/milestones/progress-percent/amruthvvkp/flaui-uiautomation-wrapper/1)
 
+![Interrogate](badges/interrogate_badge.svg)
+
 [FlaUI](https://github.com/FlaUI/FlaUI#:~:text=FlaUI%20is%20a%20.,of%20a%20wrapper%20around%20them.) is a .NET library that can be used to perform UI automated testing of Windows desktop applications like Win32, WinForms, WPF, etc.. It is a wrapper that works alongside Windows inbuilt UI Automation technology to perform UI automation as required.
 
 FlaUI has interesting approaches on multiple non-python projects. On python there is an integration with RobotFramework which allows tests to be written on [RobotFramework](https://github.com/GDATASoftwareAG/robotframework-flaui) and the keywords from it's plugin are utilized to identify elements by XPATH and perform UI actions.

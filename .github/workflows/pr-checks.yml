@@ -23,8 +23,7 @@ jobs:
         id: wpf_app_artifacts
         shell: pwsh
         run: |
-          $json = ${{ steps.list_artifacts.outputs.artifacts }}
-          $artifacts = ConvertFrom-Json $json | Select-Object -ExpandProperty artifacts | Where-Object { $_.name -eq "wpf-application" -and $_.expired -eq $false }
+          $artifacts = ${{ steps.list_artifacts.outputs.artifacts }} | Select-Object -ExpandProperty artifacts | Where-Object { $_.name -eq "wpf-application" -and $_.expired -eq $false }
 
           if ($artifacts) {
               Write-Host "Artifacts found for WPF Application"
@@ -38,8 +37,7 @@ jobs:
         id: winforms_app_artifacts
         shell: pwsh
         run: |
-          $json = ${{ steps.list_artifacts.outputs.artifacts }}
-          $artifacts = Select-Object -ExpandProperty artifacts | Where-Object { $_.name -eq "winforms-application" -and $_.expired -eq $false }
+          $artifacts = ${{ steps.list_artifacts.outputs.artifacts }} | Select-Object -ExpandProperty artifacts | Where-Object { $_.name -eq "winforms-application" -and $_.expired -eq $false }
 
           if ($artifacts) {
               Write-Host "Artifacts found for WinForms Application"
@@ -227,13 +225,9 @@ jobs:
       - name: Update package version
         id: update_version
         run: |
-          git config user.email "actions@github.com"
-          git config user.name "GitHub Actions"
           poetry version "${{ steps.get_latest_version.outputs.current_version }}"
           poetry version prerelease
           echo "updated_version=$(poetry version | cut -d' ' -f2)" >> $GITHUB_OUTPUT
-          git add pyproject.toml
-          git commit -m "Bump version to $(poetry version | cut -d' ' -f2)"
 
       - name: Build and publish distribution 📦 to Test PyPI
         uses: JRubics/poetry-publish@v1.17
@@ -243,6 +237,13 @@ jobs:
           ignore_dev_requirements: "yes"
           repository_url: https://test.pypi.org/legacy/
           repository_name: flaui-uiautomation-wrapper
+
+      - name: Commit files
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add pyproject.toml
+          git commit -m "Bump version to $(poetry version | cut -d' ' -f2)"
 
       - name: Push changes
         if: success()
