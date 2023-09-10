@@ -13,29 +13,50 @@ on:
     types: [published]
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
+  id-token: write
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Get release tag
+        id: get_tag
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.get_tag.outputs.tag }}
+
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: "3.x"
-      - name: Build package
-        run: poetry build
-      - name: Publish distribution 📦 to Test PyPI
-        uses: JRubics/poetry-publish@v1.13
-        with:
-          pypi_token: ${{ secrets.TEST_PYPI_API_TOKEN }}
-          repository_url: https://test.pypi.org/legacy/
-          repository_name: flaui-uiautomation-wrapper
-          allow_poetry_pre_release: "yes"
-      - name: Publish distribution 📦 to PyPI
+
+      - name: Setup Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          poetry config virtualenvs.in-project true
+
+      - name: Update version
+        run: poetry version $(echo ${{ steps.get_tag.outputs.tag }} | cut -d "v" -f 2)
+
+      - name: Build and Publish distribution 📦 to PyPI
         if: startsWith(github.ref, 'refs/tags')
-        uses: JRubics/poetry-publish@v1.13
+        uses: JRubics/poetry-publish@v1.17
         with:
-          pypi_token: ${{ secrets.PYPI_API_TOKEN }}
+          pypi_token: ${{ secrets.PYPI_API_TOKEN  }}
+          allow_poetry_pre_release: "yes"
+          ignore_dev_requirements: "yes"
+          repository_name: flaui-uiautomation-wrapper
+
+      - name: Commit changes
+        if: success()
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Update Poetry version to ${{ github.ref }}"
+          commit_options: "--no-verify"
+          branch: "master"
