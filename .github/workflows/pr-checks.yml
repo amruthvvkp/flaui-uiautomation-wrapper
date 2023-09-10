@@ -29,17 +29,17 @@ jobs:
         run: |
           if [ -z "${{ steps.download-artifact-1.outputs.artifact_path }}" ] && [ -z "${{ steps.download-artifact-2.outputs.artifact_path }}" ]; then
             echo "Artifacts do not exist"
-            exit 0
+            exit 1
           else
             echo "Artifacts exist"
-            exit 1
+            exit 0
           fi
 
   build_test_apps:
     name: Build Test WPF Applications
     runs-on: windows-latest
     needs: check_artifacts
-    if: needs.check_artifacts.result == 'success'
+    if: needs.check_artifacts.result != 'success'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -263,7 +263,7 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
+          branch: ${{ github.head_ref }}
 
       - name: Comment on pull request
         if: startsWith(github.ref, 'refs/tags')
