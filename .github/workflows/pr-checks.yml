@@ -11,58 +11,63 @@ permissions:
   id-token: write
 
 jobs:
-  check_artifacts:
-    name: Check for artifacts
-    runs-on: ubuntu-latest
+   build_artifacts:
+    name: Build Test WPF Applications and publish to Artifacts
+    runs-on: windows-latest
     steps:
       - name: Download artifact 1
-        id: download-artifact-1
+        id: download-wpf-application
         uses: actions/download-artifact@v3
         with:
           name: wpf-application
         continue-on-error: true
+
       - name: Download artifact 2
-        id: download-artifact-2
+        id: download-winforms-application
         uses: actions/download-artifact@v3
         with:
           name: winforms-application
         continue-on-error: true
-      - name: Check if artifacts exist
+
+      - name: Set environment flag to proceed
+        id: set_proceed_flag
         run: |
-          if [ -z "${{ steps.download-artifact-1.outputs.artifact_path }}" ] && [ -z "${{ steps.download-artifact-2.outputs.artifact_path }}" ]; then
+          if [ -z "${{ steps.download-wpf-application.outputs.artifact_path }}" ] && [ -z "${{ steps.download-winforms-application.outputs.artifact_path }}" ]; then
             echo "Artifacts do not exist"
-            exit 1
+            echo "proceed_flag=false" >> "$GITHUB_OUTPUT"
           else
             echo "Artifacts exist"
-            exit 0
+            echo "proceed_flag=true" >> "$GITHUB_OUTPUT"
           fi
 
-  build_test_apps:
-    name: Build Test WPF Applications
-    runs-on: windows-latest
-    needs: check_artifacts
-    if: needs.check_artifacts.result != 'success'
-    steps:
       - uses: actions/checkout@v4
+        if: steps.set_proceed_flag.outputs.proceed_flag == 'true'
         with:
           repository: "FlaUI/FlaUI"
           ref: "master"
+
       - name: Install .NET 6.0 SDK
+        if: steps.set_proceed_flag.outputs.proceed_flag == 'true'
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 6.0.x
+
       - name: Build Test WPF Applications
+        if: steps.set_proceed_flag.outputs.proceed_flag == 'true'
         run: |
           pwsh -File build.ps1
-          ls -R
+
       - name: Upload WPF application
+        if: steps.set_proceed_flag.outputs.proceed_flag == 'true'
         uses: actions/upload-artifact@v3
         with:
           name: wpf-application
           path: src\TestApplications\WpfApplication\bin\*
           if-no-files-found: error
           retention-days: 90
+
       - name: Upload WinForms applications
+        if: steps.set_proceed_flag.outputs.proceed_flag == 'true'
         uses: actions/upload-artifact@v3
         with:
           name: winforms-application
@@ -72,7 +77,7 @@ jobs:
 
   test:
     name: Test with pytest
-    needs: [check_artifacts, build_test_apps]
+    needs: build_artifacts
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -245,7 +250,7 @@ jobs:
         run: |
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
-          poetry version $(echo "${{ steps.get_latest_version.outputs.current_version }}")
+          poetry version "${{ steps.get_latest_version.outputs.current_version }}"
           poetry version prerelease
           echo "updated_version=$(poetry version | cut -d' ' -f2)" >> $GITHUB_OUTPUT
           git add pyproject.toml
