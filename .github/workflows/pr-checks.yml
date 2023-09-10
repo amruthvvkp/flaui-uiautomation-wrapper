@@ -29,36 +29,25 @@ jobs:
           name: winforms-application
         continue-on-error: true
 
-      - name: Set environment flag to proceed
-        id: set_proceed_flag
-        run: |
-          if [ -z "${{ steps.download-wpf-application.outputs.artifact_path }}" ] && [ -z "${{ steps.download-winforms-application.outputs.artifact_path }}" ]; then
-            echo "Artifacts do not exist"
-            echo "proceed_flag=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "Artifacts exist"
-            echo "proceed_flag=true" >> "$GITHUB_OUTPUT"
-          fi
-
       - uses: actions/checkout@v4
-        if: steps.set_proceed_flag.outputs.proceed_flag == 'true'
+        if: steps.download-wpf-application.outputs.artifacts_found == 'true' || steps.download-winforms-application.outputs.artifacts_found == 'true'
         with:
           repository: "FlaUI/FlaUI"
           ref: "master"
 
       - name: Install .NET 6.0 SDK
-        if: steps.set_proceed_flag.outputs.proceed_flag == 'true'
+        if: steps.download-wpf-application.outputs.artifacts_found == 'true' || steps.download-winforms-application.outputs.artifacts_found == 'true'
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 6.0.x
 
       - name: Build Test WPF Applications
-        if: steps.set_proceed_flag.outputs.proceed_flag == 'true'
+        if: steps.download-wpf-application.outputs.artifacts_found == 'true' || steps.download-winforms-application.outputs.artifacts_found == 'true'
         run: |
           pwsh -File build.ps1
 
       - name: Upload WPF application
-        if: steps.set_proceed_flag.outputs.proceed_flag == 'true'
+        if: steps.download-wpf-application.outputs.artifacts_found == 'true' || steps.download-winforms-application.outputs.artifacts_found == 'true'
         uses: actions/upload-artifact@v3
         with:
           name: wpf-application
@@ -67,7 +56,7 @@ jobs:
           retention-days: 90
 
       - name: Upload WinForms applications
-        if: steps.set_proceed_flag.outputs.proceed_flag == 'true'
+        if: steps.download-wpf-application.outputs.artifacts_found == 'true' || steps.download-winforms-application.outputs.artifacts_found == 'true'
         uses: actions/upload-artifact@v3
         with:
           name: winforms-application
