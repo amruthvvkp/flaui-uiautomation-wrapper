@@ -1,4 +1,4 @@
-name: Python package
+name: PR Checks
 
 on:
   pull_request:
@@ -11,57 +11,77 @@ permissions:
   id-token: write
 
 jobs:
+  check_artifacts:
+    name: Check for artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact 1
+        id: download-artifact-1
+        uses: actions/download-artifact@v3
+        with:
+          name: wpf-application
+      - name: Download artifact 2
+        id: download-artifact-2
+        uses: actions/download-artifact@v3
+        with:
+          name: winforms-application
+      - name: Check if artifacts exist
+        run: |
+          if [ -z "${{ steps.download-artifact-1.outputs.artifact_path }}" ] && [ -z "${{ steps.download-artifact-2.outputs.artifact_path }}" ]; then
+            echo "Artifacts do not exist"
+            exit 0
+          else
+            echo "Artifacts exist"
+            exit 1
+          fi
+
   build_test_apps:
     name: Build Test WPF Applications
     runs-on: windows-latest
+    needs: check_artifacts
+    if: needs.check_artifacts.result == 'success'
     steps:
       - uses: actions/checkout@v4
         with:
           repository: "FlaUI/FlaUI"
           ref: "master"
-
       - name: Install .NET 6.0 SDK
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 6.0.x
-
       - name: Build Test WPF Applications
         run: |
           pwsh -File build.ps1
           ls -R
-
       - name: Upload WPF application
         uses: actions/upload-artifact@v3
         with:
           name: wpf-application
           path: src\TestApplications\WpfApplication\bin\*
           if-no-files-found: error
-          retention-days: 1
-
+          retention-days: 90
       - name: Upload WinForms applications
         uses: actions/upload-artifact@v3
         with:
           name: winforms-application
           path: src\TestApplications\WinFormsApplication\bin\*
           if-no-files-found: error
-          retention-days: 1
+          retention-days: 90
 
   test:
     name: Test with pytest
-    needs: build_test_apps
+    needs: [check_artifacts, build_test_apps]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           persist-credentials: false
-
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -115,7 +135,7 @@ jobs:
         uses: actions/github-script@v6
         env:
           PYTEST_OUTCOME: ${{ steps.pytest.outcome }}
-          PYTEST_RESULTS: ${{ steps.pytest.outputs.stdout }}
+          PYTEST_RESULTS: ${{ steps.pytest.outcome }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -212,21 +232,20 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
           poetry config virtualenvs.in-project true
 
-      - name: Get latest version
+      - name: Get latest version from Test PyPI
         id: get_latest_version
         run: |
-          git fetch --tags
-          echo $(git describe --abbrev=0 --tags) > latest_version.txt
-          echo "{latest_version}=$(cat latest_version.txt)" >> $GITHUB_OUTPUT
+          current_version=$(curl -s https://test.pypi.org/pypi/flaui-uiautomation-wrapper/json | jq -r '.releases | keys | sort_by(.) | .[-1]')
+          echo "current_version=$current_version" >> "$GITHUB_OUTPUT"
 
       - name: Update package version
         id: update_version
         run: |
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
-          poetry version $(cat latest_version.txt)
+          poetry version $(echo "${{ steps.get_latest_version.outputs.current_version }}")
           poetry version prerelease
-          echo "{version}=$(poetry version | cut -d' ' -f2)" >> $GITHUB_OUTPUT
+          echo "updated_version=$(poetry version | cut -d' ' -f2)" >> $GITHUB_OUTPUT
           git add pyproject.toml
           git commit -m "Bump version to $(poetry version | cut -d' ' -f2)"
 
@@ -250,7 +269,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags')
         uses: actions/github-script@v6
         env:
-          UPGRADED_POETRY_VERSION: ${{ steps.update_version.outputs.version }}
+          UPGRADED_POETRY_VERSION: ${{ steps.update_version.outputs.updated_version }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
