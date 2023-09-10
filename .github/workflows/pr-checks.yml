@@ -33,14 +33,8 @@ jobs:
 
       - name: Check if artifacts exist
         id: check_artifacts
-        run: |
-          if [ (-d "test_applications/WPFApplication")  &&  (-d "test_applications/WinFormsApplication") ]; then
-            echo "Artifacts exist"
-            echo "artifacts_found=true" >> $GITHUB_OUTPUT
-          else
-            echo "Artifacts do not exist"
-            echo "artifacts_found=false" >> $GITHUB_OUTPUT
-          fi
+        shell: pwsh
+        run: if (Test-Path -Path "test_applications\WPFApplication" -PathType Container -Path "test_applications\WinFormsApplication" -PathType Container) { Write-Host "Artifacts exist"; Add-Content $env:GITHUB_OUTPUT "artifacts_found=true"; } else { Write-Host "Artifacts do not exist"; Add-Content $env:GITHUB_OUTPUT "artifacts_found=false"; }
 
       - uses: actions/checkout@v4
         if: steps.check_artifacts.outputs.artifacts_found == 'false'
