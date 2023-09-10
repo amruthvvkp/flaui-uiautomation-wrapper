@@ -34,27 +34,34 @@ jobs:
       - name: Check if artifacts exist
         id: check_artifacts
         shell: pwsh
-        run: if (Test-Path -Path "test_applications\WPFApplication" -PathType Container -Path "test_applications\WinFormsApplication" -PathType Container) { Write-Host "Artifacts exist"; Add-Content $env:GITHUB_OUTPUT "artifacts_found=true"; } else { Write-Host "Artifacts do not exist"; Add-Content $env:GITHUB_OUTPUT "artifacts_found=false"; }
+        run: |
+          if ((Test-Path -Path "test_applications\WPFApplication" -PathType Container) -and (Test-Path -Path "test_applications\WinFormsApplication" -PathType Container)) {
+              Write-Host "Artifacts exist"
+              echo "ARTIFACTS_FOUND=true" >> $ENV:GITHUB_OUTPUT
+          } else {
+              Write-Host "Artifacts do not exist"
+              echo "ARTIFACTS_FOUND=false" >> $ENV:GITHUB_OUTPUT
+          }
 
       - uses: actions/checkout@v4
-        if: steps.check_artifacts.outputs.artifacts_found == 'false'
+        if: steps.check_artifacts.outputs.ARTIFACTS_FOUND == 'false'
         with:
           repository: "FlaUI/FlaUI"
           ref: "master"
 
       - name: Install .NET 6.0 SDK
-        if: steps.check_artifacts.outputs.artifacts_found == 'false'
+        if: steps.check_artifacts.outputs.ARTIFACTS_FOUND == 'false'
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 6.0.x
 
       - name: Build Test WPF Applications
-        if: steps.check_artifacts.outputs.artifacts_found == 'false'
+        if: steps.check_artifacts.outputs.ARTIFACTS_FOUND == 'false'
         run: |
           pwsh -File build.ps1
 
       - name: Upload WPF application
-        if: steps.check_artifacts.outputs.artifacts_found == 'false'
+        if: steps.check_artifacts.outputs.ARTIFACTS_FOUND == 'false'
         uses: actions/upload-artifact@v3
         with:
           name: wpf-application
@@ -63,7 +70,7 @@ jobs:
           retention-days: 90
 
       - name: Upload WinForms applications
-        if: steps.check_artifacts.outputs.artifacts_found == 'false'
+        if: steps.check_artifacts.outputs.ARTIFACTS_FOUND == 'false'
         uses: actions/upload-artifact@v3
         with:
           name: winforms-application
