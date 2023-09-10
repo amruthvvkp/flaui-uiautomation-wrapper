@@ -15,7 +15,7 @@ jobs:
     name: Build Test WPF Applications and publish to Artifacts
     runs-on: windows-latest
     steps:
-      - name: Download artifact 1
+      - name: Download WPF Application
         id: download-wpf-application
         uses: actions/download-artifact@v3
         with:
@@ -23,7 +23,7 @@ jobs:
           path: test_applications/WPFApplication
         continue-on-error: true
 
-      - name: Download artifact 2
+      - name: Download WinForms Application
         id: download-winforms-application
         uses: actions/download-artifact@v3
         with:
@@ -36,10 +36,10 @@ jobs:
         shell: pwsh
         run: |
           if ((Test-Path -Path "test_applications\WPFApplication" -PathType Container) -and (Test-Path -Path "test_applications\WinFormsApplication" -PathType Container)) {
-              Write-Host "Artifacts exist"
+              Write-Host "Artifacts exist, skipping build"
               echo "ARTIFACTS_FOUND=true" >> $ENV:GITHUB_OUTPUT
           } else {
-              Write-Host "Artifacts do not exist"
+              Write-Host "Artifacts do not exist, building them using .NET 6.0 SDK"
               echo "ARTIFACTS_FOUND=false" >> $ENV:GITHUB_OUTPUT
           }
 
@@ -130,64 +130,10 @@ jobs:
         id: pytest
         run: |
           if [ "${{ matrix.python-version }}" == "3.7" ]; then
-            pytest . --junitxml=junit/test-results.xml
+            pytest . --verbose
           else
-            poetry run pytest . --junitxml=junit/test-results.xml
+            poetry run pytest . --verbose
           fi
-
-      - name: Upload test results
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-results
-          path: junit/test-results.xml
-
-      - name: Update PR with PyTest result summary
-        uses: actions/github-script@v6
-        env:
-          PYTEST_OUTCOME: ${{ steps.pytest.outcome }}
-          PYTEST_RESULTS: ${{ steps.pytest.outcome }}
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            // 1. Retrieve existing bot comments for the PR
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            })
-            const botComment = comments.find(comment => {
-              return comment.user.type === 'Bot' && comment.body.includes('Pytest results summary - Python ${{ matrix.python-version }}')
-            })
-
-            // 2. Prepare format of the comment
-            const output = `#### Pytest results summary - Python ${{ matrix.python-version }} 🧪\`${process.env.PYTEST_OUTCOME}\`
-
-            <details><summary>Show Details</summary>
-
-            \`\`\`\n
-            ${process.env.PYTEST_RESULTS}
-            \`\`\`
-
-            </details>
-
-            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ github.workspace }}\`, Workflow: \`${{ github.workflow }}\`*`;
-
-            // 3. If we have a comment, update it, otherwise create a new one
-            if (botComment) {
-              github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: botComment.id,
-                body: output
-              })
-            } else {
-              github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: output
-              })
-            }
 
   linting_checks:
     name: Validations with Ruff, Interrogate
