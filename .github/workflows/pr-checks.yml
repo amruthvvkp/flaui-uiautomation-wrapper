@@ -122,33 +122,46 @@ jobs:
           name: winforms-application
           path: test_applications/WinFormsApplication
 
-      - name: List all files
-        run: |
-          ls -R
-
       - name: Test with pytest
         id: pytest
         run: |
           if [ "${{ matrix.python-version }}" == "3.7" ]; then
-            pytest . --verbose
+            pytest --cache-clear --junitxml=pytest.xml --cov=flaui tests\unit_tests > pytest-coverage.txt
           else
-            poetry run pytest . --verbose
+            poetry run pytest --cache-clear --junitxml=pytest.xml --cov=flaui tests\unit_tests > pytest-coverage.txt
           fi
+
+      - name: Pytest coverage comment
+        uses: MishaKav/pytest-coverage-comment@main
+        if: matrix.python-version == '3.11'
+        with:
+          pytest-coverage-path: pytest-coverage.txt
+          title: PyTest Coverage Report Title
+          badge-title: PyTest Coverage
+          remove-link-from-badge: false
+          unique-id-for-comment: python3.11
+          junitxml-path: pytest.xml
+          junitxml-title: PyTest JUnit Xml Summary
 
   linting_checks:
     name: Validations with Ruff, Interrogate
-    needs: test
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
       - name: Run Ruff checks
-        run: |
-          echo "Ruff checks results summary:"
-          echo ""
-          ruff check . --all --no-color --format=github --output=stdout | sed 's/^/  /'
+        uses: chartboost/ruff-action@v1
+        with:
+          src: "."
+          args: --all --no-color --format=github --output=stdout
 
       - name: Python Interrogate Check
-        uses: JackMcKew/python-interrogate-check@v0.1.1
+        uses: JackMcKew/python-interrogate-check@main
         with:
           path: flaui
           badge-location: "badges/interrogate_badge.svg"
@@ -165,7 +178,7 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
+          branch: ${{ github.head_ref }}
 
   publish:
     name: Publish to Test PyPI
