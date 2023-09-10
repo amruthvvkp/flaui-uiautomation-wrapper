@@ -20,6 +20,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: wpf-application
+          path: test_applications/WPFApplication
         continue-on-error: true
 
       - name: Download artifact 2
@@ -27,27 +28,39 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: winforms-application
+          path: test_applications/WinFormsApplication
         continue-on-error: true
 
+      - name: Check if artifacts exist
+        id: check_artifacts
+        run: |
+          if [ -d "test_applications/WPFApplication" ] && [ -d "test_applications/WinFormsApplication" ]; then
+            echo "Artifacts exist"
+            echo "artifacts_found=true" >> $GITHUB_OUTPUT
+          else
+            echo "Artifacts do not exist"
+            echo "artifacts_found=false" >> $GITHUB_OUTPUT
+          fi
+
       - uses: actions/checkout@v4
-        if: steps.download-wpf-application.outputs.artifacts_found == 'true' || steps.download-winforms-application.outputs.artifacts_found == 'true'
+        if: steps.check_artifacts.outputs.artifacts_found == 'false'
         with:
           repository: "FlaUI/FlaUI"
           ref: "master"
 
       - name: Install .NET 6.0 SDK
-        if: steps.download-wpf-application.outputs.artifacts_found == 'true' || steps.download-winforms-application.outputs.artifacts_found == 'true'
+        if: steps.check_artifacts.outputs.artifacts_found == 'false'
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 6.0.x
 
       - name: Build Test WPF Applications
-        if: steps.download-wpf-application.outputs.artifacts_found == 'true' || steps.download-winforms-application.outputs.artifacts_found == 'true'
+        if: steps.check_artifacts.outputs.artifacts_found == 'false'
         run: |
           pwsh -File build.ps1
 
       - name: Upload WPF application
-        if: steps.download-wpf-application.outputs.artifacts_found == 'true' || steps.download-winforms-application.outputs.artifacts_found == 'true'
+        if: steps.check_artifacts.outputs.artifacts_found == 'false'
         uses: actions/upload-artifact@v3
         with:
           name: wpf-application
@@ -56,7 +69,7 @@ jobs:
           retention-days: 90
 
       - name: Upload WinForms applications
-        if: steps.download-wpf-application.outputs.artifacts_found == 'true' || steps.download-winforms-application.outputs.artifacts_found == 'true'
+        if: steps.check_artifacts.outputs.artifacts_found == 'false'
         uses: actions/upload-artifact@v3
         with:
           name: winforms-application
@@ -281,8 +294,10 @@ jobs:
             // 2. Prepare format of the comment
             const output = `#### Deployed to Test PyPI 🚀
 
+            <details>
             The package version \`${process.env.UPGRADED_POETRY_VERSION}\` has been published to Test PyPI. Please test and verify the package before publishing to PyPI.`;
             const URL = `https://test.pypi.org/project/flaui-uiautomation-wrapper/${process.env.UPGRADED_POETRY_VERSION}/`
+            </details>
 
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ github.workspace }}\`, Workflow: \`${{ github.workflow }}\`*`;
 
