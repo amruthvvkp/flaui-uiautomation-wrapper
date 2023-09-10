@@ -34,7 +34,7 @@ jobs:
       - name: Check if artifacts exist
         id: check_artifacts
         run: |
-          if [ -d "test_applications/WPFApplication" ] && [ -d "test_applications/WinFormsApplication" ]; then
+          if [ (-d "test_applications/WPFApplication")  &&  (-d "test_applications/WinFormsApplication") ]; then
             echo "Artifacts exist"
             echo "artifacts_found=true" >> $GITHUB_OUTPUT
           else
@@ -288,18 +288,17 @@ jobs:
               issue_number: context.issue.number,
             })
             const botComment = comments.find(comment => {
-              return comment.user.type === 'Bot' && comment.body.includes('Deployed to Test PyPI')
+              return comment.user.type === 'Bot' && comment.body.includes('Terraform Format and Style')
             })
 
             // 2. Prepare format of the comment
             const output = `#### Deployed to Test PyPI 🚀
 
             <details>
-            The package version \`${process.env.UPGRADED_POETRY_VERSION}\` has been published to Test PyPI. Please test and verify the package before publishing to PyPI.`;
-            const URL = `https://test.pypi.org/project/flaui-uiautomation-wrapper/${process.env.UPGRADED_POETRY_VERSION}/`
+            The package version \`${process.env.UPGRADED_POETRY_VERSION}\` has been published to Test PyPI. Please test and verify the package before publishing to PyPI - https://test.pypi.org/project/flaui-uiautomation-wrapper/${process.env.UPGRADED_POETRY_VERSION}/
             </details>
 
-            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ github.workspace }}\`, Workflow: \`${{ github.workflow }}\`*`;
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
 
             // 3. If we have a comment, update it, otherwise create a new one
             if (botComment) {
