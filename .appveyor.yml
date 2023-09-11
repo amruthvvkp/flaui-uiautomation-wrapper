@@ -65,13 +65,8 @@ install:
 before_build:
 - cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI && powershell.exe -ExecutionPolicy Unrestricted -File "C:\projects\FlaUI\build.ps1"
 
-build:
-  verbosity: minimal
-
 test_script:
   - cmd: >-
-      set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
-      python --version
       python -m pytest --cov=flaui --cov-report=xml --cov-report=html --cov-report=term-missing --junitxml=test-results.xml
 
 artifacts:
@@ -94,4 +89,14 @@ on_finish:
 - ps: >-
     $wc = New-Object 'System.Net.WebClient'
 
-    $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .test-results.xml))
+    if (Test-Path .test-results.xml) {
+      $wc.UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .test-results.xml))
+    }
+
+    if (Test-Path .coverage.xml) {
+      $wc.UploadFile("https://ci.appveyor.com/api/testresults/coverage/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .coverage.xml))
+    }
+
+    if (Test-Path "C:/projects/FlaUI/artifacts/UnitTestResult.xml") {
+      $wc.UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", "C:/projects/FlaUI/artifacts/UnitTestResult.xml")
+    }
