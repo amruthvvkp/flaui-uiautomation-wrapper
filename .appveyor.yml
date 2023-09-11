@@ -73,7 +73,9 @@ build_script:
 
 after_build:
   - ps: |
+      New-Item -ItemType Directory -Path "C:\projects\flaui-uiautomation-wrapper\test_applications\WPFApplication" -Force | Out-Null
       Copy-Item -Path "C:\projects\FlaUI\src\TestApplications\WpfApplication\bin\*" -Destination "C:\projects\flaui-uiautomation-wrapper\test_applications\WPFApplication" -Recurse -Force
+      New-Item -ItemType Directory -Path "C:\projects\flaui-uiautomation-wrapper\test_applications\WinFormsApplication" -Force | Out-Null
       Copy-Item -Path "C:\projects\FlaUI\src\TestApplications\WinFormsApplication\bin\*" -Destination "C:\projects\flaui-uiautomation-wrapper\test_applications\WinFormsApplication" -Recurse -Force
 
 before_test:
