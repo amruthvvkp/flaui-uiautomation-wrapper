@@ -102,7 +102,7 @@ jobs:
             curl -sSL https://install.python-poetry.org | python3 -
             echo "$HOME/.local/bin" >> $GITHUB_PATH
             poetry config virtualenvs.in-project true
-            poetry install --with unit_test --system
+            poetry install --with unit_test
             poetry run pip install pytest-github-actions-annotate-failures pytest-cov
           fi
 
@@ -120,24 +120,22 @@ jobs:
           path: test_applications/WinFormsApplication
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Test with pytest
+      - name: Test with pytest for Python ${{ matrix.python-version }}
+        if: matrix.python-version == '3.7'
         uses: pavelzw/pytest-action@v2
         with:
           emoji: false
           verbose: false
           job-summary: true
 
-      # - name: Pytest coverage comment
-      #   uses: MishaKav/pytest-coverage-comment@main
-      #   if: matrix.python-version == '3.11'
-      #   with:
-      #     pytest-coverage-path: pytest-coverage.txt
-      #     title: PyTest Coverage Report Title
-      #     badge-title: PyTest Coverage
-      #     remove-link-from-badge: false
-      #     unique-id-for-comment: python3.11
-      #     junitxml-path: pytest.xml
-      #     junitxml-title: PyTest JUnit Xml Summary
+      - name: Test with pytest for Python ${{ matrix.python-version }}
+        if: matrix.python-version != '3.7'
+        uses: pavelzw/pytest-action@v2
+        with:
+          emoji: false
+          verbose: false
+          job-summary: true
+          custom-pytest: poetry run pytest
 
   linting_checks:
     name: Validations with Ruff, Interrogate
