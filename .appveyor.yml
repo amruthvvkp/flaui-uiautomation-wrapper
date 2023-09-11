@@ -67,11 +67,14 @@ before_build:
 - cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI
 
 build_script:
-  - ps: & "C:\\projects\\FlaUI\\build.ps1"
+  - ps: |
+      # Run PowerShell script
+      & "C:\\projects\\FlaUI\\build.ps1"
 
 after_build:
-  - ps: Copy-Item -Path "C:\projects\FlaUI\src\TestApplications\WpfApplication\bin\*" -Destination "C:\projects\flaui-uiautomation-wrapper\test_applications\WPFApplication" -Recurse -Force
-  - ps: Copy-Item -Path "C:\projects\FlaUI\src\TestApplications\WinFormsApplication\bin\*" -Destination "C:\projects\flaui-uiautomation-wrapper\test_applications\WinFormsApplication" -Recurse -Force
+  - ps: |
+      Copy-Item -Path "C:\projects\FlaUI\src\TestApplications\WpfApplication\bin\*" -Destination "C:\projects\flaui-uiautomation-wrapper\test_applications\WPFApplication" -Recurse -Force
+      Copy-Item -Path "C:\projects\FlaUI\src\TestApplications\WinFormsApplication\bin\*" -Destination "C:\projects\flaui-uiautomation-wrapper\test_applications\WinFormsApplication" -Recurse -Force
 
 before_test:
   - cmd: python -m pip install --upgrade pip && python -m pip install -r requirements.txt && python -m pip install -r requirements-unit-tests.txt
