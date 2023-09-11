@@ -1,9 +1,7 @@
 version: 1.0.{build}
 branches:
-  except:
-  - '*documentation'
-  - '*gh-pages'
-  - '*master'
+  only:
+  - ^.*\/issue\d+$
 image: Visual Studio 2022
 environment:
   matrix:
