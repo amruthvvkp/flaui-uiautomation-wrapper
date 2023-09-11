@@ -124,22 +124,22 @@ jobs:
         id: pytest
         run: |
           if [ "${{ matrix.python-version }}" == "3.7" ]; then
-            pytest --cache-clear --junitxml=pytest.xml --cov=flaui . > pytest-coverage.txt
+            pytest .
           else
-            poetry run pytest --cache-clear --junitxml=pytest.xml --cov=flaui . > pytest-coverage.txt
+            poetry run pytest .
           fi
 
-      - name: Pytest coverage comment
-        uses: MishaKav/pytest-coverage-comment@main
-        if: matrix.python-version == '3.11'
-        with:
-          pytest-coverage-path: pytest-coverage.txt
-          title: PyTest Coverage Report Title
-          badge-title: PyTest Coverage
-          remove-link-from-badge: false
-          unique-id-for-comment: python3.11
-          junitxml-path: pytest.xml
-          junitxml-title: PyTest JUnit Xml Summary
+      # - name: Pytest coverage comment
+      #   uses: MishaKav/pytest-coverage-comment@main
+      #   if: matrix.python-version == '3.11'
+      #   with:
+      #     pytest-coverage-path: pytest-coverage.txt
+      #     title: PyTest Coverage Report Title
+      #     badge-title: PyTest Coverage
+      #     remove-link-from-badge: false
+      #     unique-id-for-comment: python3.11
+      #     junitxml-path: pytest.xml
+      #     junitxml-title: PyTest JUnit Xml Summary
 
   linting_checks:
     name: Validations with Ruff, Interrogate
