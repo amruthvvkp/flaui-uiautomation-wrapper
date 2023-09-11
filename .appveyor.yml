@@ -95,11 +95,8 @@ artifacts:
   - path: htmlcov
     name: coverage-html
 
-  - path: C:\projects\FlaUI\src\TestApplications\WpfApplication\bin\*
-    name: wpf-application
-
-  - path: C:\projects\FlaUI\src\TestApplications\WinFormsApplication\bin\*
-    name: winforms-application
+  - path: test_applications
+    name: test-applications
 
 on_finish:
 - ps: >-
