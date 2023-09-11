@@ -1,14 +1,22 @@
-import os
+"""This module holds all settings for the tool."""
 from pathlib import Path
-from typing import List
 
-from pydantic import BaseSettings
+from pydantic import FilePath
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    BIN_HOME: str = os.path.join(Path(__file__).parent.resolve(), "flaui", "bin")
-    WRAPPERS_HOME: str = os.path.join(Path(__file__).parent.resolve(), "flaui", "wrappers_temp")
-    FLAUI_HOME: str = str(Path(r"C:\Users\Amruth.Vithala\Projects\FlaUI\src"))
+    """Holds all common settings for the tool"""
+    BIN_HOME: Path = Path(__file__).parent.joinpath("flaui", "bin")
+
+
+class TestSettings(BaseSettings):
+    """Holds all settings for the unit test usages"""
+    WPF_TEST_APP_EXE: FilePath = Path(__file__).parent.joinpath("test_applications", "WPFApplication", "WpfApplication.exe")
+    WPF_TEST_APP_PROCESS: str = "WpfApplication.exe"
+    WINFORMS_TEST_APP_EXE: FilePath = Path(__file__).parent.joinpath("test_applications", "WinFormsApplication", "WinFormsApplication.exe")
+    WINFORMS_TEST_APP_PROCESS: str = "WinFormsApplication.exe"
 
 
 settings = Settings()
+test_settings = TestSettings()
