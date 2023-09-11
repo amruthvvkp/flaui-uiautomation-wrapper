@@ -1,7 +1,7 @@
 class Application:
     def __init__(self, application) -> None:
         self.application = application
-        
+
     def attach(self, *args):
         """Attach
         Attach
@@ -260,5 +260,3 @@ class Application:
         :param: args: Generic FlaUI Element
         """
         return self.application.WaitWhileMainHandleIsMissing(self, *args)
-
-
