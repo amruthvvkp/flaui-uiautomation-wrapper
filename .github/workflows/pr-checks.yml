@@ -107,16 +107,18 @@ jobs:
           fi
 
       - name: Download WPF application
-        uses: actions/download-artifact@v3
+        uses: blablacar/action-download-last-artifact@master
         with:
           name: wpf-application
           path: test_applications/WPFApplication
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download WinForms application
-        uses: actions/download-artifact@v3
+        uses: blablacar/action-download-last-artifact@master
         with:
           name: winforms-application
           path: test_applications/WinFormsApplication
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Test with pytest
         id: pytest
