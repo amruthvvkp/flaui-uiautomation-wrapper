@@ -1,0 +1,290 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  build_artifacts:
+    name: Build Test WPF Applications and publish to Artifacts
+    runs-on: windows-latest
+    steps:
+      - name: Check if WPF and WinForms Application artifacts are already available
+        shell: bash
+        id: check_artifacts
+        run: |
+          output=$(curl -s -X GET -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/actions/artifacts?per_page=100" | jq -r '. | @base64')
+          wpf_artifacts=$(echo "$output" | base64 --decode | jq '.artifacts[] | select(.name == "wpf-application" and .expired == false)')
+          winforms_artifacts=$(echo "$output" | base64 --decode | jq '.artifacts[] | select(.name == "winforms-application" and .expired == false)')
+
+          if [ -n "$wpf_artifacts" ]; then
+            echo "Artifacts found for WPF Application"
+            echo "ARTIFACTS_FOUND=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Artifacts not found or expired for WPF Application"
+            echo "ARTIFACTS_FOUND=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          if [ -n "$winforms_artifacts" ]; then
+            echo "Artifacts found for WinForms Application"
+            echo "ARTIFACTS_FOUND=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Artifacts not found or expired for WinForms Application"
+            echo "ARTIFACTS_FOUND=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.check_artifacts.outputs.ARTIFACTS_FOUND == 'false'
+        with:
+          repository: "FlaUI/FlaUI"
+          ref: "master"
+
+      - name: Install .NET 6.0 SDK
+        if: steps.check_artifacts.outputs.ARTIFACTS_FOUND == 'false'
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Build Test WPF Applications
+        if: steps.check_artifacts.outputs.ARTIFACTS_FOUND == 'false'
+        run: |
+          pwsh -File build.ps1
+
+      - name: Upload WPF application
+        if: steps.check_artifacts.outputs.ARTIFACTS_FOUND == 'false'
+        uses: actions/upload-artifact@v3
+        with:
+          name: wpf-application
+          path: src\TestApplications\WpfApplication\bin\*
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Upload WinForms applications
+        if: steps.check_artifacts.outputs.ARTIFACTS_FOUND == 'false'
+        uses: actions/upload-artifact@v3
+        with:
+          name: winforms-application
+          path: src\TestApplications\WinFormsApplication\bin\*
+          if-no-files-found: error
+          retention-days: 90
+
+  test:
+    name: Test with pytest
+    needs: build_artifacts
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies for Python ${{ matrix.python-version }}
+        run: |
+          if [ "${{ matrix.python-version }}" == "3.7" ]; then
+            pip install -r requirements.txt
+            pip install pytest-github-actions-annotate-failures pytest-cov
+          else
+            curl -sSL https://install.python-poetry.org | python3 -
+            echo "$HOME/.local/bin" >> $GITHUB_PATH
+            poetry config virtualenvs.in-project true
+            poetry install --with unit_test --system
+            poetry run pip install pytest-github-actions-annotate-failures pytest-cov
+          fi
+
+      - name: Download WPF application
+        uses: blablacar/action-download-last-artifact@master
+        with:
+          name: wpf-application
+          path: test_applications/WPFApplication
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download WinForms application
+        uses: blablacar/action-download-last-artifact@master
+        with:
+          name: winforms-application
+          path: test_applications/WinFormsApplication
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Test with pytest
+        uses: pavelzw/pytest-action@v2
+        with:
+          emoji: false
+          verbose: false
+          job-summary: true
+
+      # - name: Pytest coverage comment
+      #   uses: MishaKav/pytest-coverage-comment@main
+      #   if: matrix.python-version == '3.11'
+      #   with:
+      #     pytest-coverage-path: pytest-coverage.txt
+      #     title: PyTest Coverage Report Title
+      #     badge-title: PyTest Coverage
+      #     remove-link-from-badge: false
+      #     unique-id-for-comment: python3.11
+      #     junitxml-path: pytest.xml
+      #     junitxml-title: PyTest JUnit Xml Summary
+
+  linting_checks:
+    name: Validations with Ruff, Interrogate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Run Ruff checks
+        uses: chartboost/ruff-action@v1
+        with:
+          src: "."
+
+      - name: Python Interrogate Check
+        uses: JackMcKew/python-interrogate-check@main
+        with:
+          path: flaui
+          badge-location: "badges/interrogate_badge.svg"
+
+      - name: Commit files
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add badges/interrogate_badge.svg
+          git diff --exit-code || git commit -m "Update interrogate_badge.svg" -a
+
+      - name: Push changes
+        if: success()
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.head_ref }}
+
+  publish:
+    name: Publish to Test PyPI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Setup Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          poetry config virtualenvs.in-project true
+
+      - name: Get latest version from Test PyPI
+        id: get_latest_version
+        run: |
+          current_version=$(curl -s https://test.pypi.org/pypi/flaui-uiautomation-wrapper/json | jq -r '.releases | to_entries | sort_by(.value[0].upload_time) | .[-1].key')
+          echo "current_version=$current_version" >> "$GITHUB_OUTPUT"
+
+      - name: Update package version
+        id: update_version
+        run: |
+          poetry version "${{ steps.get_latest_version.outputs.current_version }}"
+          while true; do
+            poetry version prerelease
+            updated_version=$(poetry version | cut -d' ' -f2)
+            url="https://test.pypi.org/simple/flaui-uiautomation-wrapper/flaui_uiautomation_wrapper-$updated_version-py3-none-any.whl"
+            status=$(curl -s -o /dev/null -w "%{http_code}" $url)
+            if [ $status -eq 200 ]; then
+              echo "Package found on Test PyPI for version $updated_version"
+            elif [ $status -eq 404 ]; then
+              echo "Package not found on Test PyPI for version $updated_version"
+              echo "updated_version=$updated_version" >> $GITHUB_OUTPUT
+              break
+            else
+              echo "Error checking Test PyPI status: $status"
+              exit 1
+            fi
+          done
+
+      - name: Build and publish distribution 📦 to Test PyPI
+        uses: JRubics/poetry-publish@v1.17
+        with:
+          pypi_token: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          allow_poetry_pre_release: "yes"
+          ignore_dev_requirements: "yes"
+          repository_url: https://test.pypi.org/legacy/
+          repository_name: flaui-uiautomation-wrapper
+
+      - name: Commit files
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add pyproject.toml
+          git commit -m "Bump version to $(poetry version | cut -d' ' -f2)"
+
+      - name: Push changes
+        if: success()
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.head_ref }}
+
+      - name: Comment on pull request
+        uses: actions/github-script@v6
+        env:
+          UPGRADED_POETRY_VERSION: ${{ steps.update_version.outputs.updated_version }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // 1. Retrieve existing bot comments for the PR
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            })
+            const botComment = comments.find(comment => {
+              return comment.user.type === 'Bot' && comment.body.includes('Deployed to Test PyPI')
+            })
+
+            // 2. Prepare format of the comment
+            const output = `#### Deployed to Test PyPI 🚀
+
+            <details>
+            The package version \`${process.env.UPGRADED_POETRY_VERSION}\` has been published to Test PyPI. Please test and verify the package before publishing to PyPI - https://test.pypi.org/project/flaui-uiautomation-wrapper/${process.env.UPGRADED_POETRY_VERSION}/
+            </details>
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+            // 3. If we have a comment, update it, otherwise create a new one
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              })
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              })
+            }
