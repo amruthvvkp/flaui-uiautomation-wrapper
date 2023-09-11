@@ -64,7 +64,7 @@ install:
     python --version
 
 before_build:
-- cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI powershell.exe -ExecutionPolicy Unrestricted -File "C:\projects\FlaUI\build.ps1"
+- cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI && powershell.exe -ExecutionPolicy Unrestricted -File "C:\projects\FlaUI\build.ps1"
 
 build_script:
   - mv "C:\projects\FlaUI\src\TestApplications\WpfApplication\bin\*" ".\test_applications\WPFApplication"
