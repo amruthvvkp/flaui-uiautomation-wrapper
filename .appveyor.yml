@@ -79,11 +79,11 @@ after_build:
       Copy-Item -Path "C:\projects\FlaUI\src\TestApplications\WinFormsApplication\bin\*" -Destination "C:\projects\flaui-uiautomation-wrapper\test_applications\WinFormsApplication" -Recurse -Force
 
 before_test:
-  - cmd: python -m pip install --upgrade pip && python -m pip install -r requirements.txt && python -m pip install -r requirements-unit-tests.txt
+  - cmd: cd "C:\projects\flaui-uiautomation-wrapper" && python -m pip install --upgrade pip && python -m pip install -r requirements.txt && python -m pip install -r requirements-unit-tests.txt
 
 test_script:
   - cmd: >-
-      python -m pytest --cov=flaui --cov-report=xml --cov-report=html --cov-report=term-missing --junitxml=test-results.xml
+      cd "C:\projects\flaui-uiautomation-wrapper" && python -m pytest --cov=flaui --cov-report=xml --cov-report=html --cov-report=term-missing --junitxml=test-results.xml
 
 artifacts:
   - path: test-results.xml
