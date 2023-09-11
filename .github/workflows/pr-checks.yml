@@ -82,8 +82,6 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
-    env:
-      DISPLAY: ":99.0"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -122,22 +120,25 @@ jobs:
           path: test_applications/WinFormsApplication
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Test with pytest for Python ${{ matrix.python-version }} using PIP
-        if: matrix.python-version == '3.7'
-        uses: pavelzw/pytest-action@v2
-        with:
-          emoji: false
-          verbose: false
-          job-summary: true
+      - name: Parse PyTets execution command
+        id: pytest_command
+        run: |
+          if [ "${{ matrix.python-version }}" == "3.7" ]; then
+            echo "command=pytest" >> "$GITHUB_OUTPUT"
+          else
+            echo "command=poetry run pytest" >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Test with pytest for Python ${{ matrix.python-version }} using Poetry
-        if: matrix.python-version != '3.7'
+      - name: Test with pytest for Python ${{ matrix.python-version }}
+        if: matrix.python-version == '3.7'
         uses: pavelzw/pytest-action@v2
         with:
           emoji: true
           verbose: true
           job-summary: true
-          custom-pytest: poetry run pytest
+          custom-pytest: ${{ steps.pytest_command.outputs.command }}
+          custom-arguments: --max-memory-usage=2147483648
+          report-title: Test Report for Python ${{ matrix.python-version }}
 
   linting_checks:
     name: Validations with Ruff, Interrogate
