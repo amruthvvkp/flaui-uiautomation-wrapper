@@ -1,4 +1,9 @@
 version: 1.0.{build}
+branches:
+  except:
+  - '*documentation'
+  - '*gh-pages'
+  - '*master'
 image: Visual Studio 2022
 environment:
   matrix:
@@ -63,7 +68,10 @@ install:
     python -m pip install -r requirements-unit-tests.txt
 
 before_build:
-- cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI && powershell.exe -ExecutionPolicy Unrestricted -File "C:\projects\FlaUI\build.ps1"
+- cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI
+
+build_script:
+  - C:\projects\FlaUI\build.ps1
 
 test_script:
   - cmd: >-
