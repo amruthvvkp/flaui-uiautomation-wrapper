@@ -15,52 +15,29 @@ jobs:
     name: Build Test WPF Applications and publish to Artifacts
     runs-on: windows-latest
     steps:
-      - name: Get all artifacts for the repository
-        id: list_artifacts
+      - name: Check if WPF and WinForms Application artifacts are already available
         shell: bash
+        id: check_artifacts
         run: |
           output=$(curl -s -X GET -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/actions/artifacts?per_page=100" | jq -r '. | @base64')
-          echo "artifacts=$output" >> "$GITHUB_OUTPUT"
+          wpf_artifacts=$(echo "$output" | base64 --decode | jq '.artifacts[] | select(.name == "wpf-application" and .expired == false)')
+          winforms_artifacts=$(echo "$output" | base64 --decode | jq '.artifacts[] | select(.name == "winforms-application" and .expired == false)')
 
-      - name: Check if WPF Application artifact is already available
-        id: wpf_app_artifacts
-        shell: pwsh
-        run: |
-          $artifacts = ConvertFrom-Json ${{ steps.list_artifacts.outputs.artifacts }} | Select-Object -ExpandProperty artifacts | Where-Object { $_.name -eq "wpf-application" -and $_.expired -eq $false }
+          if [ -n "$wpf_artifacts" ]; then
+            echo "Artifacts found for WPF Application"
+            echo "ARTIFACTS_FOUND=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Artifacts not found or expired for WPF Application"
+            echo "ARTIFACTS_FOUND=false" >> "$GITHUB_OUTPUT"
+          fi
 
-          if ($artifacts) {
-              Write-Host "Artifacts found for WPF Application"
-              "ARTIFACTS_AVAILABLE=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          } else {
-              Write-Host "Artifacts not found or expired for WPF Application"
-              "ARTIFACTS_AVAILABLE=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          }
-
-      - name: Check if WinForms Application artifact is already available
-        id: winforms_app_artifacts
-        shell: pwsh
-        run: |
-          $artifacts = ConvertFrom-Json ${{ steps.list_artifacts.outputs.artifacts }} | Select-Object -ExpandProperty artifacts | Where-Object { $_.name -eq "winforms-application" -and $_.expired -eq $false }
-
-          if ($artifacts) {
-              Write-Host "Artifacts found for WinForms Application"
-              "ARTIFACTS_AVAILABLE=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          } else {
-              Write-Host "Artifacts not found or expired for WinForms Application"
-              "ARTIFACTS_AVAILABLE=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          }
-
-      - name: Check if artifacts are already available
-        id: check_artifacts
-        shell: pwsh
-        run: |
-          if (${{ steps.wpf_app_artifacts.outputs.ARTIFACTS_AVAILABLE }} -eq "true" -and ${{ steps.winforms_app_artifacts.outputs.ARTIFACTS_AVAILABLE }} -eq "true") {
-              Write-Host "Artifacts found for WPF and WinForms Application"
-              "ARTIFACTS_FOUND=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          } else {
-              Write-Host "Artifacts not found or expired for WPF or WinForms Application"
-              "ARTIFACTS_FOUND=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          }
+          if [ -n "$winforms_artifacts" ]; then
+            echo "Artifacts found for WinForms Application"
+            echo "ARTIFACTS_FOUND=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Artifacts not found or expired for WinForms Application"
+            echo "ARTIFACTS_FOUND=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - uses: actions/checkout@v4
         if: steps.check_artifacts.outputs.ARTIFACTS_FOUND == 'false'
@@ -283,7 +260,7 @@ jobs:
               issue_number: context.issue.number,
             })
             const botComment = comments.find(comment => {
-              return comment.user.type === 'Bot' && comment.body.includes('Terraform Format and Style')
+              return comment.user.type === 'Bot' && comment.body.includes('Deployed to Test PyPI')
             })
 
             // 2. Prepare format of the comment
