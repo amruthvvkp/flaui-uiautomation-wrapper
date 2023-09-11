@@ -97,13 +97,13 @@ jobs:
         run: |
           if [ "${{ matrix.python-version }}" == "3.7" ]; then
             pip install -r requirements.txt
-            pip install pytest-github-actions-annotate-failures pytest-cov pytest-md pytest-emoji pytest-qt
+            pip install pytest-github-actions-annotate-failures pytest-cov pytest-md pytest-emoji pytest-qt PyQt5
           else
             curl -sSL https://install.python-poetry.org | python3 -
             echo "$HOME/.local/bin" >> $GITHUB_PATH
             poetry config virtualenvs.in-project true
             poetry install --with unit_test
-            poetry run pip install pytest-github-actions-annotate-failures pytest-cov pytest-md pytest-emoji pytest-qt
+            poetry run pip install pytest-github-actions-annotate-failures pytest-cov pytest-md pytest-emoji pytest-qt PyQt5
           fi
 
       - name: Download WPF application
