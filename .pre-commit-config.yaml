@@ -11,10 +11,24 @@ repos:
         description: This hook runs poetry lock.
 
       - id: poetry-export
-        name: Poetry Export
-        description: This hook runs poetry export to export dependencies to requirements.txt file which helps to keep this repository tool agnostic.
+        name: Poetry Export Core Requirements
+        description: This hook runs poetry export to export core dependencies to requirements.txt file which helps to keep this repository tool agnostic.
         args:
-          ["--with", "dev", "-f", "requirements.txt", "-o", "requirements.txt"]
+          ["-f", "requirements.txt", "-o", "requirements.txt"]
+        verbose: true
+
+      - id: poetry-export
+        name: Poetry Export Dev Requirements
+        description: This hook runs poetry export to export dev dependencies to requirements-dev.txt file which helps to keep this repository tool agnostic.
+        args:
+          ["-f", "requirements.txt", "-o", "requirements-dev.txt", "--only", "dev"]
+        verbose: true
+
+      - id: poetry-export
+        name: Poetry Export Unit Test Requirements
+        description: This hook runs poetry export to export unit test dependencies to requirements-unit-test.txt file which helps to keep this repository tool agnostic.
+        args:
+          ["-f", "requirements.txt", "-o", "requirements-unit-test.txt", "--only", "unit_test"]
         verbose: true
 
   - repo: https://github.com/pre-commit/pre-commit-hooks

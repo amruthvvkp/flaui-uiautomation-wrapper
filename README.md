@@ -1,14 +1,5 @@
 # flaui-uiautomation-wrapper
 
-[![GitHub contributors](https://img.shields.io/github/contributors/amruthvvkp/flaui-uiautomation-wrapper)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/graphs/contributors)
-[![GitHub license](https://img.shields.io/github/license/amruthvvkp/flaui-uiautomation-wrapper)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/blob/master/LICENSE)
-![GitHub branch checks state](https://img.shields.io/github/checks-status/amruthvvkp/flaui-uiautomation-wrapper/master)
-![GitHub contributors](https://img.shields.io/github/contributors/amruthvvkp/flaui-uiautomation-wrapper)
-![GitHub commits since latest release (by SemVer including pre-releases)](https://img.shields.io/github/commits-since/amruthvvkp/flaui-uiautomation-wrapper/latest/master)
-![GitHub last commit](https://img.shields.io/github/last-commit/amruthvvkp/flaui-uiautomation-wrapper)
-![GitHub](https://img.shields.io/github/license/amruthvvkp/flaui-uiautomation-wrapper)
-![PyPI - Format](https://img.shields.io/pypi/format/flaui-uiautomation-wrapper)
-
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/flaui-uiautomation-wrapper)
 ![GitHub release (with filter)](https://img.shields.io/github/v/release/amruthvvkp/flaui-uiautomation-wrapper)
 ![PyPI - Version](https://img.shields.io/pypi/v/flaui-uiautomation-wrapper?link=https%3A%2F%2Fpypi.org%2Fproject%2Fflaui-uiautomation-wrapper%2F)
@@ -23,6 +14,14 @@
 ![GitHub milestone details](https://img.shields.io/github/milestones/progress-percent/amruthvvkp/flaui-uiautomation-wrapper/1)
 
 ![Interrogate](badges/interrogate_badge.svg)
+[![Build status](https://ci.appveyor.com/api/projects/status/dnd20nw5wjqiigse?svg=true)](https://ci.appveyor.com/project/amruthvvkp/flaui-uiautomation-wrapper)
+![GitHub branch checks state](https://img.shields.io/github/checks-status/amruthvvkp/flaui-uiautomation-wrapper/master)
+
+[![GitHub contributors](https://img.shields.io/github/contributors/amruthvvkp/flaui-uiautomation-wrapper)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/graphs/contributors)
+![GitHub commits since latest release (by SemVer including pre-releases)](https://img.shields.io/github/commits-since/amruthvvkp/flaui-uiautomation-wrapper/latest/master)
+![GitHub last commit](https://img.shields.io/github/last-commit/amruthvvkp/flaui-uiautomation-wrapper)
+![GitHub](https://img.shields.io/github/license/amruthvvkp/flaui-uiautomation-wrapper)
+![PyPI - Format](https://img.shields.io/pypi/format/flaui-uiautomation-wrapper)
 
 [FlaUI](https://github.com/FlaUI/FlaUI#:~:text=FlaUI%20is%20a%20.,of%20a%20wrapper%20around%20them.) is a .NET library that can be used to perform UI automated testing of Windows desktop applications like Win32, WinForms, WPF, etc.. It is a wrapper that works alongside Windows inbuilt UI Automation technology to perform UI automation as required.
 

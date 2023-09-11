@@ -1,0 +1,97 @@
+version: 1.0.{build}
+image: Visual Studio 2019
+environment:
+  matrix:
+    - job_name: Python 3.7 x86
+      PYTHON: "C:\\Python37"
+      PYTHON_VERSION: 3.7
+      PYTHON_ARCH: 32
+
+    - job_name: Python 3.8 x86
+      PYTHON: "C:\\Python38"
+      PYTHON_VERSION: 3.8
+      PYTHON_ARCH: 32
+
+    - job_name: Python 3.9 x86
+      PYTHON: "C:\\Python39"
+      PYTHON_VERSION: 3.9
+      PYTHON_ARCH: 32
+
+    - job_name: Python 3.10 x86
+      PYTHON: "C:\\Python310"
+      PYTHON_VERSION: 3.10
+      PYTHON_ARCH: 32
+
+    - job_name: Python 3.11 x86
+      PYTHON: "C:\\Python311"
+      PYTHON_VERSION: 3.11
+      PYTHON_ARCH: 32
+
+    - job_name: Python 3.7 x64
+      PYTHON: "C:\\Python37-x64"
+      PYTHON_VERSION: 3.7
+      PYTHON_ARCH: 64
+
+    - job_name: Python 3.8 x64
+      PYTHON: "C:\\Python38-x64"
+      PYTHON_VERSION: 3.8
+      PYTHON_ARCH: 64
+
+    - job_name: Python 3.9 x64
+      PYTHON: "C:\\Python39-x64"
+      PYTHON_VERSION: 3.9
+      PYTHON_ARCH: 64
+
+    - job_name: Python 3.10 x64
+      PYTHON: "C:\\Python310-x64"
+      PYTHON_VERSION: 3.10
+      PYTHON_ARCH: 64
+
+    - job_name: Python 3.11 x64
+      PYTHON: "C:\\Python311"
+      PYTHON_VERSION: 3.11
+      PYTHON_ARCH: 64
+
+init:
+  - ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%
+install:
+- cmd: >-
+    set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
+    python --version
+    python -m pip install --upgrade pip
+    python -m pip install -r requirements.txt
+    python -m pip install -r requirements-unit-tests.txt
+
+before_build:
+- cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI && powershell.exe -ExecutionPolicy Unrestricted -File "C:\projects\FlaUI\build.ps1"
+
+build:
+  verbosity: minimal
+
+test_script:
+  - cmd: >-
+      set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
+      python --version
+      python -m pytest --cov=flaui --cov-report=xml --cov-report=html --cov-report=term-missing --junitxml=test-results.xml
+
+artifacts:
+  - path: test-results.xml
+    name: test-results
+
+  - path: coverage.xml
+    name: coverage
+
+  - path: htmlcov
+    name: coverage-html
+
+  - path: C:\projects\flaui\src\TestApplications\WpfApplication\bin\*
+    name: wpf-application
+
+  - path: C:\projects\flaui\src\TestApplications\WinFormsApplication\bin\*
+    name: winforms-application
+
+on_finish:
+- ps: >-
+    $wc = New-Object 'System.Net.WebClient'
+
+    $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .test-results.xml))
