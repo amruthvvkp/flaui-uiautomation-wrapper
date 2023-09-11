@@ -68,10 +68,9 @@ install:
     python -m pip install -r requirements-unit-tests.txt
 
 before_build:
-- cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI
+- cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI powershell.exe -ExecutionPolicy Unrestricted -File "C:\projects\FlaUI\build.ps1"
 
-build_script:
-  - C:\projects\FlaUI\build.ps1
+build: off
 
 test_script:
   - cmd: >-
