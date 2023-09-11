@@ -97,13 +97,13 @@ jobs:
         run: |
           if [ "${{ matrix.python-version }}" == "3.7" ]; then
             pip install -r requirements.txt
-            pip install pytest-github-actions-annotate-failures pytest-cov
+            pip install pytest-github-actions-annotate-failures pytest-cov pytest-md pytest-emoji
           else
             curl -sSL https://install.python-poetry.org | python3 -
             echo "$HOME/.local/bin" >> $GITHUB_PATH
             poetry config virtualenvs.in-project true
             poetry install --with unit_test
-            poetry run pip install pytest-github-actions-annotate-failures pytest-cov
+            poetry run pip install pytest-github-actions-annotate-failures pytest-cov pytest-md pytest-emoji
           fi
 
       - name: Download WPF application
@@ -120,7 +120,7 @@ jobs:
           path: test_applications/WinFormsApplication
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Test with pytest for Python ${{ matrix.python-version }}
+      - name: Test with pytest for Python ${{ matrix.python-version }} using PIP
         if: matrix.python-version == '3.7'
         uses: pavelzw/pytest-action@v2
         with:
@@ -128,12 +128,12 @@ jobs:
           verbose: false
           job-summary: true
 
-      - name: Test with pytest for Python ${{ matrix.python-version }}
+      - name: Test with pytest for Python ${{ matrix.python-version }} using Poetry
         if: matrix.python-version != '3.7'
         uses: pavelzw/pytest-action@v2
         with:
-          emoji: false
-          verbose: false
+          emoji: true
+          verbose: true
           job-summary: true
           custom-pytest: poetry run pytest
 
