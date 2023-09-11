@@ -132,17 +132,15 @@ jobs:
       - name: Test with pytest for Python ${{ matrix.python-version }}
         uses: pavelzw/pytest-action@v2
         env:
-          DISPLAY: ":99"
+          DISPLAY: ":99.0"
           MAX_MEMORY_USAGE: "2147483648"
+          PYTEST_QT_API: "pyqt5"
+
         with:
           emoji: true
           verbose: true
           job-summary: true
           custom-pytest: ${{ steps.pytest_command.outputs.command }}
-          custom-arguments: |
-            --qt-api=pyqt5
-            --qt-pytest-qt-api=pyqt5
-            --qt-windowed
           report-title: Test Report for Python ${{ matrix.python-version }}
 
   linting_checks:
