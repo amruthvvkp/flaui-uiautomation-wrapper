@@ -102,7 +102,7 @@ jobs:
             curl -sSL https://install.python-poetry.org | python3 -
             echo "$HOME/.local/bin" >> $GITHUB_PATH
             poetry config virtualenvs.in-project true
-            poetry install --with unit_test
+            poetry install --with unit_test --system
             poetry run pip install pytest-github-actions-annotate-failures pytest-cov
           fi
 
@@ -121,13 +121,11 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Test with pytest
-        id: pytest
-        run: |
-          if [ "${{ matrix.python-version }}" == "3.7" ]; then
-            pytest . --verbose
-          else
-            poetry run pytest . --verbose
-          fi
+        uses: pavelzw/pytest-action@v2
+        with:
+          emoji: false
+          verbose: false
+          job-summary: true
 
       # - name: Pytest coverage comment
       #   uses: MishaKav/pytest-coverage-comment@main
