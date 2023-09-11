@@ -64,19 +64,17 @@ install:
     python --version
 
 before_build:
-- cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI && powershell.exe -ExecutionPolicy Unrestricted -File "C:\projects\FlaUI\build.ps1"
+- cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI
 
 build_script:
-  - mv "C:\projects\FlaUI\src\TestApplications\WpfApplication\bin\*" ".\test_applications\WPFApplication"
-  - mv "C:\projects\FlaUI\src\TestApplications\WinFormsApplication\bin\*" ".\test_applications\WinFormsApplication"
+  - ps: & "C:\\projects\\FlaUI\\build.ps1"
+
+after_build:
+  - ps: Copy-Item -Path "C:\projects\FlaUI\src\TestApplications\WpfApplication\bin\*" -Destination "C:\projects\flaui-uiautomation-wrapper\test_applications\WPFApplication" -Recurse -Force
+  - ps: Copy-Item -Path "C:\projects\FlaUI\src\TestApplications\WinFormsApplication\bin\*" -Destination "C:\projects\flaui-uiautomation-wrapper\test_applications\WinFormsApplication" -Recurse -Force
 
 before_test:
-  - cmd: >-
-      python -m pip install --upgrade pip
-
-      python -m pip install -r requirements.txt
-
-      python -m pip install -r requirements-unit-tests.txt
+  - cmd: python -m pip install --upgrade pip && python -m pip install -r requirements.txt && python -m pip install -r requirements-unit-tests.txt
 
 test_script:
   - cmd: >-
@@ -92,10 +90,10 @@ artifacts:
   - path: htmlcov
     name: coverage-html
 
-  - path: C:\projects\flaui\src\TestApplications\WpfApplication\bin\*
+  - path: C:\projects\FlaUI\src\TestApplications\WpfApplication\bin\*
     name: wpf-application
 
-  - path: C:\projects\flaui\src\TestApplications\WinFormsApplication\bin\*
+  - path: C:\projects\FlaUI\src\TestApplications\WinFormsApplication\bin\*
     name: winforms-application
 
 on_finish:
