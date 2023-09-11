@@ -60,15 +60,23 @@ init:
 install:
 - cmd: >-
     set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
+
     python --version
-    python -m pip install --upgrade pip
-    python -m pip install -r requirements.txt
-    python -m pip install -r requirements-unit-tests.txt
 
 before_build:
 - cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI powershell.exe -ExecutionPolicy Unrestricted -File "C:\projects\FlaUI\build.ps1"
 
-build: off
+build_script:
+  - mv "C:\projects\FlaUI\src\TestApplications\WpfApplication\bin\*" ".\test_applications\WPFApplication"
+  - mv "C:\projects\FlaUI\src\TestApplications\WinFormsApplication\bin\*" ".\test_applications\WinFormsApplication"
+
+before_test:
+  - cmd: >-
+      python -m pip install --upgrade pip
+
+      python -m pip install -r requirements.txt
+
+      python -m pip install -r requirements-unit-tests.txt
 
 test_script:
   - cmd: >-
