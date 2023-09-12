@@ -24,4 +24,11 @@
     "python.analysis.extraPaths": [
         "typings"
     ],
+    "[python]": {
+        "editor.defaultFormatter": null,
+        "editor.codeActionsOnSave": {
+            "source.fixAll": false
+        }
+    },
+    "ruff.importStrategy": "useBundled"
 }
