@@ -1,0 +1,87 @@
+repos:
+  - repo: https://github.com/python-poetry/poetry
+    rev: "1.5.1"
+    hooks:
+      - id: poetry-check
+        name: Poetry Check
+        description: This hook runs poetry check.
+
+      - id: poetry-lock
+        name: Poetry Lock
+        description: This hook runs poetry lock.
+
+      - id: poetry-export
+        name: Poetry Export Core Requirements
+        description: This hook runs poetry export to export core dependencies to requirements.txt file which helps to keep this repository tool agnostic.
+        args:
+          ["-f", "requirements.txt", "-o", "requirements.txt"]
+        verbose: true
+
+      - id: poetry-export
+        name: Poetry Export Dev Requirements
+        description: This hook runs poetry export to export dev dependencies to requirements-dev.txt file which helps to keep this repository tool agnostic.
+        args:
+          ["-f", "requirements.txt", "-o", "requirements-dev.txt", "--only", "dev"]
+        verbose: true
+
+      - id: poetry-export
+        name: Poetry Export Unit Test Requirements
+        description: This hook runs poetry export to export unit test dependencies to requirements-unit-test.txt file which helps to keep this repository tool agnostic.
+        args:
+          ["-f", "requirements.txt", "-o", "requirements-unit-test.txt", "--only", "unit_test"]
+        verbose: true
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+        name: Trailing Whitespace
+        description: This hook removes trailing whitespace.
+
+      - id: end-of-file-fixer
+        name: End of File Fixer
+        description: This hook makes sure files end in a newline and only a newline.
+        exclude: ^.*\.egg-info/
+
+      - id: check-merge-conflict
+        name: Check Merge Conflict
+        description: This hook checks for files that contain merge conflict strings.
+
+      - id: check-case-conflict
+        name: Check Case Conflict
+        description: This hook checks for files that differ only in case.
+
+      - id: check-toml
+        name: Check TOML
+        description: This hook checks that TOML files are valid.
+        exclude: tests/fixtures/invalid_lock/poetry\.lock
+
+      - id: check-ast
+        name: Check AST
+        description: This hook checks that Python files parse as valid Python.
+
+      - id: debug-statements
+        name: Debug Statements
+        description: This hook checks for debugger imports and py37+ breakpoint() calls.
+
+      - id: check-docstring-first
+        name: Check Docstring First
+        description: This hook checks that files have a docstring as the first statement.
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.0.283
+    hooks:
+      - id: ruff
+        name: Ruff Attempt Auto-Fixes
+        description: This hook runs ruff and attempts auto-fixes.
+        types_or: [python, pyi, jupyter]
+        args: [--fix, --exit-non-zero-on-fix]
+
+  - repo: https://github.com/econchick/interrogate
+    rev: 1.5.0
+    hooks:
+      - id: interrogate
+        name: Interrogate
+        description: This hook runs interrogate checks.
+        args: [-vv, --config, pyproject.toml, --color]
+        pass_filenames: false

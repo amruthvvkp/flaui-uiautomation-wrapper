@@ -1,0 +1,163 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [master]
+    types: [opened]
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  linting_checks:
+    name: Validations with Ruff, Interrogate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Run Ruff checks
+        uses: chartboost/ruff-action@v1
+        with:
+          src: "."
+          args: --format=github --target-version=py311
+
+      - name: Python Interrogate Check
+        uses: JackMcKew/python-interrogate-check@main
+        with:
+          path: flaui
+          badge-location: "badges/interrogate_badge.svg"
+
+      - name: Commit files
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add badges/interrogate_badge.svg
+          git diff --exit-code || git commit -m "Update interrogate_badge.svg" -a
+
+      - name: Push changes
+        if: success()
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.head_ref }}
+
+  publish:
+    name: Publish to Test PyPI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Setup Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          poetry config virtualenvs.in-project true
+
+      - name: Get latest version from Test PyPI
+        id: get_latest_version
+        run: |
+          current_version=$(curl -s https://test.pypi.org/pypi/flaui-uiautomation-wrapper/json | jq -r '.releases | to_entries | sort_by(.value[0].upload_time) | .[-1].key')
+          echo "current_version=$current_version" >> "$GITHUB_OUTPUT"
+
+      - name: Update package version
+        id: update_version
+        run: |
+          poetry version "${{ steps.get_latest_version.outputs.current_version }}"
+          while true; do
+            poetry version prerelease
+            updated_version=$(poetry version | cut -d' ' -f2)
+            url="https://test.pypi.org/simple/flaui-uiautomation-wrapper/flaui_uiautomation_wrapper-$updated_version-py3-none-any.whl"
+            status=$(curl -s -o /dev/null -w "%{http_code}" $url)
+            if [ $status -eq 200 ]; then
+              echo "Package found on Test PyPI for version $updated_version"
+            elif [ $status -eq 404 ]; then
+              echo "Package not found on Test PyPI for version $updated_version"
+              echo "updated_version=$updated_version" >> $GITHUB_OUTPUT
+              break
+            else
+              echo "Error checking Test PyPI status: $status"
+              exit 1
+            fi
+          done
+
+      - name: Build and publish distribution 📦 to Test PyPI
+        uses: JRubics/poetry-publish@v1.17
+        with:
+          pypi_token: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          allow_poetry_pre_release: "yes"
+          ignore_dev_requirements: "yes"
+          repository_url: https://test.pypi.org/legacy/
+          repository_name: flaui-uiautomation-wrapper
+
+      - name: Commit files
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add pyproject.toml
+          git commit -m "Bump version to $(poetry version | cut -d' ' -f2)"
+
+      - name: Push changes
+        if: success()
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.head_ref }}
+
+      - name: Comment on pull request
+        uses: actions/github-script@v6
+        env:
+          UPGRADED_POETRY_VERSION: ${{ steps.update_version.outputs.updated_version }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // 1. Retrieve existing bot comments for the PR
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            })
+            const botComment = comments.find(comment => {
+              return comment.user.type === 'Bot' && comment.body.includes('Deployed to Test PyPI')
+            })
+
+            // 2. Prepare format of the comment
+            const output = `#### Deployed to Test PyPI 🚀
+
+            <details>
+            The package version \`${process.env.UPGRADED_POETRY_VERSION}\` has been published to Test PyPI. Please test and verify the package before publishing to PyPI - https://test.pypi.org/project/flaui-uiautomation-wrapper/${process.env.UPGRADED_POETRY_VERSION}/
+            </details>
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+            // 3. If we have a comment, update it, otherwise create a new one
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              })
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              })
+            }
