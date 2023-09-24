@@ -1,0 +1,115 @@
+version: 1.0.{build}
+branches:
+  except:
+    - master
+image: Visual Studio 2022
+environment:
+  matrix:
+    - job_name: Python 3.7 x86
+      PYTHON: "C:\\Python37"
+      PYTHON_VERSION: 3.7
+      PYTHON_ARCH: 32
+
+    - job_name: Python 3.8 x86
+      PYTHON: "C:\\Python38"
+      PYTHON_VERSION: 3.8
+      PYTHON_ARCH: 32
+
+    - job_name: Python 3.9 x86
+      PYTHON: "C:\\Python39"
+      PYTHON_VERSION: 3.9
+      PYTHON_ARCH: 32
+
+    - job_name: Python 3.10 x86
+      PYTHON: "C:\\Python310"
+      PYTHON_VERSION: 3.10
+      PYTHON_ARCH: 32
+
+    - job_name: Python 3.11 x86
+      PYTHON: "C:\\Python311"
+      PYTHON_VERSION: 3.11
+      PYTHON_ARCH: 32
+
+    - job_name: Python 3.7 x64
+      PYTHON: "C:\\Python37-x64"
+      PYTHON_VERSION: 3.7
+      PYTHON_ARCH: 64
+
+    - job_name: Python 3.8 x64
+      PYTHON: "C:\\Python38-x64"
+      PYTHON_VERSION: 3.8
+      PYTHON_ARCH: 64
+
+    - job_name: Python 3.9 x64
+      PYTHON: "C:\\Python39-x64"
+      PYTHON_VERSION: 3.9
+      PYTHON_ARCH: 64
+
+    - job_name: Python 3.10 x64
+      PYTHON: "C:\\Python310-x64"
+      PYTHON_VERSION: 3.10
+      PYTHON_ARCH: 64
+
+    - job_name: Python 3.11 x64
+      PYTHON: "C:\\Python311"
+      PYTHON_VERSION: 3.11
+      PYTHON_ARCH: 64
+
+init:
+  - ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%
+install:
+- cmd: >-
+    set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
+
+    python --version
+
+before_build:
+- cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI
+
+build_script:
+  - ps: |
+      # Run PowerShell script
+      & "C:\\projects\\FlaUI\\build.ps1"
+
+after_build:
+  - ps: |
+      New-Item -ItemType Directory -Path "C:\projects\flaui-uiautomation-wrapper\test_applications\WPFApplication" -Force | Out-Null
+      Copy-Item -Path "C:\projects\FlaUI\src\TestApplications\WpfApplication\bin\*" -Destination "C:\projects\flaui-uiautomation-wrapper\test_applications\WPFApplication" -Recurse -Force
+      New-Item -ItemType Directory -Path "C:\projects\flaui-uiautomation-wrapper\test_applications\WinFormsApplication" -Force | Out-Null
+      Copy-Item -Path "C:\projects\FlaUI\src\TestApplications\WinFormsApplication\bin\*" -Destination "C:\projects\flaui-uiautomation-wrapper\test_applications\WinFormsApplication" -Recurse -Force
+
+before_test:
+  - cmd: cd "C:\projects\flaui-uiautomation-wrapper" && python -m pip install --upgrade pip && python -m pip install -r requirements.txt && python -m pip install -r requirements-unit-test.txt
+
+test_script:
+  - cmd: >-
+      cd "C:\projects\flaui-uiautomation-wrapper" && python -m pytest --cov=flaui --cov-report=xml --cov-report=html --cov-report=term-missing --junitxml=test-results.xml
+
+artifacts:
+  - path: test-results.xml
+    name: test-results
+
+  - path: coverage.xml
+    name: coverage
+
+  - path: htmlcov
+    name: coverage-html
+
+  - path: test_applications
+    name: test-applications
+
+on_finish:
+- ps: >-
+    $wc = New-Object 'System.Net.WebClient'
+
+    if (Test-Path .test-results.xml) {
+      $wc.UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .test-results.xml))
+    }
+
+    if (Test-Path .coverage.xml) {
+      $wc.UploadFile("https://ci.appveyor.com/api/testresults/coverage/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .coverage.xml))
+    }
+
+    if (Test-Path "C:/projects/FlaUI/artifacts/UnitTestResult.xml") {
+      $wc.UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", "C:/projects/FlaUI/artifacts/UnitTestResult.xml")
+    }
