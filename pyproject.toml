@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "flaui-uiautomation-wrapper"
-version = "0.0.7"
+version = "0.0.8a22"
 description = "Tool to perform UI Automation on Windows desktop applications using an underlying FlaUI wrapper."
 authors = ["Amruth VVKP <amruthvvkp@gmail.com>"]
 license = "LGPL-3.0-or-later"
@@ -45,7 +45,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.7,<3.11"
+python = ">=3.7,<3.12"
 loguru = "^0.6.0"
 pillow = "^9.3.0"
 arrow = "^1.2.3"
@@ -58,9 +58,9 @@ pydantic-extra-types = "^2.0.0"
 mypy = "^0.991"
 jupyter = "^1.0.0"
 isort = "^5.10.1"
-ruff = "^0.0.259"
-pre-commit = { version = "^3.3.3", python = ">=3.8,<3.11" }
+pre-commit = { version = "^3.3.3", python = ">=3.8" }
 interrogate = "^1.5.0"
+ruff = "^0.0.288"
 
 [tool.poetry.group.dev]
 optional = true

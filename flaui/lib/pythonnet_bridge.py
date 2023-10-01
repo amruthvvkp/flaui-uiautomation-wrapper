@@ -1,4 +1,5 @@
 """This module provides a bridge between Python and .NET using Python.NET."""
+
 import clr
 import config
 from loguru import logger
