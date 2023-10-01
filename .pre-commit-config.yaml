@@ -23,6 +23,7 @@ repos:
       - id: trailing-whitespace
         name: Trailing Whitespace
         description: This hook removes trailing whitespace.
+        exclude: ^(\.vscode|\.devcontainer|pytest\.xml)/.*$
 
       - id: end-of-file-fixer
         name: End of File Fixer
