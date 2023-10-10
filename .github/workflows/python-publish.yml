@@ -24,7 +24,7 @@ jobs:
     steps:
       - name: Get release tag
         id: get_tag
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
+        run: echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - uses: actions/checkout@v4
         with:

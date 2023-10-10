@@ -25,6 +25,12 @@ repos:
         verbose: true
 
       - id: poetry-export
+        name: Poetry Export Docs Requirements
+        description: This hook runs poetry export to export docs dependencies to requirements-docs.txt file which helps to keep this repository tool agnostic.
+        args:
+          ["-f", "requirements.txt", "-o", "requirements-docs.txt", "--only", "docs"]
+
+      - id: poetry-export
         name: Poetry Export Unit Test Requirements
         description: This hook runs poetry export to export unit test dependencies to requirements-unit-test.txt file which helps to keep this repository tool agnostic.
         args:

@@ -71,11 +71,13 @@ jobs:
           poetry config virtualenvs.in-project true
 
       - name: Update Package Alpha Version
+        id: update_version
         run: |
           echo "Checking package version before publishing to Test PyPI"
           poetry version
           echo "Updating package version to alpha based on the latest head release tag"
           poetry set-git-version
+          echo "UPGRADED_VERSION=$(poetry git-version)" >> $GITHUB_OUTPUT
 
       - name: Build and publish distribution 📦 to Test PyPI
         uses: JRubics/poetry-publish@v1.17
@@ -103,7 +105,7 @@ jobs:
       - name: Comment on pull request
         uses: actions/github-script@v6
         env:
-          UPGRADED_POETRY_VERSION: ${{ steps.update_version.outputs.updated_version }}
+          UPGRADED_PACKAGE_VERSION: ${{ steps.update_version.outputs.UPGRADED_VERSION }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -121,7 +123,7 @@ jobs:
             const output = `#### Deployed to Test PyPI 🚀
 
             <details>
-            The package version \`${process.env.UPGRADED_POETRY_VERSION}\` has been published to Test PyPI. Please test and verify the package before publishing to PyPI - https://test.pypi.org/project/flaui-uiautomation-wrapper/${process.env.UPGRADED_POETRY_VERSION}/
+            The package version \`${process.env.UPGRADED_PACKAGE_VERSION}\` has been published to Test PyPI. Please test and verify the package before publishing to PyPI - https://test.pypi.org/project/flaui-uiautomation-wrapper/${process.env.UPGRADED_PACKAGE_VERSION}/
             </details>
 
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Workflow: \`${{ github.workflow }}\`*`;
