@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "flaui-uiautomation-wrapper"
-version = "0.0.8a22"
+version = "0.0.8a24"
 description = "Tool to perform UI Automation on Windows desktop applications using an underlying FlaUI wrapper."
 authors = ["Amruth VVKP <amruthvvkp@gmail.com>"]
 license = "LGPL-3.0-or-later"
