@@ -60,8 +60,15 @@ init:
 install:
 - cmd: >-
     set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
-
     python --version
+    cd "C:\projects\flaui-uiautomation-wrapper"
+    python -m pip install --upgrade pip
+    python -m pip install -r requirements.txt
+    python -m pip install -r requirements-unit-test.txt
+    {% if PYTHON_VERSION == "3.7" %}
+    python -m pip install pytest-cov
+    {% endif %}
+
 
 before_build:
 - cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI
@@ -78,12 +85,9 @@ after_build:
       New-Item -ItemType Directory -Path "C:\projects\flaui-uiautomation-wrapper\test_applications\WinFormsApplication" -Force | Out-Null
       Copy-Item -Path "C:\projects\FlaUI\src\TestApplications\WinFormsApplication\bin\*" -Destination "C:\projects\flaui-uiautomation-wrapper\test_applications\WinFormsApplication" -Recurse -Force
 
-before_test:
-  - cmd: cd "C:\projects\flaui-uiautomation-wrapper" && python -m pip install --upgrade pip && python -m pip install -r requirements.txt && python -m pip install -r requirements-unit-test.txt
-
 test_script:
   - cmd: >-
-      cd "C:\projects\flaui-uiautomation-wrapper" && python -m coverage run -m pytest . -v && coverage html -d htmlcov && coverage xml -o coverage.xml
+      cd "C:\projects\flaui-uiautomation-wrapper" && {% if PYTHON_VERSION == "3.7" %}python -m pytest --cov=flaui --cov-report=xml --cov-report=html --cov-report=term-missing --junitxml=test-results.xml{% else %}python -m coverage run -m pytest . -v && coverage html -d htmlcov && coverage xml -o coverage.xml{% endif %}
 
 artifacts:
   - path: test-results.xml
