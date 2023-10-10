@@ -1,8 +1,12 @@
 [tool.poetry]
 name = "flaui-uiautomation-wrapper"
-version = "0.0.8a22"
+version = "0.1.1"
 description = "Tool to perform UI Automation on Windows desktop applications using an underlying FlaUI wrapper."
-authors = ["Amruth VVKP <amruthvvkp@gmail.com>"]
+authors = [
+  "Amruth VVKP <amruthvvkp@gmail.com>",
+  "Varshith VVS <svvarsham@gmail.com>",
+  "Tejaswani Sathish Kumar <tejaswani12.92@gmail.com",
+]
 license = "LGPL-3.0-or-later"
 readme = "README.md"
 keywords = [
@@ -67,7 +71,7 @@ optional = true
 
 [tool.poetry.group.unit_test.dependencies]
 pytest = "^7.2.0"
-pytest-cov = "^4.0.0"
+coverage = { version = "^7.3.1", python = ">=3.8" }
 
 [tool.poetry.group.unit_test]
 optional = true
@@ -86,7 +90,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "-ra -q"
+addopts = "-ra -q -p no:warnings --junitxml=test-results.xml"
 testpaths = ["tests/unit_tests/"]
 
 [tool.interrogate]
@@ -123,6 +127,7 @@ include_trailing_comma = true
 force_grid_wrap = 0
 ensure_newline_before_comments = true
 use_parentheses = true
+py_version = 310
 
 [tool.black]
 # https://github.com/psf/black
@@ -182,7 +187,7 @@ ignore = [
 # Group violations by containing file.
 format = "grouped"
 respect-gitignore = true
-src = ["aws_client"]
+src = ["flaui"]
 
 # Same as Black.
 line-length = 120
@@ -192,6 +197,7 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
 # Assume Python 3.10.
 target-version = "py310"
+fix = true
 
 [tool.ruff.mccabe]
 # Unlike Flake8, default to a complexity level of 10.
@@ -205,6 +211,33 @@ order-by-type = true
 combine-as-imports = true
 force-sort-within-sections = true
 lines-after-imports = 1
-force-single-line = true
+force-single-line = false
 split-on-trailing-comma = false
 known-third-party = ["pydantic"]
+
+[tool.coverage.run]
+disable_warnings = ["no-data-collected"]
+branch = true
+source = ["flaui"]
+command_line = "-m pytest . -v"
+relative_files = true
+
+[tool.coverage.html]
+directory = "htmlcov"
+skip_empty = true
+title = "FlaUI Test Coverage Report"
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+[tool.coverage.lcov]
+output = "coverage.lcov"
+
+[tool.coverage.report]
+exclude_also = [
+  "raise RuntimeError",
+  "if waiter_config is None:",
+  "except AssertionError",
+  "except ClientError",
+  "except WaiterError",
+]
