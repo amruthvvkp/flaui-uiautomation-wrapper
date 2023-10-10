@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "flaui-uiautomation-wrapper"
-version = "0.0.8a23"
+version = "0.1.0a5+bccad92"
 description = "Tool to perform UI Automation on Windows desktop applications using an underlying FlaUI wrapper."
 authors = [
   "Amruth VVKP <amruthvvkp@gmail.com>",
@@ -47,6 +47,11 @@ classifiers = [
   "Topic :: Software Development :: Testing",
   "Intended Audience :: Developers",
 ]
+
+[tool.poetry-git-version-plugin]
+make_alpha_version = true
+alpha_version_format = '{version}a{distance}+{commit_hash}'
+version_format = '{version}'
 
 [tool.poetry.dependencies]
 python = ">=3.7,<3.12"

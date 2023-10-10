@@ -67,34 +67,15 @@ jobs:
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
           echo "$HOME/.local/bin" >> $GITHUB_PATH
+          poetry self add poetry-git-version-plugin
           poetry config virtualenvs.in-project true
 
-      - name: Get latest version from Test PyPI
-        id: get_latest_version
+      - name: Update Package Alpha Version
         run: |
-          current_version=$(curl -s https://test.pypi.org/pypi/flaui-uiautomation-wrapper/json | jq -r '.releases | to_entries | sort_by(.value[0].upload_time) | .[-1].key')
-          echo "current_version=$current_version" >> "$GITHUB_OUTPUT"
-
-      - name: Update package version
-        id: update_version
-        run: |
-          poetry version "${{ steps.get_latest_version.outputs.current_version }}"
-          while true; do
-            poetry version prerelease
-            updated_version=$(poetry version | cut -d' ' -f2)
-            url="https://test.pypi.org/simple/flaui-uiautomation-wrapper/flaui_uiautomation_wrapper-$updated_version-py3-none-any.whl"
-            status=$(curl -s -o /dev/null -w "%{http_code}" $url)
-            if [ $status -eq 200 ]; then
-              echo "Package found on Test PyPI for version $updated_version"
-            elif [ $status -eq 404 ]; then
-              echo "Package not found on Test PyPI for version $updated_version"
-              echo "updated_version=$updated_version" >> $GITHUB_OUTPUT
-              break
-            else
-              echo "Error checking Test PyPI status: $status"
-              exit 1
-            fi
-          done
+          echo "Checking package version before publishing to Test PyPI"
+          poetry version
+          echo "Updating package version to alpha based on the latest head release tag"
+          poetry set-git-version
 
       - name: Build and publish distribution 📦 to Test PyPI
         uses: JRubics/poetry-publish@v1.17
