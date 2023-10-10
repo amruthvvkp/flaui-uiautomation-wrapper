@@ -83,7 +83,7 @@ before_test:
 
 test_script:
   - cmd: >-
-      cd "C:\projects\flaui-uiautomation-wrapper" && python -m coverage run -m pytest . -v && coverage combine && coverage html -d htmlcov && coverage xml -o coverage.xml
+      cd "C:\projects\flaui-uiautomation-wrapper" && python -m coverage run -m pytest . -v && coverage html -d htmlcov && coverage xml -o coverage.xml
 
 artifacts:
   - path: test-results.xml
