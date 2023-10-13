@@ -1,8 +1,9 @@
 """This module provides a bridge between Python and .NET using Python.NET."""
 
 import clr
-import config
 from loguru import logger
+
+import flaui.lib.config as config
 
 def setup_pythonnet_bridge() -> None:
     """
@@ -18,7 +19,7 @@ def setup_pythonnet_bridge() -> None:
         for _ in BIN_HOME.glob("*.dll"):
             clr.AddReference(_.as_posix())  # pyright: ignore
             clr.AddReference(_.stem)  # pyright: ignore
-            logger.info(f"Added {_.name} DLL from {_} to Python.NET bridge")
+            logger.info(f"Added {_.name} DLL to Python.NET bridge")
     except Exception as err:
         logger.exception(f"{err}")
         raise err

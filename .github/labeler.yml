@@ -1,0 +1,67 @@
+# This file contains the label definitions for the GitHub repository.
+
+# Label based on changed module
+feature:
+  - flaui/**
+
+# Label based on changed Prefect flows
+flaui-wrappers:
+  - flaui/wrappers/**
+
+# Label based on changed Prefect tasks
+flaui-core:
+  - flaui/core/**
+
+# Label based on changed Prefect blocks
+flaui-lib:
+  - any:
+      [
+        "flaui/lib/**",
+        "flaui/modules/**",
+      ]
+
+# Label based on changed core library files
+flaui-c-sharp-binaries:
+  - flaui/bin/**
+
+# Label based on changed dependencies
+dependency-update:
+  - any:
+      [
+        "pyproject.toml",
+        "requirements.txt",
+        "requirements-dev.txt",
+        "requirements-docs.txt",
+        "requirements-unit-tests.txt",
+      ]
+
+# Label based on changed configuration files
+configuration:
+  - .*
+
+# Label based on changed documentation files
+documentation:
+  - any:
+      [
+        "docs/**",
+        "README.md",
+      ]
+
+# Label based on changed test files
+unit-tests:
+  - tests/unit_tests/**
+
+example-tests:
+  - tests/example_tests/**
+
+# Label based on changed CI/CD files
+ci-cd:
+  - any:
+      [
+        ".appveyor.yml",
+        ".github/workflows/**",
+      ]
+
+# Default label for release type on PR
+minor:
+  - "*"
