@@ -24,7 +24,7 @@ jobs:
     steps:
       - name: Get release tag
         id: get_tag
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
+        run: echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - uses: actions/checkout@v4
         with:
@@ -39,10 +39,13 @@ jobs:
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
           echo "$HOME/.local/bin" >> $GITHUB_PATH
+          poetry self add poetry-git-version-plugin
           poetry config virtualenvs.in-project true
 
-      - name: Update version
-        run: poetry version $(echo ${{ steps.get_tag.outputs.tag }} | cut -d "v" -f 2)
+      - name: Update Poetry version in pyproject.toml
+        run: |
+          echo "Updating package version to alpha based on the latest head release tag"
+          poetry set-git-version
 
       - name: Build and Publish distribution 📦 to PyPI
         if: startsWith(github.ref, 'refs/tags')
