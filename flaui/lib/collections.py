@@ -2,7 +2,6 @@
 from typing import Any
 from typing import Dict
 from typing import List
-
 class TypeCast:
     """A class that provides methods to convert C# objects to Python objects"""
 
