@@ -1,7 +1,6 @@
 """This module contains unit tests for the enums module."""
 from flaui.lib.enums import UIAutomationTypes
 
-
 class TestUIAutomationTypes:
     """
     This class contains unit tests for the UIAutomationTypes enum.

@@ -45,45 +45,44 @@ The tests cover the following methods:
 
 import os
 from pathlib import Path
-from typing import Any
-from typing import Generator
+from typing import Any, Generator
 
 from config import test_settings
-from flaui.core.automation_elements import AutomationElement
-from flaui.core.automation_elements import Calendar
-from flaui.core.automation_elements import CheckBox
-from flaui.core.automation_elements import ComboBox
-from flaui.core.automation_elements import DataGridView
-from flaui.core.automation_elements import DateTimePicker
-from flaui.core.automation_elements import Grid
-from flaui.core.automation_elements import GridCell
-from flaui.core.automation_elements import GridHeaderItem
-from flaui.core.automation_elements import GridRow
-from flaui.core.automation_elements import Label
-from flaui.core.automation_elements import ListBox
-from flaui.core.automation_elements import ListBoxItem
-from flaui.core.automation_elements import Menu
-from flaui.core.automation_elements import MenuItem
-from flaui.core.automation_elements import ProgressBar
-from flaui.core.automation_elements import RadioButton
-from flaui.core.automation_elements import Slider
-from flaui.core.automation_elements import Spinner
-from flaui.core.automation_elements import Tab
-from flaui.core.automation_elements import TabItem
-from flaui.core.automation_elements import TextBox
-from flaui.core.automation_elements import Thumb
-from flaui.core.automation_elements import TitleBar
-from flaui.core.automation_elements import ToggleButton
-from flaui.core.automation_elements import Tree
-from flaui.core.automation_elements import TreeItem
-from flaui.core.automation_elements import Window
+from flaui.core.automation_elements import (
+    AutomationElement,
+    Calendar,
+    CheckBox,
+    ComboBox,
+    DataGridView,
+    DateTimePicker,
+    Grid,
+    GridCell,
+    GridHeaderItem,
+    GridRow,
+    Label,
+    ListBox,
+    ListBoxItem,
+    Menu,
+    MenuItem,
+    ProgressBar,
+    RadioButton,
+    Slider,
+    Spinner,
+    Tab,
+    TabItem,
+    TextBox,
+    Thumb,
+    TitleBar,
+    ToggleButton,
+    Tree,
+    TreeItem,
+    Window,
+)
 from flaui.core.automation_type import AutomationType
 from flaui.core.condition_factory import ConditionFactory
-from FlaUI.Core.Definitions import TreeScope  # pyright: ignore
-from FlaUI.Core.Definitions import TreeTraversalOptions  # pyright: ignore
 from flaui.core.definitions import ControlType
-from flaui.lib.enums import KnownClassNames
-from flaui.lib.enums import UIAutomationTypes
+from FlaUI.Core.Definitions import TreeScope, TreeTraversalOptions  # pyright: ignore
+from flaui.lib.enums import KnownClassNames, UIAutomationTypes
 from flaui.modules.automation import Automation
 from pydantic import ValidationError
 import pytest

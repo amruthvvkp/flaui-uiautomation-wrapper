@@ -5,10 +5,7 @@ It contains methods to launch, attach, kill, dispose, and close an application. 
 
 from __future__ import annotations
 
-from typing import Any
-from typing import List
-from typing import Optional
-from typing import Union
+from typing import Any, List, Optional, Union
 
 from flaui.core.automation_elements import Window
 from flaui.lib.collections import TypeCast

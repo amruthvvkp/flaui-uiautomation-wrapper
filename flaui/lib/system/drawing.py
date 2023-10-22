@@ -2,13 +2,11 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any
-from typing import Optional
+from typing import Any, Optional
 
 from pydantic import Field
 from pydantic_settings import BaseSettings
-from System.Drawing import Color as CSColor  # pyright: ignore
-from System.Drawing import KnownColor as CSKnownColor  # pyright: ignore
+from System.Drawing import Color as CSColor, KnownColor as CSKnownColor  # pyright: ignore
 
 class KnownColor(Enum):
     """Specifies the known system colors"""

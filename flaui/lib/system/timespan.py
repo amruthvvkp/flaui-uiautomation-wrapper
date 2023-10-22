@@ -1,8 +1,7 @@
 """This module provides a wrapper for the TimeSpan class from the object <class 'System.TimeSpan'> from the module - System."""
 # Still a work in progress
 
-from pydantic import BaseModel
-from pydantic import ConfigDict
+from pydantic import BaseModel, ConfigDict
 from System import TimeSpan as CSTimeSpan  # pyright: ignore
 
 class TimeSpan(BaseModel):

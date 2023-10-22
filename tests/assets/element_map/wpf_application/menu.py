@@ -1,9 +1,7 @@
 """This map is used to store the Menu element locators for the WPF application."""
 
-from pydantic_settings import BaseSettings
-
 from flaui.core.automation_elements import Menu, MenuItem, Window
-
+from pydantic_settings import BaseSettings
 
 class MenuElements(BaseSettings):
     """This class is used to store the Menu element locators for the WPF application."""

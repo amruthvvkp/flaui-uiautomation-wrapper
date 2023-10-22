@@ -15,12 +15,13 @@ It defines several enums for different types of controls in Microsoft UI Automat
 from enum import Enum
 
 # Wrapper class for the C# namespace FlaUI.Core.Definitions
-from FlaUI.Core.Definitions import ControlType as CSControlType  # pyright: ignore
-from FlaUI.Core.Definitions import ExpandCollapseState as CSExpandCollapseState  # pyright: ignore
-from FlaUI.Core.Definitions import PropertyConditionFlags as CSPropertyConditionFlags  # pyright: ignore
-from FlaUI.Core.Definitions import RowOrColumnMajor as CSRowOrColumnMajor  # pyright: ignore
-from FlaUI.Core.Definitions import ToggleState as CSToggleState  # pyright: ignore
-
+from FlaUI.Core.Definitions import (  # pyright: ignore
+    ControlType as CSControlType,
+    ExpandCollapseState as CSExpandCollapseState,
+    PropertyConditionFlags as CSPropertyConditionFlags,
+    RowOrColumnMajor as CSRowOrColumnMajor,
+    ToggleState as CSToggleState,
+)
 
 class PropertyConditionFlags(Enum):
     """Optional flags that are used when checking the property."""

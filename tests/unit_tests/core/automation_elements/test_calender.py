@@ -5,15 +5,14 @@ from datetime import datetime
 from typing import Any, Generator
 
 import arrow
-import pytest
-from System import DateTime as SystemDateTime  # pyright: ignore
-
 from config import test_settings
 from flaui.core.automation_elements import Window
 from flaui.lib.enums import UIAutomationTypes
 from flaui.modules.automation import Automation
-from tests.assets.element_map.wpf_application.base import WPFApplicationElements
+import pytest
+from System import DateTime as SystemDateTime  # pyright: ignore
 
+from tests.assets.element_map.wpf_application.base import WPFApplicationElements
 
 @pytest.fixture(scope="class")
 def wpf_application(ui_automation_type: UIAutomationTypes) -> Generator[Automation, None, None]:

@@ -1,7 +1,4 @@
-from flaui.core.automation_elements import AutomationElement
-from flaui.core.automation_elements import Button
-from flaui.core.automation_elements import TitleBar
-from flaui.core.automation_elements import Window
+from flaui.core.automation_elements import AutomationElement, Button, TitleBar, Window
 from pydantic_settings import BaseSettings
 
 class TitleBarElements(BaseSettings):

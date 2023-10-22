@@ -1,7 +1,6 @@
 """This module contains unit tests to the collections module."""
 from flaui.lib.collections import TypeCast
 
-
 class TestTypeCast:
     """Tests the TypeCast class."""
     def test_py_list(self):
@@ -28,8 +27,7 @@ class TestTypeCast:
         """
         Test the conversion of a C# Dictionary object to a Python dictionary.
         """
-        from System.Collections.Generic import Dictionary  # pyright: ignore
-        from System.Collections.Generic import IDictionary  # pyright: ignore
+        from System.Collections.Generic import Dictionary, IDictionary  # pyright: ignore
 
         test_object = IDictionary[str, str](Dictionary[str, str]())
         test_dict = {"0": "A", "1": "B", "2": "C"}

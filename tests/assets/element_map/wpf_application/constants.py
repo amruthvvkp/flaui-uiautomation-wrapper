@@ -2,7 +2,6 @@
 
 from enum import IntEnum
 
-
 class ApplicationTabIndex(IntEnum):
     """This class is used to store the tab index for the WPF application."""
     SIMPLE_CONTROLS = 0

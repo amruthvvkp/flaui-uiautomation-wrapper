@@ -4,9 +4,7 @@ The Application class is responsible for launching, attaching, and interacting w
 It also provides methods for getting information about the application, such as its process ID and main window handle.
 """
 from time import sleep
-from typing import Any
-from typing import List
-from typing import Optional
+from typing import Any, List, Optional
 
 from flaui.core.application import Application
 from flaui.core.automation_elements import Window

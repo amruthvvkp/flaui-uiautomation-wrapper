@@ -206,7 +206,7 @@ order-by-type = true
 combine-as-imports = true
 force-sort-within-sections = true
 lines-after-imports = 1
-force-single-line = true
+force-single-line = false
 split-on-trailing-comma = false
 known-third-party = ["pydantic"]
 

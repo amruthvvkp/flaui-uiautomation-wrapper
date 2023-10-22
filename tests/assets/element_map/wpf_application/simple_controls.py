@@ -15,9 +15,9 @@ from flaui.core.automation_elements import (
     TextBox,
 )
 from flaui.core.definitions import ControlType
+
 from tests.assets.element_map.wpf_application.common import AbtstractControlCollection
 from tests.assets.element_map.wpf_application.constants import ApplicationTabIndex
-
 
 class SimpleControlsElements(AbtstractControlCollection):
     """This class is used to store the Simple Controls element locators for the WPF application."""

@@ -2,9 +2,9 @@
 
 from flaui.core.automation_elements import Button, Calendar, DateTimePicker, ListBox, TabItem, TextBox
 from flaui.core.definitions import ControlType
+
 from tests.assets.element_map.wpf_application.common import AbtstractControlCollection
 from tests.assets.element_map.wpf_application.constants import ApplicationTabIndex
-
 
 class MoreControlsElements(AbtstractControlCollection):
     """This class is used to store the More Controls element locators for the WPF application."""

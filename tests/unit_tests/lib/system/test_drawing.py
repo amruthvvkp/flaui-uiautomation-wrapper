@@ -6,11 +6,8 @@ This module contains unit tests for the drawing.py module. It tests the followin
 """
 
 
-from System.Drawing import Color as CSColor  # pyright: ignore
-from System.Drawing import KnownColor as CSKnownColor  # pyright: ignore
-
 from flaui.lib.system.drawing import Color, ColorCollection, KnownColor
-
+from System.Drawing import Color as CSColor, KnownColor as CSKnownColor  # pyright: ignore
 
 def test_known_color():
     """Unit tests for the class KnownColor"""
