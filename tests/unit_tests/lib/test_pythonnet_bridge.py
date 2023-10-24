@@ -11,7 +11,7 @@ def test_setup_pythonnet_bridge() -> None:
     If any exceptions are raised during this process, they are logged and the test fails with an appropriate error message.
     """
     try:
-        import config
+        import flaui.lib.config as config
         from flaui.lib.pythonnet_bridge import setup_pythonnet_bridge
 
         assert config.settings.BIN_HOME.exists()

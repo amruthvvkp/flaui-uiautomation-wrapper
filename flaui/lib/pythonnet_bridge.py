@@ -1,8 +1,9 @@
 """This module provides a bridge between Python and .NET using Python.NET."""
 
 import clr
-import config
 from loguru import logger
+
+import flaui.lib.config as config
 
 def setup_pythonnet_bridge() -> None:
     """
