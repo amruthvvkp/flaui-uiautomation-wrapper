@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Any, Generator
 
 import arrow
-from config import test_settings
+from tests.config import test_settings
 from flaui.core.automation_elements import Window
 from flaui.lib.enums import UIAutomationTypes
 from flaui.modules.automation import Automation

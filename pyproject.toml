@@ -35,7 +35,7 @@ classifiers = [
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
+"Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3 :: Only",
   "Topic :: Software Development :: Testing",
@@ -220,3 +220,31 @@ lines-after-imports = 1
 force-single-line = false
 split-on-trailing-comma = false
 known-third-party = ["pydantic"]
+
+[tool.coverage.run]
+disable_warnings = ["no-data-collected"]
+branch = true
+source = ["flaui"]
+command_line = "-m pytest . -v"
+relative_files = true
+
+[tool.coverage.html]
+directory = "htmlcov"
+skip_empty = true
+title = "FlaUI Test Coverage Report"
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+[tool.coverage.lcov]
+output = "coverage.lcov"
+
+[tool.coverage.report]
+exclude_also = [
+  "raise RuntimeError",
+  "if waiter_config is None:",
+  "except AssertionError",
+  "except ClientError",
+  "except WaiterError",
+]
+omit = []

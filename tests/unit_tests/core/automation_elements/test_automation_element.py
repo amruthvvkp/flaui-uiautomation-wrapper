@@ -47,7 +47,7 @@ import os
 from pathlib import Path
 from typing import Any, Generator
 
-from config import test_settings
+from tests.config import test_settings
 from flaui.core.automation_elements import (
     AutomationElement,
     Calendar,

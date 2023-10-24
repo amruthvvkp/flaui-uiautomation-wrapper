@@ -151,7 +151,7 @@ class Application:
         """Waits until the main handle is set.
 
         :param time_out: An optional timeout. If null is passed, the timeout is infinite., defaults to None
-        :return: True a main window handle was found, false otherwise.
+        :return: True if a main window handle is found, else False.
         """
         return self._application.WaitWhileMainHandleIsMissing(time_out)
 
@@ -159,6 +159,6 @@ class Application:
         """Waits as long as the application is busy.
 
         :param time_out: An optional timeout. If null is passed, the timeout is infinite., defaults to None
-        :return: True if the application is idle, false otherwise.
+        :return: True if the application is idle, else False.
         """
         return self._application.WaitWhileBusy(time_out)
