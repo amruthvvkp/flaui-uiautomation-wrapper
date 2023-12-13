@@ -14,6 +14,7 @@ from flaui.lib.collections import TypeCast
 from FlaUI.Core import Application as CSApplication  # pyright: ignore
 # isort: on
 
+
 class Application:
     """
     Wrapper for an application which should be automated
@@ -78,6 +79,14 @@ class Application:
         :return: Timeout value
         """
         return self._application.CloseTimeout
+
+    @close_timeout.setter
+    def close_timeout(self, value: int) -> None:
+        """The timeout to wait to close an application gracefully.
+
+        :param value: Timeout value
+        """
+        self._application.CloseTimeout = value
 
     def get_all_top_level_windows(self, automation: Any) -> List[Window]:
         """Gets all top level windows from the application.

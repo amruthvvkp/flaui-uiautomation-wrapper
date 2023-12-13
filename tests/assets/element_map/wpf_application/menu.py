@@ -3,6 +3,7 @@
 from flaui.core.automation_elements import Menu, MenuItem, Window
 from pydantic_settings import BaseSettings
 
+
 class MenuElements(BaseSettings):
     """This class is used to store the Menu element locators for the WPF application."""
 
@@ -21,7 +22,7 @@ class MenuElements(BaseSettings):
 
         :return: The Menu element.
         """
-        return self.main_window.find_first_child(condition=self._condition_factory().by_class_name("Menu")).as_menu()
+        return self.main_window.find_first_child(condition=self._condition_factory.by_class_name("Menu")).as_menu()
 
     @property
     def file_menu(self) -> MenuItem:
@@ -29,7 +30,9 @@ class MenuElements(BaseSettings):
 
         :return: The File Menu element.
         """
-        all_menu_items = self.parent_element.find_all_children(condition=self._condition_factory().by_class_name("MenuItem"))
+        all_menu_items = self.parent_element.find_all_children(
+            condition=self._condition_factory.by_class_name("MenuItem")
+        )
         file_menu_item = [menu_item for menu_item in all_menu_items if menu_item.name == "File"][0]
         return file_menu_item.as_menu_item()
 
@@ -39,6 +42,8 @@ class MenuElements(BaseSettings):
 
         :return: The Edit Menu element.
         """
-        all_menu_items = self.parent_element.find_all_children(condition=self._condition_factory().by_class_name("MenuItem"))
+        all_menu_items = self.parent_element.find_all_children(
+            condition=self._condition_factory.by_class_name("MenuItem")
+        )
         edit_menu_item = [menu_item for menu_item in all_menu_items if menu_item.name == "Edit"][0]
         return edit_menu_item.as_menu_item()

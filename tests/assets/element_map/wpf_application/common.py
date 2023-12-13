@@ -10,6 +10,7 @@ class AbtstractControlCollection(BaseSettings, ABC):
 
     main_window: Window
 
+    @property
     def _condition_factory(self):
         """Returns the condition factory for the Simple Controls.
 

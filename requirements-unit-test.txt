@@ -62,9 +62,9 @@ coverage[toml]==7.2.7 ; python_version >= "3.7" and python_version < "3.13" \
     --hash=sha256:f6951407391b639504e3b3be51b7ba5f3528adbf1a8ac3302b687ecababf929e \
     --hash=sha256:f75f7168ab25dd93110c8a8117a22450c19976afbc44234cbf71481094c1b850 \
     --hash=sha256:fdec9e8cbf13a5bf63290fc6013d216a4c7232efb51548594ca3631a7f13c3a3
-exceptiongroup==1.1.3 ; python_version >= "3.7" and python_version < "3.11" \
-    --hash=sha256:097acd85d473d75af5bb98e41b61ff7fe35efe6675e4f9370ec6ec5126d160e9 \
-    --hash=sha256:343280667a4585d195ca1cf9cef84a4e178c4b6cf2274caef9859782b567d5e3
+exceptiongroup==1.2.0 ; python_version >= "3.7" and python_version < "3.11" \
+    --hash=sha256:4bfd3996ac73b41e9b9628b04e079f193850720ea5945fc96a08633c66912f14 \
+    --hash=sha256:91f5c769735f051a4290d52edd0858999b57e5876e9f85937691bd4c9fa3ed68
 importlib-metadata==6.7.0 ; python_version >= "3.7" and python_version < "3.8" \
     --hash=sha256:1aaf550d4f73e5d6783e7acb77aec43d49da8017410afae93822cc9cca98c4d4 \
     --hash=sha256:cb52082e659e97afc5dac71e79de97d8681de3aa07ff18578330904a9d18e5b5
@@ -80,10 +80,10 @@ pluggy==1.2.0 ; python_version >= "3.7" and python_version < "3.13" \
 pytest-cov==4.1.0 ; python_version >= "3.7" and python_version < "3.13" \
     --hash=sha256:3904b13dfbfec47f003b8e77fd5b589cd11904a21ddf1ab38a64f204d6a10ef6 \
     --hash=sha256:6ba70b9e97e69fcc3fb45bfeab2d0a138fb65c4d0d6a41ef33983ad114be8c3a
-pytest==7.4.2 ; python_version >= "3.7" and python_version < "3.13" \
-    --hash=sha256:1d881c6124e08ff0a1bb75ba3ec0bfd8b5354a01c194ddd5a0a870a48d99b002 \
-    --hash=sha256:a766259cfab564a2ad52cb1aae1b881a75c3eb7e34ca3779697c23ed47c47069
-tomli==2.0.1 ; python_version >= "3.7" and python_version < "3.11" \
+pytest==7.4.3 ; python_version >= "3.7" and python_version < "3.13" \
+    --hash=sha256:0d009c083ea859a71b76adf7c1d502e4bc170b80a8ef002da5806527b9591fac \
+    --hash=sha256:d989d136982de4e3b29dabcc838ad581c64e8ed52c11fbe86ddebd9da0818cd5
+tomli==2.0.1 ; python_version >= "3.7" and python_full_version <= "3.11.0a6" \
     --hash=sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc \
     --hash=sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f
 typing-extensions==4.7.1 ; python_version >= "3.7" and python_version < "3.8" \

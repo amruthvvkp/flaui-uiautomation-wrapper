@@ -1,10 +1,11 @@
-"""This contains element map for the tab More Controls for the WPD test application."""
+"""This contains element map for the tab More Controls for the WPF test application."""
 
 from flaui.core.automation_elements import Button, Calendar, DateTimePicker, ListBox, TabItem, TextBox
 from flaui.core.definitions import ControlType
 
 from tests.assets.element_map.wpf_application.common import AbtstractControlCollection
 from tests.assets.element_map.wpf_application.constants import ApplicationTabIndex
+
 
 class MoreControlsElements(AbtstractControlCollection):
     """This class is used to store the More Controls element locators for the WPF application."""
@@ -15,8 +16,10 @@ class MoreControlsElements(AbtstractControlCollection):
 
         :return: The Simple Controls element.
         """
-        tab = self.main_window.find_first_child(condition=self._condition_factory().by_control_type(ControlType.Tab)).as_tab()
-        element = tab.find_first_child(condition=self._condition_factory().by_name("More Controls")).as_tab_item()
+        tab = self.main_window.find_first_child(
+            condition=self._condition_factory.by_control_type(ControlType.Tab)
+        ).as_tab()
+        element = tab.find_first_child(condition=self._condition_factory.by_name("More Controls")).as_tab_item()
 
         if not element.is_selected:
             tab.select_tab_item(ApplicationTabIndex.MORE_CONTROLS.value)
@@ -28,8 +31,9 @@ class MoreControlsElements(AbtstractControlCollection):
 
         :return: The Calender element.
         """
-        return self.parent_element.find_first_child(condition=self._condition_factory().by_automation_id("calendar")).as_calendar()
-
+        return self.parent_element.find_first_child(
+            condition=self._condition_factory.by_automation_id("calendar")
+        ).as_calendar()
 
     @property
     def date_picker(self) -> DateTimePicker:
@@ -37,7 +41,9 @@ class MoreControlsElements(AbtstractControlCollection):
 
         :return: The DatePicker element.
         """
-        return self.parent_element.find_first_child(condition=self._condition_factory().by_automation_id("datePicker")).as_date_time_picker()
+        return self.parent_element.find_first_child(
+            condition=self._condition_factory.by_automation_id("datePicker")
+        ).as_date_time_picker()
 
     @property
     def date_picker_show_calendar_button(self) -> Button:
@@ -45,7 +51,7 @@ class MoreControlsElements(AbtstractControlCollection):
 
         :return: The Show Calendar Button element.
         """
-        return self.date_picker.find_first_child(condition=self._condition_factory().by_name("Show Calendar")).as_button()
+        return self.date_picker.find_first_child(condition=self._condition_factory.by_name("Show Calendar")).as_button()
 
     @property
     def date_picker_edit_text_box(self) -> TextBox:
@@ -53,7 +59,9 @@ class MoreControlsElements(AbtstractControlCollection):
 
         :return: The Edit TextBox element.
         """
-        return self.date_picker.find_first_child(condition=self._condition_factory().by_name("PART_TextBox")).as_text_box()
+        return self.date_picker.find_first_child(
+            condition=self._condition_factory.by_name("PART_TextBox")
+        ).as_text_box()
 
     @property
     def large_list_box(self) -> ListBox:
@@ -61,4 +69,6 @@ class MoreControlsElements(AbtstractControlCollection):
 
         :return: The Large ListBox element.
         """
-        return self.parent_element.find_first_child(condition=self._condition_factory().by_automation_id("LargeListBox")).as_list_box()
+        return self.parent_element.find_first_child(
+            condition=self._condition_factory.by_automation_id("LargeListBox")
+        ).as_list_box()
