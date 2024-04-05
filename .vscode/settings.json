@@ -1,31 +1,21 @@
 {
-    "autoDocstring.docstringFormat": "sphinx-notypes",
-    "cSpell.words": [
-        "flaui",
-        "pyautogui",
-        "pydantic",
-        "uiautomation",
-        "versioneer"
-    ],
-    "python.testing.pytestArgs": [
-        "tests"
-    ],
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true,
-    "files.exclude": {
-        "**/*.egg-info": true
+  "python.testing.pytestArgs": ["tests"],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "files.exclude": {
+    "**/*.egg-info": true
+  },
+  "testExplorer.mergeSuites": true,
+  "testExplorer.hideWhen": "noTests",
+  "testExplorer.showOnRun": true,
+  "python.analysis.extraPaths": ["typings"],
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
     },
-    "testExplorer.mergeSuites": true,
-    "testExplorer.hideWhen": "noTests",
-    "testExplorer.showOnRun": true,
-    "python.analysis.extraPaths": [
-        "typings"
-    ],
-    "[python]": {
-        "editor.defaultFormatter": null,
-        "editor.codeActionsOnSave": {
-            "source.fixAll": "never"
-        }
-    },
-    "ruff.importStrategy": "useBundled"
+    "ruff.organizeImports": false
+  },
+  "editor.formatOnSave": true
 }

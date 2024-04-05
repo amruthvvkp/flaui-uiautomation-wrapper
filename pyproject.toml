@@ -79,6 +79,7 @@ optional = true
 [tool.poetry.group.unit_test.dependencies]
 pytest = "^7.2.0"
 pytest-cov = "^4.0.0"
+pytest-sugar = "^1.0.0"
 
 [tool.poetry.group.unit_test]
 optional = true

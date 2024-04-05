@@ -16,6 +16,10 @@ from typing import Any, Union
 from FlaUI.Core.Conditions import (  # pyright: ignore
     ConditionFactory as CSConditionFactory,
     PropertyCondition as CSPropertyCondition,
+    OrCondition as CSOrCondition,
+    AndCondition as CSAndCondition,
+    NotCondition as CSNotCondition,
+
 )
 from pydantic import BaseModel, ConfigDict
 
@@ -29,7 +33,7 @@ class PropertyCondition(BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    condition: CSPropertyCondition
+    condition: Union[CSPropertyCondition, CSOrCondition, CSAndCondition, CSNotCondition]
 
     def And(self, new_condition: ConditionFactory) -> PropertyCondition:
         """Adds the given condition with an "and".
@@ -244,7 +248,7 @@ class ConditionFactory(BaseModel):
 
         :return: Property Condition
         """
-        return PropertyCondition(condition=self.raw_cf.Menu())
+        return PropertyCondition(condition=self.raw_cf.ByControlType(ControlType.Menu.value)).Or(self.raw_cf.ByControlType(ControlType.MenuBar.value))
 
     def grid(self):
         """Searches for a DataGrid/List.

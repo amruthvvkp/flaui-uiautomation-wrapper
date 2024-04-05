@@ -201,12 +201,12 @@ class ElementBase(ElementModel, abc.ABC):  # pragma: no cover
         return self.raw_element.Patterns
 
     @property
-    def properties(self) -> Any:
+    def properties(self) -> Properties:
         """Standard UIA properties of this element
 
         :return: UIA Properties
         """
-        return self.raw_element.Properties
+        return Properties(raw_properties=self.raw_element.Properties)
 
     # TODO: Get actual ControlType, ConditionalFactory class, BoundingRectangle object
 
@@ -385,13 +385,16 @@ class AutomationElement(ElementBase):
         """
         return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllByXPath(x_path)]
 
-    def find_all_children(self, condition: PropertyCondition) -> List[AutomationElement]:
+    def find_all_children(self, condition: Optional[PropertyCondition]=None) -> List[AutomationElement]:
         """Finds all children with the condition.
 
         :param condition: The search condition.
         :return: The found elements or an empty list if no elements were found.
         """
-        return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllChildren(condition.condition)]
+        if condition is None:
+            return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllChildren()]
+        else:
+            return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllChildren(condition.condition)]
 
     def find_all_descendants(self, condition: PropertyCondition) -> List[AutomationElement]:
         """Finds all descendants with the condition.
@@ -1572,7 +1575,7 @@ class ListBox(AutomationElement):
     """Class to interact with a list box element"""
 
     @property
-    def Items(self) -> List[ListBoxItem]:
+    def items(self) -> List[ListBoxItem]:
         """Returns all the list box items
 
         :return: List of ListBoxItem elements
@@ -1580,7 +1583,7 @@ class ListBox(AutomationElement):
         return [ListBoxItem(raw_element=_) for _ in self.raw_element.Items]  # type: ignore
 
     @property
-    def SelectedItems(self) -> List[ListBoxItem]:
+    def selected_items(self) -> List[ListBoxItem]:
         """Gets all selected items.
 
         :return: List of ListBoxItem elements
@@ -1588,7 +1591,7 @@ class ListBox(AutomationElement):
         return [ListBoxItem(raw_element=_) for _ in self.raw_element.SelectedItems]  # type: ignore
 
     @property
-    def SelectedItem(self) -> ListBoxItem:
+    def selected_item(self) -> ListBoxItem:
         """Gets the first selected item or null otherwise.
 
         :return: ListBoxItem element if selected, else None
@@ -1660,12 +1663,20 @@ class Menu(AutomationElement):
     """Class to interact with a menu or menubar element"""
 
     @property
-    def items(self) -> MenuItems:
+    def items(self) -> List[MenuItem]:
         """Gets all MenuItem which are inside this element.
 
         :return: List of Menu Items
         """
-        return [MenuItems(menu_items=_) for _ in self.raw_element.Items]  # ignore: type # pyright: ignore
+        return [MenuItem(raw_element=_) for _ in self.raw_element.Items]  # ignore: type # pyright: ignore
+
+    def get_item_by_name(self, name: str) -> MenuItem:
+        """Gets the menu item by name.
+
+        :param name: Name of the menu item
+        :return: MenuItem element
+        """
+        return MenuItem(raw_element=self.raw_element.Items[name])
 
     @property
     def is_win_menu(self) -> bool:
@@ -1682,22 +1693,6 @@ class Menu(AutomationElement):
         :return: True if the menu is Win32 model, else False
         """
         self.raw_element.IsWin32Menu = value
-
-
-class MenuItems(BaseModel):
-    """Represents a list of MenuItem elements."""
-
-    # TODO: Check how to properly parse the property attrs
-    menu_items: List[MenuItem]
-
-    # @property
-    # def Length(self) -> int:
-    #     return len(self.menu_items)
-
-    # @property
-    # def this(text: str) -> MenuItem:
-    #     pass
-
 
 class MenuItem(AutomationElement):
     """Class to interact with a menu item element."""
@@ -1727,14 +1722,12 @@ class MenuItem(AutomationElement):
         return self.raw_element.Text
 
     @property
-    def items(self) -> MenuItems:
+    def items(self) -> List[MenuItem]:
         """Gets all MenuItem which are inside this element.
 
         :return: MenuItems
         """
-        return MenuItems(
-            menu_items=self.raw_element.Items
-        )  # TODO: Find a way to fix menu items and then revisit this one
+        return [MenuItem(raw_element=_) for _ in self.raw_element.Items]
 
     def invoke(self) -> MenuItem:
         """Invokes the element.
@@ -1787,6 +1780,14 @@ class MenuItem(AutomationElement):
         :return: None
         """
         self.raw_element.IsChecked(value)
+
+    def get_item_by_name(self, name: str) -> MenuItem:
+        """Gets the menu item by name.
+
+        :param name: Name of the menu item
+        :return: MenuItem element
+        """
+        return MenuItem(raw_element=self.raw_element.Items[name])
 
 
 class ProgressBar(AutomationElement):
@@ -2262,12 +2263,13 @@ class Window(AutomationElement):
         """
         return [Window(raw_element=_) for _ in self.raw_element.ModalWindows()]
 
+    @property
     def popup(self) -> Window:
         """Gets the current WPF popup window.
 
         :return: Pop up window
         """
-        return Window(raw_element=self.raw_element.Popup())
+        return Window(raw_element=self.raw_element.Popup)
 
     @property
     def context_menu(self) -> Menu:
@@ -2304,3 +2306,553 @@ class Window(AutomationElement):
         :param alpha: Transparency value
         """
         self.raw_element.SetTransparency(alpha)
+
+class IAutomationProperty(BaseModel, abc.ABC):
+    """Interface for an automation property."""
+
+    @property
+    @abc.abstractmethod
+    def value(self):
+        """Gets the value of the automation property."""
+        pass
+
+    @property
+    @abc.abstractmethod
+    def value_or_default(self):
+        """Gets the value of the automation property or a default value if not available."""
+        pass
+
+    @abc.abstractmethod
+    def try_get_value(self):
+        """Tries to get the value of the automation property."""
+        pass
+
+    @property
+    @abc.abstractmethod
+    def is_supported(self):
+        """Checks if the automation property is supported."""
+        pass
+
+
+class AutomationProperty(IAutomationProperty):
+    raw_property : Any
+
+    @property
+    def framework_automation_element(self) -> AutomationElement:
+        """Returns the FrameworkAutomationElement of the property.
+
+        :return: The FrameworkAutomationElement of the property.
+        """
+        return AutomationElement(raw_element=self.raw_property.FrameworkAutomationElement)
+
+    @property
+    def is_supported(self) -> bool:
+        """Returns if the property is supported.
+
+        :return: True if the property is supported, False otherwise.
+        """
+        return self.raw_property.IsSupported
+
+    @property
+    def property_id(self) -> str:
+        """Returns the property ID.
+
+        :return: The property ID.
+        """
+        return self.raw_property.PropertyId.Id
+
+    @property
+    def to_string(self) -> str:
+        """Returns the string representation of the property.
+
+        :return: The string representation of the property.
+        """
+        return self.raw_property.ToString()
+
+    @property
+    def value(self):
+        """Returns the value of the property.
+
+        :return: The value of the property.
+        """
+        return self.raw_property.Value
+
+    @property
+    def value_or_default(self):
+        """Returns the value of the property or a default value if the value is None.
+
+        :return: The value of the property or a default value if the value is None.
+        """
+        return self.raw_property.ValueOrDefault
+
+    def try_get_value(self) -> Tuple[bool, str]:
+        """Tries to get the value of the property.
+
+        :return: A tuple with the first element being True if the value was retrieved successfully, False otherwise.
+        """
+        return self.raw_property.TryGetValue()
+
+    def __eq__(self, other) -> bool:
+        """
+        Checks if the current AutomationProperty is equal to another AutomationProperty.
+
+        :param other: Another AutomationProperty object to compare with.
+        :return: True if the current AutomationProperty is equal to the other AutomationProperty, False otherwise.
+        """
+        if isinstance(other, AutomationProperty):
+            return self.value == other.value
+        return False
+
+    def __str__(self):
+        return str(self.value_or_default)
+
+class Properties(BaseModel):
+    raw_properties: Any
+
+    @property
+    def accelerator_key(self) -> AutomationProperty:
+        """Returns the AcceleratorKey of the property.
+
+        :return: The AcceleratorKey of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.AcceleratorKey)
+
+    @property
+    def access_key(self) -> AutomationProperty:
+        """Returns the AccessKey of the property.
+
+        :return: The AccessKey of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.AccessKey)
+
+    @property
+    def annotation_objects(self) -> AutomationProperty:
+        """Returns the AnnotationObjects of the property.
+
+        :return: The AnnotationObjects of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.AnnotationObjects)
+
+    @property
+    def annotation_types(self) -> AutomationProperty:
+        """Returns the AnnotationTypes of the property.
+
+        :return: The AnnotationTypes of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.AnnotationTypes)
+
+    @property
+    def aria_properties(self) -> AutomationProperty:
+        """Returns the AriaProperties of the property.
+
+        :return: The AriaProperties of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.AriaProperties)
+
+    @property
+    def aria_role(self) -> AutomationProperty:
+        """Returns the AriaRole of the property.
+
+        :return: The AriaRole of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.AriaRole)
+
+    @property
+    def automation_id(self) -> AutomationProperty:
+        """Returns the AutomationId of the property.
+
+        :return: The AutomationId of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.AutomationId)
+
+    @property
+    def bounding_rectangle(self) -> AutomationProperty:
+        """Returns the BoundingRectangle of the property.
+
+        :return: The BoundingRectangle of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.BoundingRectangle)
+
+    @property
+    def center_point(self) -> AutomationProperty:
+        """Returns the CenterPoint of the property.
+
+        :return: The CenterPoint of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.CenterPoint)
+
+    @property
+    def class_name(self) -> AutomationProperty:
+        """Returns the ClassName of the property.
+
+        :return: The ClassName of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.ClassName)
+
+    @property
+    def clickable_point(self) -> AutomationProperty:
+        """Returns the ClickablePoint of the property.
+
+        :return: The ClickablePoint of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.ClickablePoint)
+
+    @property
+    def controller_for(self) -> AutomationProperty:
+        """Returns the ControllerFor of the property.
+
+        :return: The ControllerFor of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.ControllerFor)
+
+    @property
+    def control_type(self) -> AutomationProperty:
+        """Returns the ControlType of the property.
+
+        :return: The ControlType of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.ControlType)
+
+    @property
+    def culture(self) -> AutomationProperty:
+        """Returns the Culture of the property.
+
+        :return: The Culture of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.Culture)
+
+    @property
+    def described_by(self) -> AutomationProperty:
+        """Returns the DescribedBy of the property.
+
+        :return: The DescribedBy of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.DescribedBy)
+
+    @property
+    def fill_color(self) -> AutomationProperty:
+        """Returns the FillColor of the property.
+
+        :return: The FillColor of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.FillColor)
+
+    @property
+    def fill_type(self) -> AutomationProperty:
+        """Returns the FillType of the property.
+
+        :return: The FillType of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.FillType)
+
+    @property
+    def flows_from(self) -> AutomationProperty:
+        """Returns the FlowsFrom of the property.
+
+        :return: The FlowsFrom of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.FlowsFrom)
+
+    @property
+    def flows_to(self) -> AutomationProperty:
+        """Returns the FlowsTo of the property.
+
+        :return: The FlowsTo of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.FlowsTo)
+
+    @property
+    def framework_id(self) -> AutomationProperty:
+        """Returns the FrameworkId of the property.
+
+        :return: The FrameworkId of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.FrameworkId)
+
+    @property
+    def full_description(self) -> AutomationProperty:
+        """Returns the FullDescription of the property.
+
+        :return: The FullDescription of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.FullDescription)
+
+    @property
+    def has_keyboard_focus(self) -> AutomationProperty:
+        """Returns the HasKeyboardFocus of the property.
+
+        :return: The HasKeyboardFocus of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.HasKeyboardFocus)
+
+    @property
+    def heading_level(self) -> AutomationProperty:
+        """Returns the HeadingLevel of the property.
+
+        :return: The HeadingLevel of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.HeadingLevel)
+
+    @property
+    def help_text(self) -> AutomationProperty:
+        """Returns the HelpText of the property.
+
+        :return: The HelpText of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.HelpText)
+
+    @property
+    def is_content_element(self) -> AutomationProperty:
+        """Returns the IsContentElement of the property.
+
+        :return: The IsContentElement of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.IsContentElement)
+
+    @property
+    def is_control_element(self) -> AutomationProperty:
+        """Returns the IsControlElement of the property.
+
+        :return: The IsControlElement of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.IsControlElement)
+
+    @property
+    def is_data_valid_for_form(self) -> AutomationProperty:
+        """Returns the IsDataValidForForm of the property.
+
+        :return: The IsDataValidForForm of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.IsDataValidForForm)
+
+    @property
+    def is_dialog(self) -> AutomationProperty:
+        """Returns the IsDialog of the property.
+
+        :return: The IsDialog of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.IsDialog)
+
+    @property
+    def is_enabled(self) -> AutomationProperty:
+        """Returns the IsEnabled of the property.
+
+        :return: The IsEnabled of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.IsEnabled)
+
+    @property
+    def is_keyboard_focusable(self) -> AutomationProperty:
+        """Returns the IsKeyboardFocusable of the property.
+
+        :return: The IsKeyboardFocusable of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.IsKeyboardFocusable)
+
+    @property
+    def is_offscreen(self) -> AutomationProperty:
+        """Returns the IsOffscreen of the property.
+
+        :return: The IsOffscreen of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.IsOffscreen)
+
+    @property
+    def is_password(self) -> AutomationProperty:
+        """Returns the IsPassword of the property.
+
+        :return: The IsPassword of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.IsPassword)
+
+    @property
+    def is_peripheral(self) -> AutomationProperty:
+        """Returns the IsPeripheral of the property.
+
+        :return: The IsPeripheral of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.IsPeripheral)
+
+    @property
+    def is_required_for_form(self) -> AutomationProperty:
+        """Returns the IsRequiredForForm of the property.
+
+        :return: The IsRequiredForForm of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.IsRequiredForForm)
+
+    @property
+    def item_status(self) -> AutomationProperty:
+        """Returns the ItemStatus of the property.
+
+        :return: The ItemStatus of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.ItemStatus)
+
+    @property
+    def item_type(self) -> AutomationProperty:
+        """Returns the ItemType of the property.
+
+        :return: The ItemType of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.ItemType)
+
+    @property
+    def labeled_by(self) -> AutomationProperty:
+        """Returns the LabeledBy of the property.
+
+        :return: The LabeledBy of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.LabeledBy)
+
+    @property
+    def landmark_type(self) -> AutomationProperty:
+        """Returns the LandmarkType of the property.
+
+        :return: The LandmarkType of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.LandmarkType)
+
+    @property
+    def level(self) -> AutomationProperty:
+        """Returns the Level of the property.
+
+        :return: The Level of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.Level)
+
+    @property
+    def live_setting(self) -> AutomationProperty:
+        """Returns the LiveSetting of the property.
+
+        :return: The LiveSetting of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.LiveSetting)
+
+    @property
+    def localized_control_type(self) -> AutomationProperty:
+        """Returns the LocalizedControlType of the property.
+
+        :return: The LocalizedControlType of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.LocalizedControlType)
+
+    @property
+    def localized_landmark_type(self) -> AutomationProperty:
+        """Returns the LocalizedLandmarkType of the property.
+
+        :return: The LocalizedLandmarkType of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.LocalizedLandmarkType)
+
+    @property
+    def name(self) -> AutomationProperty:
+        """Returns the Name of the property.
+
+        :return: The Name of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.Name)
+
+    @property
+    def native_window_handle(self) -> AutomationProperty:
+        """Returns the NativeWindowHandle of the property.
+
+        :return: The NativeWindowHandle of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.NativeWindowHandle)
+
+    @property
+    def optimize_for_visual_content(self) -> AutomationProperty:
+        """Returns the OptimizeForVisualContent of the property.
+
+        :return: The OptimizeForVisualContent of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.OptimizeForVisualContent)
+
+    @property
+    def orientation(self) -> AutomationProperty:
+        """Returns the Orientation of the property.
+
+        :return: The Orientation of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.Orientation)
+
+    @property
+    def outline_color(self) -> AutomationProperty:
+        """Returns the OutlineColor of the property.
+
+        :return: The OutlineColor of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.OutlineColor)
+
+    @property
+    def outline_thickness(self) -> AutomationProperty:
+        """Returns the OutlineThickness of the property.
+
+        :return: The OutlineThickness of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.OutlineThickness)
+
+    @property
+    def position_in_set(self) -> AutomationProperty:
+        """Returns the PositionInSet of the property.
+
+        :return: The PositionInSet of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.PositionInSet)
+
+    @property
+    def process_id(self) -> AutomationProperty:
+        """Returns the ProcessId of the property.
+
+        :return: The ProcessId of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.ProcessId)
+
+    @property
+    def provider_description(self) -> AutomationProperty:
+        """Returns the ProviderDescription of the property.
+
+        :return: The ProviderDescription of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.ProviderDescription)
+
+    @property
+    def rotation(self) -> AutomationProperty:
+        """Returns the Rotation of the property.
+
+        :return: The Rotation of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.Rotation)
+
+    @property
+    def runtime_id(self) -> AutomationProperty:
+        """Returns the RuntimeId of the property.
+
+        :return: The RuntimeId of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.RuntimeId)
+
+    @property
+    def size(self) -> AutomationProperty:
+        """Returns the Size of the property.
+
+        :return: The Size of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.Size)
+
+    @property
+    def size_of_set(self) -> AutomationProperty:
+        """Returns the SizeOfSet of the property.
+
+        :return: The SizeOfSet of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.SizeOfSet)
+
+    @property
+    def visual_effects(self) -> AutomationProperty:
+        """Returns the VisualEffects of the property.
+
+        :return: The VisualEffects of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.VisualEffects)
