@@ -14,19 +14,17 @@ from __future__ import annotations
 from typing import Any, Union
 
 from FlaUI.Core.Conditions import (  # pyright: ignore
-    ConditionFactory as CSConditionFactory,
-    PropertyCondition as CSPropertyCondition,
-    OrCondition as CSOrCondition,
     AndCondition as CSAndCondition,
+    ConditionFactory as CSConditionFactory,
     NotCondition as CSNotCondition,
-
+    OrCondition as CSOrCondition,
+    PropertyCondition as CSPropertyCondition,
 )
 from pydantic import BaseModel, ConfigDict
 
 from flaui.core.definitions import ControlType, PropertyConditionFlags
 from flaui.core.framework_types import FrameworkType
 from flaui.lib.enums import KnownClassNames
-
 
 class PropertyCondition(BaseModel):
     """PropertyCondition wraps a PropertyCondition object from FlaUI.Core.Conditions module. This class provides methods to create and combine conditions, compare values, and get property and value of the condition."""

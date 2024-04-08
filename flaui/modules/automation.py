@@ -1,11 +1,11 @@
 """This module contains the wrapper for FlaUI's UIAutomation class. This class is a custom class designed to ease the usage of FlaUI's UIAutomation class in Python."""
 
-from flaui.core.application import Application
-from flaui.core.condition_factory import ConditionFactory
-from flaui.lib.enums import UIAutomationTypes
 from FlaUI.UIA2 import UIA2Automation  # pyright: ignore
 from FlaUI.UIA3 import UIA3Automation  # pyright: ignore
 
+from flaui.core.application import Application
+from flaui.core.condition_factory import ConditionFactory
+from flaui.lib.enums import UIAutomationTypes
 
 class Automation:
     """UIAutomation constructed wrapper for FlaUI usage.

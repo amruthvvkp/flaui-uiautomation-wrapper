@@ -7,9 +7,8 @@ This file consists of fixtures that are used in the unit tests."""
 import os
 from typing import Any, Generator, Literal
 
-import pytest
-
 from flaui.lib.pythonnet_bridge import setup_pythonnet_bridge
+import pytest
 
 # # isort: off
 
