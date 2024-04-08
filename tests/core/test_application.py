@@ -9,7 +9,6 @@ from flaui.modules.automation import Automation
 import pytest
 from System import InvalidOperationException  # pyright: ignore
 
-
 @pytest.fixture(scope="module")
 def wordpad_application(wordpad: Automation) -> Generator[Application, None, None]:
     """Fixture to yield the wordpad application.
@@ -32,9 +31,9 @@ class TestApplication:
         assert wordpad_application.name == "wordpad"
         assert wordpad_application.has_exited is False
         assert wordpad_application.main_window_handle is not None
-        with pytest.raises(Exception) as exc_info:
+        from System import InvalidOperationException  # pyright: ignore
+        with pytest.raises(InvalidOperationException):
             assert wordpad_application.exit_code
-        assert isinstance(exc_info.value, AttributeError)
         assert wordpad_application.close_timeout is not None
 
     def test_get_all_top_level_windows(self, wordpad_application: Application, automation: Any):
