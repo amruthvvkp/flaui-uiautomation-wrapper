@@ -190,7 +190,6 @@ ignore = [
 ]
 
 # Group violations by containing file.
-format = "grouped"
 respect-gitignore = true
 src = ["flaui"]
 

@@ -1,7 +1,8 @@
+"""Methods to convert generic FlaUI identified objects casted into proper identified FlaUI objects."""
 from typing import Any
 
 # isort: off
-from FlaUI.Core.AutomationElements import (
+from FlaUI.Core.AutomationElements import (  # pyright: ignore
     AutomationElementExtensions as CSAutomationElementExtensions,
 )  # pyright: ignore
 
