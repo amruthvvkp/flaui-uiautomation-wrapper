@@ -5,26 +5,16 @@ Wrapper objects for AutomationElement class.
 from __future__ import annotations
 
 import abc
-from datetime import date
-from datetime import datetime
-from typing import Any
-from typing import List
-from typing import Optional
-from typing import Tuple
-from typing import Union
+from datetime import date, datetime
+from typing import Any, List, Optional, Tuple, Union
 
 import arrow
-from pydantic import BaseModel
-from pydantic import Field
+from pydantic import BaseModel, Field
 from System import TimeSpan  # pyright: ignore
 
 from flaui.core.automation_type import AutomationType
-from flaui.core.condition_factory import ConditionFactory
-from flaui.core.condition_factory import PropertyCondition
-from flaui.core.definitions import ControlType
-from flaui.core.definitions import ExpandCollapseState
-from flaui.core.definitions import RowOrColumnMajor
-from flaui.core.definitions import ToggleState
+from flaui.core.condition_factory import ConditionFactory, PropertyCondition
+from flaui.core.definitions import ControlType, ExpandCollapseState, RowOrColumnMajor, ToggleState
 from flaui.core.framework_types import FrameworkType
 from flaui.lib.collections import TypeCast
 from flaui.lib.system.drawing import ColorCollection
@@ -35,6 +25,8 @@ from flaui.lib.system.drawing import ColorCollection
 
 
 class ElementModel(BaseModel, abc.ABC):
+    """Base class for all automation elements"""
+
     raw_element: Any = Field(
         ..., title="Automation Element", description="Contains the C# automation element in raw form"
     )  # Consider making this a private property
@@ -214,6 +206,7 @@ class InvokeAutomationElement(ElementModel, abc.ABC):
     """An element that supports the InvokePattern"""
 
     def invoke(self) -> None:
+        """Invokes the element"""
         self.raw_element.Invoke()
 
 
@@ -345,6 +338,11 @@ class AutomationElement(ElementBase):
         self.raw_element.DoubleClick(move_mouse)
 
     def draw_highlight(self, color: ColorCollection = ColorCollection.Red, duration: int = 2000) -> None:
+        """Draws a highlight around the element.
+
+        :param color: Color used to highlight, defaults to ColorCollection.Red
+        :param duration: Duration to highlight, defaults to 2000
+        """
         self.raw_element.Automation.OverlayManager.Show(
             self.raw_element.Properties.BoundingRectangle.Value, color, duration
         )
@@ -1337,6 +1335,10 @@ class GridHeaderItem(AutomationElement):
 
     @property
     def text(self) -> str:
+        """Gets the text of the element.
+
+        :return: Element text
+        """
         return self.raw_element.Text
 
 

@@ -1,8 +1,12 @@
 [tool.poetry]
 name = "flaui-uiautomation-wrapper"
-version = "0.0.7"
+version = "0.0.8a24"
 description = "Tool to perform UI Automation on Windows desktop applications using an underlying FlaUI wrapper."
-authors = ["Amruth VVKP <amruthvvkp@gmail.com>"]
+authors = [
+  "Amruth VVKP <amruthvvkp@gmail.com>",
+  "Varshith VVS <svvarsham@gmail.com>",
+  "Tejaswani Sathish Kumar <tejaswani12.92@gmail.com",
+]
 license = "LGPL-3.0-or-later"
 readme = "README.md"
 keywords = [
@@ -14,25 +18,58 @@ keywords = [
   "windows automation",
   "windows testing",
   "desktop automation",
+  "flaui",
+  "qa",
 ]
 packages = [{ include = "flaui" }]
 include = [{ path = "flaui/bin/*.dll" }]
-exclude = [{ path = "wrapper_generator/*" }]
+exclude = ["tests", "docs"]
+repository = "https://github.com/amruthvvkp/flaui-uiautomation-wrapper"
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
+  "Operating System :: Microsoft :: Windows",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Software Development :: Testing",
+  "Topic :: Software Development :: Quality Assurance",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Utilities",
+  "Typing :: Typed",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
+  "Operating System :: MacOS :: MacOS X",
+  "Topic :: Software Development :: Testing",
+  "Intended Audience :: Developers",
+]
+
+[tool.poetry-git-version-plugin]
+make_alpha_version = true
+alpha_version_format = '{version}a{distance}+{commit_hash}'
+version_format = '{version}'
 
 [tool.poetry.dependencies]
-python = ">=3.7,<3.11"
-pydantic = "^1.10.2"
+python = ">=3.7,<3.12"
 loguru = "^0.6.0"
 pillow = "^9.3.0"
 arrow = "^1.2.3"
 pythonnet = "^3.0.1"
+pydantic = "^2.0.0"
+pydantic-settings = "^2.0.0"
+pydantic-extra-types = "^2.0.0"
 
 [tool.poetry.group.dev.dependencies]
-black = "^22.10.0"
 mypy = "^0.991"
 jupyter = "^1.0.0"
 isort = "^5.10.1"
-ruff = "^0.0.259"
+pre-commit = { version = "^3.3.3", python = ">=3.8" }
+interrogate = "^1.5.0"
+ruff = "^0.0.288"
 
 [tool.poetry.group.dev]
 optional = true
@@ -58,25 +95,28 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "-ra -q"
-testpaths = ["tests/"]
+addopts = "-ra -q -p no:warnings --junitxml=test-results.xml"
+testpaths = ["tests/unit_tests/"]
 
-classifiers = [
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.7",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
-  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-  "Operating System :: Microsoft :: Windows",
-  "Operating System :: POSIX :: Linux",
-  "Operating System :: MacOS :: MacOS X",
-  "Topic :: Software Development :: Developers",
-  "Topic :: Software Development :: Testing",
-  "Intended Audience :: Developers",
-]
-
-repository = "https://github.com/amruthvvkp/flaui-uiautomation-wrapper"
+[tool.interrogate]
+ignore-init-method = true
+ignore-init-module = true
+ignore-magic = false
+ignore-semiprivate = false
+ignore-private = false
+ignore-property-decorators = false
+ignore-module = false
+ignore-nested-functions = false
+ignore-nested-classes = true
+ignore-setters = false
+fail-under = 95
+exclude = ["docs", "build"]
+ignore-regex = ["^get$", "^mock_.*", ".*BaseClass.*"]
+verbose = 2
+quiet = false
+whitelist-regex = []
+color = true
+omit-covered-files = false
 
 
 [tool.isort]
@@ -92,6 +132,7 @@ include_trailing_comma = true
 force_grid_wrap = 0
 ensure_newline_before_comments = true
 use_parentheses = true
+py_version = 310
 
 [tool.black]
 # https://github.com/psf/black
@@ -149,9 +190,8 @@ ignore = [
 ]
 
 # Group violations by containing file.
-format = "grouped"
 respect-gitignore = true
-src = ["aws_client"]
+src = ["flaui"]
 
 # Same as Black.
 line-length = 120
@@ -161,6 +201,7 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
 # Assume Python 3.10.
 target-version = "py310"
+fix = true
 
 [tool.ruff.mccabe]
 # Unlike Flake8, default to a complexity level of 10.
@@ -174,6 +215,33 @@ order-by-type = true
 combine-as-imports = true
 force-sort-within-sections = true
 lines-after-imports = 1
-force-single-line = true
+force-single-line = false
 split-on-trailing-comma = false
 known-third-party = ["pydantic"]
+
+[tool.coverage.run]
+disable_warnings = ["no-data-collected"]
+branch = true
+source = ["flaui"]
+command_line = "-m pytest . -v"
+relative_files = true
+
+[tool.coverage.html]
+directory = "htmlcov"
+skip_empty = true
+title = "FlaUI Test Coverage Report"
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+[tool.coverage.lcov]
+output = "coverage.lcov"
+
+[tool.coverage.report]
+exclude_also = [
+  "raise RuntimeError",
+  "if waiter_config is None:",
+  "except AssertionError",
+  "except ClientError",
+  "except WaiterError",
+]

@@ -1,20 +1,22 @@
-# Helper class with some commonly used conditions.
+"""Helper class with some commonly used conditions for the FlaUI framework."""
+
 from __future__ import annotations
 
-from typing import Any
-from typing import Union
+from typing import Any, Union
 
-from FlaUI.Core.Conditions import ConditionFactory as CSConditionFactory  # pyright: ignore
-from FlaUI.Core.Conditions import PropertyCondition as CSPropertyCondition  # pyright: ignore
-from pydantic import BaseModel
-from pydantic import validate_arguments
+from FlaUI.Core.Conditions import (  # pyright: ignore
+    ConditionFactory as CSConditionFactory,  # pyright: ignore
+    PropertyCondition as CSPropertyCondition,  # pyright: ignore
+)
+from pydantic import BaseModel, validate_arguments
 
-from flaui.core.definitions import ControlType
-from flaui.core.definitions import PropertyConditionFlags
+from flaui.core.definitions import ControlType, PropertyConditionFlags
 from flaui.core.framework_types import FrameworkType
 
 
 class PropertyCondition(BaseModel):
+    """Helper class with some commonly used conditions for the FlaUI framework."""
+
     class Config:
         arbitrary_types_allowed = True
 
@@ -85,6 +87,8 @@ class PropertyCondition(BaseModel):
 
 
 class ConditionFactory(BaseModel):
+    """Helper class with some commonly used conditions for the FlaUI framework."""
+
     raw_cf: CSConditionFactory
 
     @validate_arguments

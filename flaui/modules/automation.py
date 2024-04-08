@@ -1,3 +1,5 @@
+"""Automation module for FlaUI usage."""
+
 from FlaUI.UIA2 import UIA2Automation  # pyright: ignore
 from FlaUI.UIA3 import UIA3Automation  # pyright: ignore
 from pydantic import validate_arguments

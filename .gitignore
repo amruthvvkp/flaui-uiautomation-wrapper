@@ -49,6 +49,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+test-results.xml
 
 # Translations
 *.mo
@@ -165,3 +166,7 @@ junit/*
 # PYPI Secrets
 .pypirc
 flaui_arch
+
+# Test Applications
+test_applications
+pytest.xml

@@ -1,4 +1,4 @@
-# Wrapper for Application class from the object <class 'FlaUI.Core.Application'> from the module - FlaUI.Core
+"""Wrapper for Application class from the object <class 'FlaUI.Core.Application'> from the module - FlaUI.Core"""
 
 from __future__ import annotations
 

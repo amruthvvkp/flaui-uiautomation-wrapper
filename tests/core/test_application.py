@@ -1,8 +1,7 @@
+"""Tests for the Application class in the core module."""
+
 from time import sleep
-from typing import Any
-from typing import Generator
-from typing import List
-from typing import Optional
+from typing import Any, Generator, List, Optional
 
 from flaui.core.application import Application
 from flaui.core.automation_elements import AutomationElement
@@ -13,20 +12,37 @@ from System import InvalidOperationException  # pyright: ignore
 
 @pytest.fixture(scope="module")
 def wordpad_application(wordpad: Automation) -> Generator[Application, None, None]:
+    """Fixture to yield the wordpad application.
+
+    :param wordpad: Wordpad automation object
+    :yield: Wordpad application
+    """
     yield wordpad.application
 
 
 class TestApplication:
+    """Tests for the Application class in the core module."""
+
     def test_class_properties(self, wordpad_application: Application):
+        """Test the class properties.
+
+        :param wordpad_application: Wordpad application
+        """
         assert wordpad_application.process_id is not None
         assert wordpad_application.name == "wordpad"
         assert wordpad_application.has_exited is False
         assert wordpad_application.main_window_handle is not None
-        with pytest.raises(Exception):
-            wordpad_application.exit_code
+        with pytest.raises(Exception) as exc_info:
+            assert wordpad_application.exit_code
+        assert isinstance(exc_info.value, AttributeError)
         assert wordpad_application.close_timeout is not None
 
     def test_get_all_top_level_windows(self, wordpad_application: Application, automation: Any):
+        """Test the get_all_top_level_windows method.
+
+        :param wordpad_application: Wordpad application
+        :param automation: Automation object
+        """
         timeout = 30
         timer = 0
         windows: Optional[List[AutomationElement]] = []
@@ -40,10 +56,16 @@ class TestApplication:
         # TODO: assert return type is window element and validate title
 
     def test_get_main_window(self, wordpad_application: Application, automation: Any):
+        """Test the get_main_window method.
+
+        :param wordpad_application: Wordpad application
+        :param automation: Automation object
+        """
         window = wordpad_application.get_main_window(automation)
         assert window is not None
 
     def test_launch(self):
+        """Test the launch method."""
         app = Application()
         app.launch("wordpad.exe")
 
@@ -55,6 +77,10 @@ class TestApplication:
         app.kill()
 
     def test_launch_store_app(self):
+        """Test the launch_store_app method.
+
+        :raises ValueError: If the OS is not Windows 10 or Windows 11
+        """
         from FlaUI.Core.Tools import OperatingSystem  # pyright: ignore
 
         if OperatingSystem.IsWindows10() or OperatingSystem.IsWindows11():
@@ -73,6 +99,10 @@ class TestApplication:
         app.kill()
 
     def test_attach(self, wordpad_application: Application):
+        """Test the attach method.
+
+        :param wordpad_application: Wordpad application
+        """
         app = Application()
         for _ in [f"{wordpad_application.name}.exe", wordpad_application.process_id]:
             app.attach(_)
@@ -81,6 +111,10 @@ class TestApplication:
             assert wordpad_application.process_id == app.process_id
 
     def test_attach_or_launch(self, wordpad_application: Application):
+        """Test the attach_or_launch method.
+
+        :param wordpad_application: Wordpad application
+        """
         app = Application()
         app.attach_or_launch(f"{wordpad_application.name}.exe")
 
@@ -88,18 +122,23 @@ class TestApplication:
         assert wordpad_application.process_id == app.process_id
 
     def test_kill(self):
+        """Test the kill method."""
         app = Application()
         app.launch("wordpad.exe")
         app.kill()
 
         with pytest.raises(InvalidOperationException):
-            app.name
+            assert app.name
         assert app.process_id is not None
         assert app.is_store_app is False
         assert app.has_exited is True
         assert app.exit_code == -1
 
     def test_dispose(self, wordpad_application: Application):
+        """Test the dispose method.
+
+        :param wordpad_application: Wordpad application
+        """
         app = Application()
         app.attach(wordpad_application.process_id)
         app.dispose()
@@ -112,6 +151,7 @@ class TestApplication:
         assert app.is_store_app is False
 
     def test_close(self):
+        """Test the close method."""
         app = Application()
         app.launch("wordpad.exe")
         app.close()
@@ -125,6 +165,7 @@ class TestApplication:
         assert app.exit_code in [0, -1]
 
     def test_wait_while_main_handle_is_missing(self):
+        """Test the wait_while_main_handle_is_missing method."""
         app = Application()
         app.launch("wordpad.exe")
 
@@ -139,6 +180,7 @@ class TestApplication:
         app.kill()
 
     def test_wait_while_busy(self):
+        """Test the wait_while_busy method."""
         app = Application()
         app.launch("wordpad.exe")
 

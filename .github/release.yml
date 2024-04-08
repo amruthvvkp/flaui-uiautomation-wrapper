@@ -1,0 +1,52 @@
+# This is a release template that generates release notes when a GitHub release is created.
+
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+      - duplicate
+      - post-release
+  categories:
+  - title: Exciting New Features 🎉
+    labels:
+      - enhancement
+      - feature
+      - flaui-wrappers
+      - flaui-core
+      - flaui-lib
+      - flaui-c-sharp-binaries
+
+  - title: Breaking Changes 🛠
+    labels:
+      - breaking-change
+      - breaking
+
+  - title: Bug Fixes 🐛
+    labels:
+      - bug
+      - fix
+
+  - title: Documentation Changes 📚
+    labels:
+      - documentation
+      - docs
+
+  - title: Dependency Updates 📦
+    labels:
+      - dependency-update
+
+  - title: CI/CD Changes 🚀
+    labels:
+      - ci-cd
+
+  - title: Configuration Changes ⚙️
+    labels:
+      - configuration
+
+  - title: Tests 🧪
+    labels:
+      - tests
+
+  - title: Other Changes
+    labels:
+      - "*"

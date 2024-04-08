@@ -1,12 +1,18 @@
+"""Contains the definitions for the FlaUI library."""
+
 from enum import Enum
 
-from FlaUI.Core.Definitions import ControlType as CSControlType  # pyright: ignore
-from FlaUI.Core.Definitions import ExpandCollapseState as CSExpandCollapseState  # pyright: ignore
-from FlaUI.Core.Definitions import ToggleState as CSToggleState  # pyright: ignore
-from FlaUI.Core.Definitions import RowOrColumnMajor as CSRowOrColumnMajor  # pyright: ignore
+from FlaUI.Core.Definitions import (  # pyright: ignore
+    ControlType as CSControlType,  # pyright: ignore
+    ExpandCollapseState as CSExpandCollapseState,  # pyright: ignore
+    RowOrColumnMajor as CSRowOrColumnMajor,  # pyright: ignore
+    ToggleState as CSToggleState,  # pyright: ignore
+)
 
 
 class PropertyConditionFlags(Enum):
+    """Flags for property conditions."""
+
     # Note = We cannot import from FlaUI.Core.Definitions import PropertyConditionFlags and
     # use them to build enum here since the first value is None which throws an error on Python
     none = 0
@@ -90,6 +96,8 @@ class ToggleState(Enum):
 
 
 class ExpandCollapseState(Enum):
+    """Contains values that specify the expand/collapse state of a Microsoft UI Automation element that implements the ExpandCollapsePattern."""
+
     Collapsed = CSExpandCollapseState.Collapsed
     Expanded = CSExpandCollapseState.Expanded
     PartiallyExpanded = CSExpandCollapseState.PartiallyExpanded
@@ -97,6 +105,8 @@ class ExpandCollapseState(Enum):
 
 
 class RowOrColumnMajor(Enum):
+    """Contains values that specify whether a grid is arranged by row or by column."""
+
     RowMajor = CSRowOrColumnMajor.RowMajor
     ColumnMajor = CSRowOrColumnMajor.ColumnMajor
     Indeterminate = CSRowOrColumnMajor.Indeterminate
