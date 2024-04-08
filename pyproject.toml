@@ -35,6 +35,8 @@ classifiers = [
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3 :: Only",
   "Topic :: Software Development :: Testing",
   "Topic :: Software Development :: Quality Assurance",
@@ -54,11 +56,11 @@ alpha_version_format = '{version}a{distance}+{commit_hash}'
 version_format = '{version}'
 
 [tool.poetry.dependencies]
-python = ">=3.7,<3.12"
+python = ">=3.7,<3.13"
 loguru = "^0.6.0"
 pillow = "^9.3.0"
 arrow = "^1.2.3"
-pythonnet = "^3.0.1"
+pythonnet = "^3.0.3"
 pydantic = "^2.0.0"
 pydantic-settings = "^2.0.0"
 pydantic-extra-types = "^2.0.0"
@@ -77,6 +79,7 @@ optional = true
 [tool.poetry.group.unit_test.dependencies]
 pytest = "^7.2.0"
 pytest-cov = "^4.0.0"
+pytest-sugar = "^1.0.0"
 
 [tool.poetry.group.unit_test]
 optional = true
@@ -218,30 +221,3 @@ lines-after-imports = 1
 force-single-line = false
 split-on-trailing-comma = false
 known-third-party = ["pydantic"]
-
-[tool.coverage.run]
-disable_warnings = ["no-data-collected"]
-branch = true
-source = ["flaui"]
-command_line = "-m pytest . -v"
-relative_files = true
-
-[tool.coverage.html]
-directory = "htmlcov"
-skip_empty = true
-title = "FlaUI Test Coverage Report"
-
-[tool.coverage.xml]
-output = "coverage.xml"
-
-[tool.coverage.lcov]
-output = "coverage.lcov"
-
-[tool.coverage.report]
-exclude_also = [
-  "raise RuntimeError",
-  "if waiter_config is None:",
-  "except AssertionError",
-  "except ClientError",
-  "except WaiterError",
-]

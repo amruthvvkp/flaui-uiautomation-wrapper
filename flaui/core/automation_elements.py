@@ -1,38 +1,50 @@
 """
-Wrapper objects for AutomationElement class.
+This module contains wrapper objects for AutomationElement class.
+It defines two abstract classes, ElementModel and ElementBase, which are used as base classes for other classes that wrap AutomationElement objects.
+ElementBase provides properties to access various attributes of the wrapped AutomationElement object.
 """
 
 from __future__ import annotations
 
 import abc
-from datetime import date, datetime
-from typing import Any, List, Optional, Tuple, Union
+from datetime import date
+from typing import Any, Callable, List, Optional, Tuple, TypeVar, Union
 
 import arrow
-from pydantic import BaseModel, Field
-from System import TimeSpan  # pyright: ignore
+from pydantic import BaseModel, Field, field_validator
+from System import DateTime as CSDateTime, NullReferenceException, TimeSpan  # pyright: ignore
 
 from flaui.core.automation_type import AutomationType
 from flaui.core.condition_factory import ConditionFactory, PropertyCondition
 from flaui.core.definitions import ControlType, ExpandCollapseState, RowOrColumnMajor, ToggleState
 from flaui.core.framework_types import FrameworkType
 from flaui.lib.collections import TypeCast
-from flaui.lib.system.drawing import ColorCollection
+from flaui.lib.exceptions import ElementNotFoundError
+from flaui.lib.system.drawing import Color, ColorCollection
 
 # ================================================================================
 #   Element base Pydantic abstract class
 # ================================================================================
 
 
-class ElementModel(BaseModel, abc.ABC):
-    """Base class for all automation elements"""
-
+class ElementModel(BaseModel, abc.ABC):  # pragma: no cover
     raw_element: Any = Field(
         ..., title="Automation Element", description="Contains the C# automation element in raw form"
     )  # Consider making this a private property
 
+    @field_validator("raw_element")
+    def validate_element_exists(cls, v: Any) -> Any:  # pragma: no cover
+        """Validate the element exists
 
-class ElementBase(ElementModel, abc.ABC):
+        :param v: Raw Element
+        :return: Raw Element
+        """
+        if v is None:
+            raise ElementNotFoundError("Element does not exist")
+        return v
+
+
+class ElementBase(ElementModel, abc.ABC):  # pragma: no cover
     """Automation Element base abstract class"""
 
     @property
@@ -189,12 +201,12 @@ class ElementBase(ElementModel, abc.ABC):
         return self.raw_element.Patterns
 
     @property
-    def properties(self) -> Any:
+    def properties(self) -> Properties:
         """Standard UIA properties of this element
 
         :return: UIA Properties
         """
-        return self.raw_element.Properties
+        return Properties(raw_properties=self.raw_element.Properties)
 
     # TODO: Get actual ControlType, ConditionalFactory class, BoundingRectangle object
 
@@ -202,15 +214,15 @@ class ElementBase(ElementModel, abc.ABC):
 # =====================================================================================================
 #   Pattern Elements Pydantic abstract models from FlaUI.Core.AutomationElements.PatternElements
 # =====================================================================================================
-class InvokeAutomationElement(ElementModel, abc.ABC):
+class InvokeAutomationElement(ElementModel, abc.ABC):  # pragma: no cover
     """An element that supports the InvokePattern"""
 
     def invoke(self) -> None:
-        """Invokes the element"""
+        """Invokes the element."""
         self.raw_element.Invoke()
 
 
-class ToggleAutomationElement(ElementModel, abc.ABC):
+class ToggleAutomationElement(ElementModel, abc.ABC):  # pragma: no cover
     """Class for an element that supports the TogglePattern"""
 
     @property
@@ -220,6 +232,14 @@ class ToggleAutomationElement(ElementModel, abc.ABC):
         :return: ToggleState
         """
         return ToggleState(self.raw_element.ToggleState)
+
+    @toggle_state.setter
+    def toggle_state(self, value: ToggleState) -> None:
+        """Sets the current toggle state.
+
+        :param value: ToggleState
+        """
+        self.raw_element.ToggleState = value.value
 
     def is_toggled(self) -> bool:
         """Gets or sets if the element is toggled.
@@ -241,7 +261,10 @@ class ToggleAutomationElement(ElementModel, abc.ABC):
         return self.toggle() if self.is_toggled() == required_state else None
 
 
-class SelectionItemAutomationElement(ElementModel, abc.ABC):
+T = TypeVar("T", bound="SelectionItemAutomationElement")
+
+
+class SelectionItemAutomationElement(ElementModel, abc.ABC):  # pragma: no cover
     """An element which supports the SelectionItemPattern"""
 
     @property
@@ -252,38 +275,26 @@ class SelectionItemAutomationElement(ElementModel, abc.ABC):
         """
         return self.raw_element.IsSelected
 
-    def select(self) -> SelectionItemAutomationElement:
+    def select(self: T) -> T:
         """Selects the element.
 
-        :return: SelectionItemAutomationElement
+        :return: Self
         """
-        return SelectionItemAutomationElement(raw_element=self.raw_element.Select())
+        return self.__class__(raw_element=self.raw_element.Select())
 
-    def add_to_selection(self) -> SelectionItemAutomationElement:
+    def add_to_selection(self: T) -> T:
         """Adds the element to the selection.
 
-        :return: SelectionItemAutomationElement
+        :return: Self
         """
-        return SelectionItemAutomationElement(raw_element=self.raw_element.AddToSelection())
+        return self.__class__(raw_element=self.raw_element.AddToSelection())
 
-    def remove_from_selection(self) -> SelectionItemAutomationElement:
+    def remove_from_selection(self: T) -> T:
         """Removes the element to the selection.
 
-        :return: SelectionItemAutomationElement
+        :return: Self
         """
-        return SelectionItemAutomationElement(raw_element=self.raw_element.RemoveFromSelection())
-
-
-class ComboBoxItem(SelectionItemAutomationElement, abc.ABC):
-    """Class to interact with a combobox item element."""
-
-    @property
-    def text(self) -> str:
-        """Gets the text of the element.
-
-        :return: Element text
-        """
-        return self.raw_element.Text
+        return self.__class__(raw_element=self.raw_element.RemoveFromSelection())
 
 
 # ================================================================================
@@ -299,6 +310,8 @@ class AutomationElement(ElementBase):
         :return: Automation object
         """
         return self.raw_element.Automation
+
+    # TODO: Create AutomationBase based on FlaUI.Core.AutomationBase and return that over here
 
     @property
     def item_status(self) -> str:
@@ -337,14 +350,14 @@ class AutomationElement(ElementBase):
         """
         self.raw_element.DoubleClick(move_mouse)
 
-    def draw_highlight(self, color: ColorCollection = ColorCollection.Red, duration: int = 2000) -> None:
-        """Draws a highlight around the element.
+    def draw_highlight(self, color: Color = ColorCollection.Red, duration: int = 2000) -> None:
+        """Draw a highlight around the element with the given settings.
 
-        :param color: Color used to highlight, defaults to ColorCollection.Red
-        :param duration: Duration to highlight, defaults to 2000
+        :param color: Color object, defaults to ColorCollection.Red
+        :param duration: Duration to highlight (in ms), defaults to 2000
         """
         self.raw_element.Automation.OverlayManager.Show(
-            self.raw_element.Properties.BoundingRectangle.Value, color, duration
+            self.raw_element.Properties.BoundingRectangle.Value, color.cs_object, duration
         )
 
     def equals(self, another_element: AutomationElement) -> bool:
@@ -372,13 +385,16 @@ class AutomationElement(ElementBase):
         """
         return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllByXPath(x_path)]
 
-    def find_all_children(self, condition: PropertyCondition) -> List[AutomationElement]:
+    def find_all_children(self, condition: Optional[PropertyCondition]=None) -> List[AutomationElement]:
         """Finds all children with the condition.
 
         :param condition: The search condition.
         :return: The found elements or an empty list if no elements were found.
         """
-        return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllChildren(condition.condition)]
+        if condition is None:
+            return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllChildren()]
+        else:
+            return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllChildren(condition.condition)]
 
     def find_all_descendants(self, condition: PropertyCondition) -> List[AutomationElement]:
         """Finds all descendants with the condition.
@@ -464,14 +480,14 @@ class AutomationElement(ElementBase):
         """
         return AutomationElement(raw_element=self.raw_element.FindFirstDescendant(condition.condition))
 
-    def find_first_nested(self, conditions: Optional[Any]) -> AutomationElement:
+    def find_first_nested(self, condition: Optional[PropertyCondition]) -> AutomationElement:
         """Finds the first element by iterating thru all conditions.
 
-        :param conditions: The conditions to use.
+        :param condition: The condition to use.
         :return: The found element or null if no element was found.
         """
         return AutomationElement(
-            raw_element=self.raw_element.FindFirstNested(conditions.raw_cf)  # type: ignore # pyright: ignore
+            raw_element=self.raw_element.FindFirstNested(condition.condition)  # type: ignore # pyright: ignore
         )
 
     def find_first_with_options(
@@ -654,218 +670,277 @@ class AutomationElement(ElementBase):
         """
         return self.raw_element.TryGetClickablePoint()
 
-    def AsCalendar(self) -> Calendar:
+    def as_button(self) -> Button:
+        """Converts the element to a Button.
+
+        :return: Button element
+        """
+        from FlaUI.Core.AutomationElements import Button as CSButton  # pyright: ignore
+
+        return Button(raw_element=CSButton(self.framework_automation_element))
+
+    def as_calendar(self) -> Calendar:
         """Converts the element to a Calendar.
 
         :return: Calendar element
         """
-        return Calendar(raw_element=self.raw_element.AsCalendar())
+        from FlaUI.Core.AutomationElements import Calendar as CSCalendar  # pyright: ignore
 
-    def AsCheckBox(self) -> CheckBox:
+        return Calendar(raw_element=CSCalendar(self.framework_automation_element))
+
+    def as_check_box(self) -> CheckBox:
         """Converts the element to a CheckBox.
 
         :return: CheckBox element
         """
-        return CheckBox(raw_element=self.raw_element.AsCheckBox())
+        from FlaUI.Core.AutomationElements import CheckBox as CSCheckBox  # pyright: ignore
 
-    def AsComboBox(self) -> ComboBox:
+        return CheckBox(raw_element=CSCheckBox(self.framework_automation_element))
+
+    def as_combo_box(self) -> ComboBox:
         """Converts the element to a ComboBox.
 
         :return: ComboBox element
         """
-        return ComboBox(raw_element=self.raw_element.AsComboBox())
+        from FlaUI.Core.AutomationElements import ComboBox as CSComboBox  # pyright: ignore
 
-    def AsDataGridView(self) -> DataGridView:
+        return ComboBox(raw_element=CSComboBox(self.framework_automation_element))
+
+    def as_data_grid_view(self) -> DataGridView:
         """Converts the element to a DataGridView.
 
         :return: DataGridView element
         """
-        return DataGridView(raw_element=self.raw_element.AsDataGridView())
+        from FlaUI.Core.AutomationElements import DataGridView as CSDataGridView  # pyright: ignore
 
-    def AsDateTimePicker(self) -> DateTimePicker:
+        return DataGridView(raw_element=CSDataGridView(self.framework_automation_element))
+
+    def as_date_time_picker(self) -> DateTimePicker:
         """Converts the element to a DateTimePicker.
 
         :return: DateTimePicker element
         """
-        return DateTimePicker(raw_element=self.raw_element.AsDateTimePicker())
+        from FlaUI.Core.AutomationElements import DateTimePicker as CSDateTimePicker  # pyright: ignore
 
-    def AsLabel(self) -> Label:
+        return DateTimePicker(raw_element=CSDateTimePicker(self.framework_automation_element))
+
+    def as_label(self) -> Label:
         """Converts the element to a Label.
 
         :return: Label element
         """
-        return Label(raw_element=self.raw_element.AsLabel())
+        from FlaUI.Core.AutomationElements import Label as CSLabel  # pyright: ignore
 
-    def AsGrid(self) -> Grid:
+        return Label(raw_element=CSLabel(self.framework_automation_element))
+
+    def as_grid(self) -> Grid:
         """Converts the element to a Grid.
 
         :return: Grid element
         """
-        return Grid(raw_element=self.raw_element.AsGrid())
+        from FlaUI.Core.AutomationElements import Grid as CSGrid  # pyright: ignore
 
-    def AsGridRow(self) -> GridRow:
+        return Grid(raw_element=CSGrid(self.framework_automation_element))
+
+    def as_grid_row(self) -> GridRow:
         """Converts the element to a GridRow.
 
         :return: GridRow element
         """
-        return GridRow(raw_element=self.raw_element.AsGridRow())
+        from FlaUI.Core.AutomationElements import GridRow as CSGridRow  # pyright: ignore
 
-    def AsGridCell(self) -> GridCell:
+        return GridRow(raw_element=CSGridRow(self.framework_automation_element))
+
+    def as_grid_cell(self) -> GridCell:
         """Converts the element to a GridCell.
 
         :return: GridCell element
         """
-        return GridCell(raw_element=self.raw_element.AsGridCell())
+        from FlaUI.Core.AutomationElements import GridCell as CSGridCell  # pyright: ignore
 
-    def AsGridHeaderItem(self) -> GridHeaderItem:
+        return GridCell(raw_element=CSGridCell(self.framework_automation_element))
+
+    def as_grid_header_item(self) -> GridHeaderItem:
         """Converts the element to a GridHeaderItem.
 
         :return: GridHeaderItem element
         """
-        return GridHeaderItem(raw_element=self.raw_element.AsGridHeaderItem())
+        from FlaUI.Core.AutomationElements import GridHeaderItem as CSGridHeaderItem  # pyright: ignore
 
-    # def AsHorizontalScrollBar(self) -> HorizontalScrollBar:
+        return GridHeaderItem(raw_element=CSGridHeaderItem(self.framework_automation_element))
+
+    # def as_horizontal_scroll_bar(self) -> HorizontalScrollBar:
     #     """Converts the element to a HorizontalScrollBar.
 
     #     :return: HorizontalScrollBar element
     #     """
-    #     return HorizontalScrollBar(raw_element=self.raw_element.AsHorizontalScrollBar())# TODO: Put in HorizontalScrollBar element and update this line
+    #     # TODO: Put in HorizontalScrollBar element and update this line
+    #     from FlaUI.Core.AutomationElements import HorizontalScrollBar as CSHorizontalScrollBar  # pyright: ignore
+    #     return HorizontalScrollBar(raw_element=CSHorizontalScrollBar(self.framework_automation_element))
 
-    def AsListBox(self) -> ListBox:
+    def as_list_box(self) -> ListBox:
         """Converts the element to a ListBox.
 
         :return: ListBox element
         """
-        return ListBox(raw_element=self.raw_element.AsListBox())
+        from FlaUI.Core.AutomationElements import ListBox as CSListBox  # pyright: ignore
 
-    def AsListBoxItem(self) -> ListBoxItem:
+        return ListBox(raw_element=CSListBox(self.framework_automation_element))
+
+    def as_list_box_item(self) -> ListBoxItem:
         """Converts the element to a ListBoxItem.
 
         :return: ListBoxItem element
         """
-        return ListBoxItem(raw_element=self.raw_element.AsListBoxItem())
+        from FlaUI.Core.AutomationElements import ListBoxItem as CSListBoxItem  # pyright: ignore
 
-    def AsMenu(self) -> Menu:
+        return ListBoxItem(raw_element=CSListBoxItem(self.framework_automation_element))
+
+    def as_menu(self) -> Menu:
         """Converts the element to a Menu.
 
         :return: Menu element
         """
-        return Menu(raw_element=self.raw_element.AsMenu())
+        from FlaUI.Core.AutomationElements import Menu as CSMenu  # pyright: ignore
 
-    def AsMenuItem(self) -> MenuItem:
+        return Menu(raw_element=CSMenu(self.framework_automation_element))
+
+    def as_menu_item(self) -> MenuItem:
         """Converts the element to a MenuItem.
 
         :return: MenuItem element
         """
-        return MenuItem(raw_element=self.raw_element.AsMenuItem())
+        from FlaUI.Core.AutomationElements import MenuItem as CSMenuItem  # pyright: ignore
 
-    def AsProgressBar(self) -> ProgressBar:
+        return MenuItem(raw_element=CSMenuItem(self.framework_automation_element))
+
+    def as_progress_bar(self) -> ProgressBar:
         """Converts the element to a ProgressBar.
 
         :return: ProgressBar element
         """
-        return ProgressBar(raw_element=self.raw_element.AsProgressBar())
+        from FlaUI.Core.AutomationElements import ProgressBar as CSProgressBar  # pyright: ignore
 
-    def AsRadioButton(self) -> RadioButton:
+        return ProgressBar(raw_element=CSProgressBar(self.framework_automation_element))
+
+    def as_radio_button(self) -> RadioButton:
         """Converts the element to a RadioButton.
 
         :return: RadioButton element
         """
-        return RadioButton(raw_element=self.raw_element.AsRadioButton())
+        from FlaUI.Core.AutomationElements import RadioButton as CSRadioButton  # pyright: ignore
 
-    def AsSlider(self) -> Slider:
+        return RadioButton(raw_element=CSRadioButton(self.framework_automation_element))
+
+    def as_slider(self) -> Slider:
         """Converts the element to a Slider.
 
         :return: Slider element
         """
-        return Slider(raw_element=self.raw_element.AsSlider())
+        from FlaUI.Core.AutomationElements import Slider as CSSlider  # pyright: ignore
 
-    def AsSpinner(self) -> Spinner:
+        return Slider(raw_element=CSSlider(self.framework_automation_element))
+
+    def as_spinner(self) -> Spinner:
         """Converts the element to a Spinner.
 
         :return: Spinner element
         """
-        return Spinner(raw_element=self.raw_element.AsSpinner())
+        from FlaUI.Core.AutomationElements import Spinner as CSSpinner  # pyright: ignore
 
-    def AsTab(self) -> Tab:
+        return Spinner(raw_element=CSSpinner(self.framework_automation_element))
+
+    def as_tab(self) -> Tab:
         """Converts the element to a Tab.
 
         :return: Tab element
         """
-        return Tab(raw_element=self.raw_element.AsTab())
+        from FlaUI.Core.AutomationElements import Tab as CSTab  # pyright: ignore
 
-    def AsTabItem(self) -> TabItem:
+        return Tab(raw_element=CSTab(self.framework_automation_element))
+
+    def as_tab_item(self) -> TabItem:
         """Converts the element to a TabItem.
 
         :return: TabItem element
         """
-        return TabItem(raw_element=self.raw_element.AsTabItem())
+        from FlaUI.Core.AutomationElements import TabItem as CSTabItem  # pyright: ignore
 
-    def AsTextBox(self) -> TextBox:
+        return TabItem(raw_element=CSTabItem(self.framework_automation_element))
+
+    def as_text_box(self) -> TextBox:
         """Converts the element to a TextBox.
 
         :return: TextBox element
         """
-        return TextBox(raw_element=self.raw_element.AsTextBox())
+        from FlaUI.Core.AutomationElements import TextBox as CSTextBox  # pyright: ignore
 
-    def AsThumb(self) -> Thumb:
+        return TextBox(raw_element=CSTextBox(self.framework_automation_element))
+
+    def as_thumb(self) -> Thumb:
         """Converts the element to a Thumb.
 
         :return: Thumb element
         """
-        return Thumb(raw_element=self.raw_element.AsThumb())
+        from FlaUI.Core.AutomationElements import Thumb as CSThumb  # pyright: ignore
 
-    def AsTitleBar(self) -> TitleBar:
+        return Thumb(raw_element=CSThumb(self.framework_automation_element))
+
+    def as_title_bar(self) -> TitleBar:
         """Converts the element to a TitleBar.
 
         :return: TitleBar element
         """
-        return TitleBar(raw_element=self.raw_element.AsTitleBar())
+        from FlaUI.Core.AutomationElements import TitleBar as CSTitleBar  # pyright: ignore
 
-    def AsToggleButton(self) -> ToggleButton:
+        return TitleBar(raw_element=CSTitleBar(self.framework_automation_element))
+
+    def as_toggle_button(self) -> ToggleButton:
         """Converts the element to a ToggleButton.
 
         :return: ToggleButton element
         """
-        return ToggleButton(raw_element=self.raw_element.AsToggleButton())
+        from FlaUI.Core.AutomationElements import ToggleButton as CSToggleButton  # pyright: ignore
 
-    def AsTree(self) -> Tree:
+        return ToggleButton(raw_element=CSToggleButton(self.framework_automation_element))
+
+    def as_tree(self) -> Tree:
         """Converts the element to a Tree.
 
         :return: Tree element
         """
-        return Tree(raw_element=self.raw_element.AsTree())
+        from FlaUI.Core.AutomationElements import Tree as CSTree  # pyright: ignore
 
-    def AsTreeItem(self) -> TreeItem:
+        return Tree(raw_element=CSTree(self.framework_automation_element))
+
+    def as_tree_item(self) -> TreeItem:
         """Converts the element to a TreeItem.
 
         :return: TreeItem element
         """
-        return TreeItem(raw_element=self.raw_element.AsTreeItem())
+        from FlaUI.Core.AutomationElements import TreeItem as CSTreeItem  # pyright: ignore
 
-    # def AsVerticalScrollBar(self) -> VerticalScrollBar:
+        return TreeItem(raw_element=CSTreeItem(self.framework_automation_element))
+
+    # def as_vertical_scroll_bar(self) -> VerticalScrollBar:
     #     """Converts the element to a VerticalScrollBar.
 
     #     :return: VerticalScrollBar element
     #     """
-    #     return VerticalScrollBar(raw_element=self.raw_element.AsVerticalScrollBar()) # Build VerticalScrollBar class and update this line
+    #     # TODO: Build VerticalScrollBar class and update this line
+    #     return VerticalScrollBar(raw_element=self.raw_element.AsVerticalScrollBar())
 
-    def AsWindow(self) -> Window:
+    def as_window(self) -> Window:
         """Converts the element to a Window.
 
         :return: Window element
         """
-        return Window(raw_element=self.raw_element.AsWindow())
+        from FlaUI.Core.AutomationElements import Window as CSWindow  # pyright: ignore
+
+        return Window(raw_element=CSWindow(self.framework_automation_element))
 
 
-# TODO: Next things to do
-# 1. Build other classes
-# 2. Finally add AutomationElementExtensions
-# 3. Write unit tests
-# 4. Fix return class types for certain functions which use system libraries
-
-
-class Button(AutomationElement, InvokeAutomationElement):
+class Button(AutomationElement, InvokeAutomationElement):  # pragma: no cover
     """Class to interact with a button element"""
 
     pass
@@ -874,21 +949,31 @@ class Button(AutomationElement, InvokeAutomationElement):
 class Calendar(AutomationElement):
     """Class to interact with a calendar element. Not supported for Windows Forms calendar"""
 
+    @staticmethod
+    def _parse_date(py_date: date) -> CSDateTime:
+        """Parses a Python date object to a C# DateTime object
+
+        :param py_date: Python date object
+        :return: CSDateTime object
+        """
+        # Use DateTime(*date.timetuple()[:6] + (date.microsecond/1000,)) for date objects
+        return CSDateTime(*arrow.get(py_date).date().timetuple()[:6])
+
     @property
-    def selected_dates(self) -> date:
+    def selected_dates(self) -> List[date]:
         """Gets the selected dates in the calendar. For Win32 multiple selection calendar the returned array has two dates,
         the first date and the last date of the selected range. For WPF calendar the returned array contains all selected dates
 
         :return: Selected dates
         """
-        return arrow.get(self.raw_element.SelectedDates).date()
+        return [arrow.get(_.ToString("o")).date() for _ in self.raw_element.SelectedDates]
 
     def select_date(self, date: date) -> None:
         """Deselects other selected dates and selects the specified date.
 
         :param date: Date object
         """
-        self.raw_element.SelectDate(arrow.get(date).date())
+        self.raw_element.SelectDate(self._parse_date(date))
 
     def select_range(self, dates: List[date]) -> None:
         """For WPF calendar with SelectionMode="MultipleRange" this method deselects other selected dates and selects the specified range.
@@ -899,7 +984,7 @@ class Calendar(AutomationElement):
 
         :param dates: Date ranges
         """
-        self.raw_element.SelectRange(dates)
+        self.raw_element.SelectRange([self._parse_date(_) for _ in dates])
 
     def add_to_selection(self, date: date) -> None:
         """For WPF calendar with SelectionMode="MultipleRange" this method adds the specified date to current selection.
@@ -908,7 +993,7 @@ class Calendar(AutomationElement):
 
         :param date: Date object
         """
-        self.raw_element.AddToSelection(arrow.get(date).date())
+        self.raw_element.AddToSelection(self._parse_date(date))
 
     def add_range_to_selection(self, dates: List[date]) -> None:
         """For WPF calendar with SelectionMode="MultipleRange" this method adds the specified range to current selection.
@@ -917,7 +1002,7 @@ class Calendar(AutomationElement):
 
         :param dates: Date ranges
         """
-        self.raw_element.AddRangeToSelection(dates)
+        self.raw_element.AddRangeToSelection([self._parse_date(_) for _ in dates])
 
 
 class CheckBox(AutomationElement, ToggleAutomationElement):
@@ -944,15 +1029,21 @@ class ComboBox(AutomationElement):
     """Class to interact with a combobox element"""
 
     @property
-    def AnimationDuration(self, time_span: int = 100) -> Any:
+    def animation_duration(self, time_span: int = 100) -> Any:
         """Timespan to wait until the animation for opening/closing is finished.
 
         :param time_span: Timespan in milliseconds, defaults to 100
         :return: C# TimeSpan object from System namespace
         """
-        return self.raw_element.AnimationDuration(
-            TimeSpan.FromMilliseconds(time_span)
-        )  # TODO: Check if get/set property is needed to work here
+        return self.raw_element.AnimationDuration
+
+    @animation_duration.setter
+    def animation_duration(self, time_span: int = 100) -> None:
+        """Timespan to wait until the animation for opening/closing is finished.
+
+        :param time_span: Timespan in milliseconds, defaults to 100
+        """
+        self.raw_element.AnimationDuration = TimeSpan.FromMilliseconds(time_span)
 
     @property
     def editable_text(self) -> str:
@@ -962,6 +1053,15 @@ class ComboBox(AutomationElement):
         :return: Editable text of the element
         """
         return self.raw_element.EditableText
+
+    @editable_text.setter
+    def editable_text(self, value: str) -> None:
+        """Sets the text of the editable element inside the combobox.
+        Only works if the combobox is editable.
+
+        :param value: Text value
+        """
+        self.raw_element.EditableText = value
 
     @property
     def is_editable(self) -> bool:
@@ -1004,7 +1104,7 @@ class ComboBox(AutomationElement):
         return ComboBoxItem(raw_element=self.raw_element.SelectedItem)
 
     @property
-    def items(self) -> List[str]:
+    def items(self) -> List[ComboBoxItem]:
         """Gets all available items from the ComboBox element
 
         :return: Item
@@ -1036,6 +1136,18 @@ class ComboBox(AutomationElement):
         return ComboBoxItem(raw_element=self.raw_element.Select(value))
 
 
+class ComboBoxItem(AutomationElement, SelectionItemAutomationElement):  # pragma: no cover
+    """Class to interact with a combobox item element."""
+
+    @property
+    def text(self) -> str:
+        """Gets the text of the element
+
+        :return: Element text
+        """
+        return self.raw_element.Text
+
+
 class DataGridView(AutomationElement):
     """Class to interact with a WinForms DataGridView"""
 
@@ -1048,14 +1160,21 @@ class DataGridView(AutomationElement):
         """
         return self.raw_element.HasAddRow
 
+    @has_add_row.setter
+    def has_add_row(self, value: bool) -> None:
+        """Flag to indicate if the grid has the "Add New Item" row or not.
+
+        :param value: True if has Add row, else False
+        """
+        self.raw_element.HasAddRow = value
+
     @property
-    def header(self) -> Union[DataGridViewHeader, None]:
+    def header(self) -> DataGridViewHeader:
         """Gets the header element or null if the header is disabled.
 
         :return: DataGridViewHeader element if header element exists, else None
         """
-        raw_element = self.raw_element.Header
-        return DataGridViewHeader(raw_element=raw_element) if raw_element else raw_element
+        return DataGridViewHeader(raw_element=self.raw_element.Header)
 
     @property
     def rows(self) -> List[DataGridViewRow]:
@@ -1075,7 +1194,7 @@ class DataGridViewHeader(AutomationElement):
 
         :return: List of DataGridViewHeaderItem
         """
-        return [DataGridViewHeaderItem(raw_element=_) for _ in self.raw_element.DataGridViewHeaderItem]
+        return [DataGridViewHeaderItem(raw_element=_) for _ in self.raw_element.Columns]
 
 
 class DataGridViewHeaderItem(AutomationElement):
@@ -1113,55 +1232,38 @@ class DataGridViewCell(AutomationElement):
         """
         return self.raw_element.Value
 
-    # TODO: Check Get/Set actions while testing
-    def get_value(self) -> str:
-        """Gets the value in the cell.
+    @value.setter
+    def value(self, value: str) -> None:
+        """Value in the cell.
 
-        :return: Cell value
+        :param value: Cell value
         """
-        return self.raw_element.Value
-
-    def set_value(self, value: str) -> None:
-        """Sets the value in the cell.
-
-        :param value: Value to set
-        """
-        self.raw_element.Value(value)
+        self.raw_element.Value = value
 
 
 class DateTimePicker(AutomationElement):
     """Class to interact with a DateTimePicker element"""
 
     @property
-    def selected_date(self) -> Union[datetime, None]:
+    def selected_date(self) -> Optional[date]:
         """Gets the selected date in the DateTimePicker.
         For Win32, setting SelectedDate to null will uncheck the DateTimePicker control and disable it.
         Also for Win32, if the control is unchecked then SelectedDate will return null.
 
-        :return: Datetime object if exists, else None
+        :return: date object if exists, else None
         """
-        raw_element = self.raw_element.SelectedDate
-        return arrow.get(raw_element).datetime if raw_element else None
+        _raw_date = self.raw_element.SelectedDate
+        return arrow.get(_raw_date.Year, _raw_date.Month, _raw_date.Day).date() if _raw_date else None
 
-    # TODO: Check Get/Set method during testing
-    def get_selected_date(self) -> Union[datetime, None]:
-        """Gets the selected date in the DateTimePicker.
-        For Win32, setting SelectedDate to null will uncheck the DateTimePicker control and disable it.
-        Also for Win32, if the control is unchecked then SelectedDate will return null.
-
-        :return: Datetime object if exists, else None
-        """
-        raw_element = self.raw_element.SelectedDate
-        return arrow.get(raw_element).datetime if raw_element else None
-
-    def set_selected_date(self, datetime: datetime) -> None:
+    @selected_date.setter
+    def selected_date(self, date: date) -> None:
         """Sets the selected date in the DateTimePicker.
         For Win32, setting SelectedDate to null will uncheck the DateTimePicker control and disable it.
         Also for Win32, if the control is unchecked then SelectedDate will return null.
 
-        :return: Datetime object if exists, else None
+        :return: date object if exists, else None
         """
-        self.raw_element.SelectedDate(datetime)
+        self.raw_element.SelectedDate = CSDateTime.Parse(arrow.get(date).strftime("%Y-%m-%d"))
 
 
 class Grid(AutomationElement):
@@ -1233,15 +1335,38 @@ class Grid(AutomationElement):
         return [GridRow(raw_element=_) for _ in self.raw_element.SelectedItems]  # type: ignore
 
     @property
-    def selected_item(self) -> Union[GridRow, None]:
+    def selected_item(self) -> GridRow:
         """Gets the first selected item or null otherwise.
 
         :return: GridRow element if selected, else None
         """
-        raw_element = self.raw_element.SelectedItem
-        return GridRow(raw_element=raw_element) if raw_element else raw_element
+        return GridRow(raw_element=self.raw_element.SelectedItem)
 
-    def select(self, row_index: Optional[int], column_index: Optional[int], text_to_find: Optional[str]) -> GridRow:
+    def _retry_while_null_reference_exception(self, func: Callable, message: str) -> Any:
+        """Retries the function call if a NullReferenceException is thrown.
+        Grid rows are not available immediately after the grid is loaded, so we need to retry the function call.
+        Sometimes the function call is still not successful after the first retry, so we try it twice. We attempt to click on the grid before the second retry.
+
+        :param func: Function to call
+        :param message: Error message
+        :return: Function result
+        """
+        attempts = 0
+        while attempts < 2:
+            try:
+                return func()
+            except NullReferenceException:
+                # This is a workaround for a bug where the row is not yet available, Python.NET does not handle this exception correctly.
+                # It rather throws a System.NullReferenceException: Object reference not set to an instance of an object.
+                # This is a known issue:
+                attempts += 1
+                self.click()
+                continue
+        raise ValueError(message)
+
+    def select(
+        self, row_index: Optional[int] = None, column_index: Optional[int] = None, text_to_find: Optional[str] = None
+    ) -> GridRow:
         """Select the first row by text in the given Row index or a combination of Column index along with text_to_find.
 
         :param row_index: Row index
@@ -1251,14 +1376,23 @@ class Grid(AutomationElement):
         :return: GridRow element
         """
         if all([column_index, text_to_find]):
-            return GridRow(raw_element=self.raw_element.Select(column_index, text_to_find))
-        elif all([row_index]):
-            return GridRow(raw_element=self.raw_element.Select(row_index))
+            return GridRow(
+                raw_element=self._retry_while_null_reference_exception(
+                    lambda: self.raw_element.Select(column_index, text_to_find), "Row not found in column"
+                )
+            )
+        elif all([row_index]) and not any([column_index, text_to_find]):
+            return GridRow(
+                raw_element=self._retry_while_null_reference_exception(
+                    lambda: self.raw_element.Select(row_index), "Row not found in row index"
+                )
+            )
+
         else:
             raise ValueError("Invalid input sent to the function, cannot select the row")
 
     def add_to_selection(
-        self, row_index: Optional[int], column_index: Optional[int], text_to_find: Optional[str]
+        self, row_index: Optional[int] = None, column_index: Optional[int] = None, text_to_find: Optional[str] = None
     ) -> GridRow:
         """Add a row to the selection by index or by text in the given column.
 
@@ -1269,14 +1403,24 @@ class Grid(AutomationElement):
         :return: GridRow element
         """
         if all([column_index, text_to_find]):
-            return GridRow(raw_element=self.raw_element.AddToSelection(column_index, text_to_find))
-        elif all([row_index]):
-            return GridRow(raw_element=self.raw_element.AddToSelection(row_index))
+            return GridRow(
+                raw_element=self._retry_while_null_reference_exception(
+                    lambda: self.raw_element.AddToSelection(column_index, text_to_find),
+                    "Row not found in column, cannot add to selection",
+                )
+            )
+        elif all([row_index]) and not any([column_index, text_to_find]):
+            return GridRow(
+                raw_element=self._retry_while_null_reference_exception(
+                    lambda: self.raw_element.AddToSelection(row_index),
+                    "Row not found in row index, cannot add to selection",
+                )
+            )
         else:
             raise ValueError("Invalid input sent to the function, cannot add to the selection")
 
     def remove_from_selection(
-        self, row_index: Optional[int], column_index: Optional[int], text_to_find: Optional[str]
+        self, row_index: Optional[int] = None, column_index: Optional[int] = None, text_to_find: Optional[str] = None
     ) -> GridRow:
         """Remove a row to the selection by index or by text in the given column.
 
@@ -1287,9 +1431,19 @@ class Grid(AutomationElement):
         :return: GridRow element
         """
         if all([column_index, text_to_find]):
-            return GridRow(raw_element=self.raw_element.RemoveFromSelection(column_index, text_to_find))
-        elif all([row_index]):
-            return GridRow(raw_element=self.raw_element.RemoveFromSelection(row_index))
+            return GridRow(
+                raw_element=self._retry_while_null_reference_exception(
+                    lambda: self.raw_element.RemoveFromSelection(column_index, text_to_find),
+                    "Row not found in column, cannot remove from selection",
+                )
+            )
+        elif all([row_index]) and not any([column_index, text_to_find]):
+            return GridRow(
+                raw_element=self._retry_while_null_reference_exception(
+                    lambda: self.raw_element.RemoveFromSelection(row_index),
+                    "Row not found in row index, cannot remove from selection",
+                )
+            )
         else:
             raise ValueError("Invalid input sent to the function, cannot remove from the selection")
 
@@ -1325,7 +1479,7 @@ class GridHeader(AutomationElement):
     """Header element for grids and tables."""
 
     @property
-    def Columns(self) -> List[GridHeaderItem]:
+    def columns(self) -> List[GridHeaderItem]:
         """Gets all header items from the grid header."""
         return [GridHeaderItem(raw_element=_) for _ in self.raw_element.Columns]
 
@@ -1335,9 +1489,9 @@ class GridHeaderItem(AutomationElement):
 
     @property
     def text(self) -> str:
-        """Gets the text of the element.
+        """Gets the text of the header item.
 
-        :return: Element text
+        :return: Text of the header item
         """
         return self.raw_element.Text
 
@@ -1346,12 +1500,12 @@ class GridRow(SelectionItemAutomationElement):
     """Row element for grids and tables."""
 
     @property
-    def cells(self) -> GridCell:
+    def cells(self) -> List[GridCell]:
         """Gets all the cells from the row.
 
         :return: GridCell element
         """
-        return GridCell(raw_element=self.raw_element.Cells)
+        return [GridCell(raw_element=_) for _ in self.raw_element.Cells]
 
     @property
     def header(self) -> GridHeaderItem:
@@ -1396,6 +1550,14 @@ class GridCell(AutomationElement):
         """
         return GridRow(raw_element=self.raw_element.ContainingRow)
 
+    @property
+    def value(self) -> str:
+        """Gets the value of the cell.
+
+        :return: Cell value
+        """
+        return self.raw_element.Value
+
 
 class Label(AutomationElement):
     """Class to interact with a label element"""
@@ -1413,7 +1575,7 @@ class ListBox(AutomationElement):
     """Class to interact with a list box element"""
 
     @property
-    def Items(self) -> List[ListBoxItem]:
+    def items(self) -> List[ListBoxItem]:
         """Returns all the list box items
 
         :return: List of ListBoxItem elements
@@ -1421,7 +1583,7 @@ class ListBox(AutomationElement):
         return [ListBoxItem(raw_element=_) for _ in self.raw_element.Items]  # type: ignore
 
     @property
-    def SelectedItems(self) -> List[ListBoxItem]:
+    def selected_items(self) -> List[ListBoxItem]:
         """Gets all selected items.
 
         :return: List of ListBoxItem elements
@@ -1429,13 +1591,12 @@ class ListBox(AutomationElement):
         return [ListBoxItem(raw_element=_) for _ in self.raw_element.SelectedItems]  # type: ignore
 
     @property
-    def SelectedItem(self) -> Union[ListBoxItem, None]:
+    def selected_item(self) -> ListBoxItem:
         """Gets the first selected item or null otherwise.
 
         :return: ListBoxItem element if selected, else None
         """
-        raw_element = self.raw_element.SelectedItem
-        return ListBoxItem(raw_element=raw_element) if raw_element else None
+        return ListBoxItem(raw_element=self.raw_element.SelectedItem)
 
     def select(self, value: Union[str, int]) -> ListBoxItem:
         """Selects an item by index or text.
@@ -1488,32 +1649,34 @@ class ListBoxItem(SelectionItemAutomationElement):
         """
         return self.raw_element.IsChecked
 
-    # TODO: Get/Set method is to be checked in testing
-    def get_is_checked(self) -> bool:
-        """Gets if the listbox item is checked, if checking is supported
-
-        :return: True if checked, else False
-        """
-        return self.raw_element.IsChecked
-
-    def set_is_checked(self, value: bool) -> None:
+    @is_checked.setter
+    def is_checked(self, value: bool) -> None:
         """Sets if the listbox item is checked, if checking is supported
 
-        :return: True if checked, else False
+        :value: Flag to set
+        :return: None
         """
-        self.raw_element.IsChecked(value)
+        self.raw_element.IsChecked = value
 
 
 class Menu(AutomationElement):
     """Class to interact with a menu or menubar element"""
 
     @property
-    def items(self) -> MenuItems:
+    def items(self) -> List[MenuItem]:
         """Gets all MenuItem which are inside this element.
 
         :return: List of Menu Items
         """
-        return [MenuItems(menu_items=_) for _ in self.raw_element.Items]  # ignore: type # pyright: ignore
+        return [MenuItem(raw_element=_) for _ in self.raw_element.Items]  # ignore: type # pyright: ignore
+
+    def get_item_by_name(self, name: str) -> MenuItem:
+        """Gets the menu item by name.
+
+        :param name: Name of the menu item
+        :return: MenuItem element
+        """
+        return MenuItem(raw_element=self.raw_element.Items[name])
 
     @property
     def is_win_menu(self) -> bool:
@@ -1523,21 +1686,13 @@ class Menu(AutomationElement):
         """
         return self.raw_element.IsWin32Menu
 
+    @is_win_menu.setter
+    def is_win_menu(self, value: bool) -> None:
+        """Flag to indicate if the containing menu is a Win32 menu because that one needs special handling
 
-class MenuItems(BaseModel):
-    """Represents a list of MenuItem elements."""
-
-    # TODO: Check how to properly parse the property attrs
-    menu_items: List[MenuItem]
-
-    # @property
-    # def Length(self) -> int:
-    #     return len(self.menu_items)
-
-    # @property
-    # def this(text: str) -> MenuItem:
-    #     pass
-
+        :return: True if the menu is Win32 model, else False
+        """
+        self.raw_element.IsWin32Menu = value
 
 class MenuItem(AutomationElement):
     """Class to interact with a menu item element."""
@@ -1550,6 +1705,14 @@ class MenuItem(AutomationElement):
         """
         return self.raw_element.IsWin32Menu
 
+    @is_win_menu.setter
+    def is_win_menu(self, value: bool) -> None:
+        """Flag to indicate if the containing menu is a Win32 menu because that one needs special handling
+
+        :return: True if the menu is Win32 model, else False
+        """
+        self.raw_element.IsWin32Menu = value
+
     @property
     def text(self) -> str:
         """Gets the text of the element
@@ -1559,14 +1722,12 @@ class MenuItem(AutomationElement):
         return self.raw_element.Text
 
     @property
-    def items(self) -> MenuItems:
+    def items(self) -> List[MenuItem]:
         """Gets all MenuItem which are inside this element.
 
         :return: MenuItems
         """
-        return MenuItems(
-            menu_items=self.raw_element.Items
-        )  # TODO: Find a way to fix menu items and then revisit this one
+        return [MenuItem(raw_element=_) for _ in self.raw_element.Items]
 
     def invoke(self) -> MenuItem:
         """Invokes the element.
@@ -1589,7 +1750,6 @@ class MenuItem(AutomationElement):
         """
         return MenuItem(raw_element=self.raw_element.Collapse())
 
-    # TODO: Check Get/Set methods for IsChecked during testing
     @property
     def is_checked(self) -> bool:
         """Gets if a menu item is checked or unchecked, if checking is supported.
@@ -1600,14 +1760,16 @@ class MenuItem(AutomationElement):
         """
         return self.raw_element.IsChecked
 
-    def get_is_checked(self) -> bool:
-        """Gets if a menu item is checked or unchecked, if checking is supported.
+    @is_checked.setter
+    def is_checked(self, value: bool) -> None:
+        """Sets if a menu item is checked or unchecked, if checking is supported.
         /// For some applications, like WPF, setting this property doesn't execute the action that happens when a user clicks the menu item, only the checked state is changed.
         /// For WPF and Windows Forms applications, if you want to execute the action too, you need to use Invoke() method.
 
-        :return: True if checked, else False
+        :value: Flag to set
+        :return: None
         """
-        return self.raw_element.IsChecked
+        self.raw_element.IsChecked = value
 
     def set_is_checked(self, value: bool) -> None:
         """Sets if a menu item is checked or unchecked, if checking is supported.
@@ -1618,6 +1780,14 @@ class MenuItem(AutomationElement):
         :return: None
         """
         self.raw_element.IsChecked(value)
+
+    def get_item_by_name(self, name: str) -> MenuItem:
+        """Gets the menu item by name.
+
+        :param name: Name of the menu item
+        :return: MenuItem element
+        """
+        return MenuItem(raw_element=self.raw_element.Items[name])
 
 
 class ProgressBar(AutomationElement):
@@ -1659,20 +1829,13 @@ class RadioButton(AutomationElement):
         """
         return self.raw_element.IsChecked
 
-    # TODO: Check Get/Set methods during testing
-    def get_is_checked(self) -> bool:
-        """Flag to get the selection of this element.
-
-        :return: True if element is checked, else False
-        """
-        return self.raw_element.IsChecked
-
-    def set_is_checked(self, value: bool) -> None:
+    @is_checked.setter
+    def is_checked(self, value: bool) -> None:
         """Flag to set the selection of this element.
 
-        :return: None
+        :value: True if element is checked, else False
         """
-        self.raw_element.IsChecked(value)
+        self.raw_element.IsChecked = value
 
 
 class Slider(AutomationElement):
@@ -1840,7 +2003,7 @@ class Tab(AutomationElement):
 
         :return: TabItem element
         """
-        return TabItem(raw_element=self.raw_element.SelectedTabItem())
+        return TabItem(raw_element=self.raw_element.SelectedTabItem)
 
     @property
     def selected_tab_item_index(self) -> int:
@@ -1857,21 +2020,16 @@ class Tab(AutomationElement):
         """
         return [TabItem(raw_element=_) for _ in self.raw_element.TabItems()]
 
-    def select_tab_item(self, index: Optional[int] = None, value: Optional[str] = None) -> TabItem:
+    def select_tab_item(self, index: Optional[int] = None, value: Optional[str] = None):
         """Selects a TabItem by index
 
         :param index: Selects by index value
         :param value: Selects by tab value
-        :return: Selected TabItem element
         """
-        return (
-            TabItem(raw_element=self.raw_element.SelectTabItem(index))
-            if index
-            else TabItem(raw_element=self.raw_element.SelectTabItem(value))
-        )
+        self.raw_element.SelectTabItem(index) if index else self.raw_element.SelectTabItem(value)
 
 
-class TabItem(SelectionItemAutomationElement):
+class TabItem(AutomationElement, SelectionItemAutomationElement):
     """Class to interact with a tabitem element."""
 
     pass
@@ -2089,6 +2247,15 @@ class Window(AutomationElement):
         """
         return self.raw_element.IsMainWindow
 
+    @is_main_window.setter
+    def is_main_window(self, value: bool) -> None:
+        """Flag to indicate, if the window is the application's main window.
+        Is used so that it does not need to be looked up again in some cases (e.g. Context Menu).
+
+        :return: True if the window is main window else False
+        """
+        self.raw_element.IsMainWindow = value
+
     def modal_windows(self) -> List[Window]:
         """Gets a list of all modal child windows.
 
@@ -2096,12 +2263,13 @@ class Window(AutomationElement):
         """
         return [Window(raw_element=_) for _ in self.raw_element.ModalWindows()]
 
+    @property
     def popup(self) -> Window:
         """Gets the current WPF popup window.
 
         :return: Pop up window
         """
-        return Window(raw_element=self.raw_element.Popup())
+        return Window(raw_element=self.raw_element.Popup)
 
     @property
     def context_menu(self) -> Menu:
@@ -2138,3 +2306,553 @@ class Window(AutomationElement):
         :param alpha: Transparency value
         """
         self.raw_element.SetTransparency(alpha)
+
+class IAutomationProperty(BaseModel, abc.ABC):
+    """Interface for an automation property."""
+
+    @property
+    @abc.abstractmethod
+    def value(self):
+        """Gets the value of the automation property."""
+        pass
+
+    @property
+    @abc.abstractmethod
+    def value_or_default(self):
+        """Gets the value of the automation property or a default value if not available."""
+        pass
+
+    @abc.abstractmethod
+    def try_get_value(self):
+        """Tries to get the value of the automation property."""
+        pass
+
+    @property
+    @abc.abstractmethod
+    def is_supported(self):
+        """Checks if the automation property is supported."""
+        pass
+
+
+class AutomationProperty(IAutomationProperty):
+    raw_property : Any
+
+    @property
+    def framework_automation_element(self) -> AutomationElement:
+        """Returns the FrameworkAutomationElement of the property.
+
+        :return: The FrameworkAutomationElement of the property.
+        """
+        return AutomationElement(raw_element=self.raw_property.FrameworkAutomationElement)
+
+    @property
+    def is_supported(self) -> bool:
+        """Returns if the property is supported.
+
+        :return: True if the property is supported, False otherwise.
+        """
+        return self.raw_property.IsSupported
+
+    @property
+    def property_id(self) -> str:
+        """Returns the property ID.
+
+        :return: The property ID.
+        """
+        return self.raw_property.PropertyId.Id
+
+    @property
+    def to_string(self) -> str:
+        """Returns the string representation of the property.
+
+        :return: The string representation of the property.
+        """
+        return self.raw_property.ToString()
+
+    @property
+    def value(self):
+        """Returns the value of the property.
+
+        :return: The value of the property.
+        """
+        return self.raw_property.Value
+
+    @property
+    def value_or_default(self):
+        """Returns the value of the property or a default value if the value is None.
+
+        :return: The value of the property or a default value if the value is None.
+        """
+        return self.raw_property.ValueOrDefault
+
+    def try_get_value(self) -> Tuple[bool, str]:
+        """Tries to get the value of the property.
+
+        :return: A tuple with the first element being True if the value was retrieved successfully, False otherwise.
+        """
+        return self.raw_property.TryGetValue()
+
+    def __eq__(self, other) -> bool:
+        """
+        Checks if the current AutomationProperty is equal to another AutomationProperty.
+
+        :param other: Another AutomationProperty object to compare with.
+        :return: True if the current AutomationProperty is equal to the other AutomationProperty, False otherwise.
+        """
+        if isinstance(other, AutomationProperty):
+            return self.value == other.value
+        return False
+
+    def __str__(self):
+        return str(self.value_or_default)
+
+class Properties(BaseModel):
+    raw_properties: Any
+
+    @property
+    def accelerator_key(self) -> AutomationProperty:
+        """Returns the AcceleratorKey of the property.
+
+        :return: The AcceleratorKey of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.AcceleratorKey)
+
+    @property
+    def access_key(self) -> AutomationProperty:
+        """Returns the AccessKey of the property.
+
+        :return: The AccessKey of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.AccessKey)
+
+    @property
+    def annotation_objects(self) -> AutomationProperty:
+        """Returns the AnnotationObjects of the property.
+
+        :return: The AnnotationObjects of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.AnnotationObjects)
+
+    @property
+    def annotation_types(self) -> AutomationProperty:
+        """Returns the AnnotationTypes of the property.
+
+        :return: The AnnotationTypes of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.AnnotationTypes)
+
+    @property
+    def aria_properties(self) -> AutomationProperty:
+        """Returns the AriaProperties of the property.
+
+        :return: The AriaProperties of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.AriaProperties)
+
+    @property
+    def aria_role(self) -> AutomationProperty:
+        """Returns the AriaRole of the property.
+
+        :return: The AriaRole of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.AriaRole)
+
+    @property
+    def automation_id(self) -> AutomationProperty:
+        """Returns the AutomationId of the property.
+
+        :return: The AutomationId of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.AutomationId)
+
+    @property
+    def bounding_rectangle(self) -> AutomationProperty:
+        """Returns the BoundingRectangle of the property.
+
+        :return: The BoundingRectangle of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.BoundingRectangle)
+
+    @property
+    def center_point(self) -> AutomationProperty:
+        """Returns the CenterPoint of the property.
+
+        :return: The CenterPoint of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.CenterPoint)
+
+    @property
+    def class_name(self) -> AutomationProperty:
+        """Returns the ClassName of the property.
+
+        :return: The ClassName of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.ClassName)
+
+    @property
+    def clickable_point(self) -> AutomationProperty:
+        """Returns the ClickablePoint of the property.
+
+        :return: The ClickablePoint of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.ClickablePoint)
+
+    @property
+    def controller_for(self) -> AutomationProperty:
+        """Returns the ControllerFor of the property.
+
+        :return: The ControllerFor of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.ControllerFor)
+
+    @property
+    def control_type(self) -> AutomationProperty:
+        """Returns the ControlType of the property.
+
+        :return: The ControlType of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.ControlType)
+
+    @property
+    def culture(self) -> AutomationProperty:
+        """Returns the Culture of the property.
+
+        :return: The Culture of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.Culture)
+
+    @property
+    def described_by(self) -> AutomationProperty:
+        """Returns the DescribedBy of the property.
+
+        :return: The DescribedBy of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.DescribedBy)
+
+    @property
+    def fill_color(self) -> AutomationProperty:
+        """Returns the FillColor of the property.
+
+        :return: The FillColor of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.FillColor)
+
+    @property
+    def fill_type(self) -> AutomationProperty:
+        """Returns the FillType of the property.
+
+        :return: The FillType of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.FillType)
+
+    @property
+    def flows_from(self) -> AutomationProperty:
+        """Returns the FlowsFrom of the property.
+
+        :return: The FlowsFrom of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.FlowsFrom)
+
+    @property
+    def flows_to(self) -> AutomationProperty:
+        """Returns the FlowsTo of the property.
+
+        :return: The FlowsTo of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.FlowsTo)
+
+    @property
+    def framework_id(self) -> AutomationProperty:
+        """Returns the FrameworkId of the property.
+
+        :return: The FrameworkId of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.FrameworkId)
+
+    @property
+    def full_description(self) -> AutomationProperty:
+        """Returns the FullDescription of the property.
+
+        :return: The FullDescription of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.FullDescription)
+
+    @property
+    def has_keyboard_focus(self) -> AutomationProperty:
+        """Returns the HasKeyboardFocus of the property.
+
+        :return: The HasKeyboardFocus of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.HasKeyboardFocus)
+
+    @property
+    def heading_level(self) -> AutomationProperty:
+        """Returns the HeadingLevel of the property.
+
+        :return: The HeadingLevel of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.HeadingLevel)
+
+    @property
+    def help_text(self) -> AutomationProperty:
+        """Returns the HelpText of the property.
+
+        :return: The HelpText of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.HelpText)
+
+    @property
+    def is_content_element(self) -> AutomationProperty:
+        """Returns the IsContentElement of the property.
+
+        :return: The IsContentElement of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.IsContentElement)
+
+    @property
+    def is_control_element(self) -> AutomationProperty:
+        """Returns the IsControlElement of the property.
+
+        :return: The IsControlElement of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.IsControlElement)
+
+    @property
+    def is_data_valid_for_form(self) -> AutomationProperty:
+        """Returns the IsDataValidForForm of the property.
+
+        :return: The IsDataValidForForm of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.IsDataValidForForm)
+
+    @property
+    def is_dialog(self) -> AutomationProperty:
+        """Returns the IsDialog of the property.
+
+        :return: The IsDialog of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.IsDialog)
+
+    @property
+    def is_enabled(self) -> AutomationProperty:
+        """Returns the IsEnabled of the property.
+
+        :return: The IsEnabled of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.IsEnabled)
+
+    @property
+    def is_keyboard_focusable(self) -> AutomationProperty:
+        """Returns the IsKeyboardFocusable of the property.
+
+        :return: The IsKeyboardFocusable of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.IsKeyboardFocusable)
+
+    @property
+    def is_offscreen(self) -> AutomationProperty:
+        """Returns the IsOffscreen of the property.
+
+        :return: The IsOffscreen of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.IsOffscreen)
+
+    @property
+    def is_password(self) -> AutomationProperty:
+        """Returns the IsPassword of the property.
+
+        :return: The IsPassword of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.IsPassword)
+
+    @property
+    def is_peripheral(self) -> AutomationProperty:
+        """Returns the IsPeripheral of the property.
+
+        :return: The IsPeripheral of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.IsPeripheral)
+
+    @property
+    def is_required_for_form(self) -> AutomationProperty:
+        """Returns the IsRequiredForForm of the property.
+
+        :return: The IsRequiredForForm of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.IsRequiredForForm)
+
+    @property
+    def item_status(self) -> AutomationProperty:
+        """Returns the ItemStatus of the property.
+
+        :return: The ItemStatus of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.ItemStatus)
+
+    @property
+    def item_type(self) -> AutomationProperty:
+        """Returns the ItemType of the property.
+
+        :return: The ItemType of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.ItemType)
+
+    @property
+    def labeled_by(self) -> AutomationProperty:
+        """Returns the LabeledBy of the property.
+
+        :return: The LabeledBy of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.LabeledBy)
+
+    @property
+    def landmark_type(self) -> AutomationProperty:
+        """Returns the LandmarkType of the property.
+
+        :return: The LandmarkType of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.LandmarkType)
+
+    @property
+    def level(self) -> AutomationProperty:
+        """Returns the Level of the property.
+
+        :return: The Level of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.Level)
+
+    @property
+    def live_setting(self) -> AutomationProperty:
+        """Returns the LiveSetting of the property.
+
+        :return: The LiveSetting of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.LiveSetting)
+
+    @property
+    def localized_control_type(self) -> AutomationProperty:
+        """Returns the LocalizedControlType of the property.
+
+        :return: The LocalizedControlType of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.LocalizedControlType)
+
+    @property
+    def localized_landmark_type(self) -> AutomationProperty:
+        """Returns the LocalizedLandmarkType of the property.
+
+        :return: The LocalizedLandmarkType of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.LocalizedLandmarkType)
+
+    @property
+    def name(self) -> AutomationProperty:
+        """Returns the Name of the property.
+
+        :return: The Name of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.Name)
+
+    @property
+    def native_window_handle(self) -> AutomationProperty:
+        """Returns the NativeWindowHandle of the property.
+
+        :return: The NativeWindowHandle of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.NativeWindowHandle)
+
+    @property
+    def optimize_for_visual_content(self) -> AutomationProperty:
+        """Returns the OptimizeForVisualContent of the property.
+
+        :return: The OptimizeForVisualContent of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.OptimizeForVisualContent)
+
+    @property
+    def orientation(self) -> AutomationProperty:
+        """Returns the Orientation of the property.
+
+        :return: The Orientation of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.Orientation)
+
+    @property
+    def outline_color(self) -> AutomationProperty:
+        """Returns the OutlineColor of the property.
+
+        :return: The OutlineColor of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.OutlineColor)
+
+    @property
+    def outline_thickness(self) -> AutomationProperty:
+        """Returns the OutlineThickness of the property.
+
+        :return: The OutlineThickness of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.OutlineThickness)
+
+    @property
+    def position_in_set(self) -> AutomationProperty:
+        """Returns the PositionInSet of the property.
+
+        :return: The PositionInSet of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.PositionInSet)
+
+    @property
+    def process_id(self) -> AutomationProperty:
+        """Returns the ProcessId of the property.
+
+        :return: The ProcessId of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.ProcessId)
+
+    @property
+    def provider_description(self) -> AutomationProperty:
+        """Returns the ProviderDescription of the property.
+
+        :return: The ProviderDescription of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.ProviderDescription)
+
+    @property
+    def rotation(self) -> AutomationProperty:
+        """Returns the Rotation of the property.
+
+        :return: The Rotation of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.Rotation)
+
+    @property
+    def runtime_id(self) -> AutomationProperty:
+        """Returns the RuntimeId of the property.
+
+        :return: The RuntimeId of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.RuntimeId)
+
+    @property
+    def size(self) -> AutomationProperty:
+        """Returns the Size of the property.
+
+        :return: The Size of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.Size)
+
+    @property
+    def size_of_set(self) -> AutomationProperty:
+        """Returns the SizeOfSet of the property.
+
+        :return: The SizeOfSet of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.SizeOfSet)
+
+    @property
+    def visual_effects(self) -> AutomationProperty:
+        """Returns the VisualEffects of the property.
+
+        :return: The VisualEffects of the property.
+        """
+        return AutomationProperty(raw_property=self.raw_properties.VisualEffects)

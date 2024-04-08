@@ -1,13 +1,12 @@
-"""This module contains the enumeration of the framework types."""
-
+"""Contains the enumeration of the different types of UI frameworks that FlaUI supports."""
 from enum import Enum
 
 from FlaUI.Core import FrameworkType as CSFrameworkType  # pyright: ignore
 
-
 class FrameworkType(Enum):
-    """Enums for handling the framework type."""
-
+    """
+    An enumeration of the different types of UI frameworks that FlaUI supports.
+    """
     none = None
     Unknown = CSFrameworkType.Unknown
     Wpf = CSFrameworkType.Wpf

@@ -1,12 +1,18 @@
-"""Wrapper for Application class from the object <class 'FlaUI.Core.Application'> from the module - FlaUI.Core"""
+"""
+This module provides a wrapper for the Application class from the object <class 'FlaUI.Core.Application'> from the module - FlaUI.Core.
+It contains methods to launch, attach, kill, dispose, and close an application. It also provides properties to get the name, process ID, exit code, and main window handle of the application.
+"""
 
 from __future__ import annotations
 
 from typing import Any, List, Optional, Union
 
-from FlaUI.Core import Application as CSApplication  # pyright: ignore
-from flaui.core.automation_elements import AutomationElement
+from flaui.core.automation_elements import Window
 from flaui.lib.collections import TypeCast
+
+# isort: off
+from FlaUI.Core import Application as CSApplication  # pyright: ignore
+# isort: on
 
 
 class Application:
@@ -74,15 +80,24 @@ class Application:
         """
         return self._application.CloseTimeout
 
-    def get_all_top_level_windows(self, automation: Any) -> List[AutomationElement]:
+    @close_timeout.setter
+    def close_timeout(self, value: int) -> None:
+        """The timeout to wait to close an application gracefully.
+
+        :param value: Timeout value
+        """
+        self._application.CloseTimeout = value
+
+    def get_all_top_level_windows(self, automation: Any) -> List[Window]:
         """Gets all top level windows from the application.
 
         :param automation: The automation object to use.
         :return: Get's all top level windows form the application
         """
-        return TypeCast.py_list(self._application.GetAllTopLevelWindows(automation))
+        parsed = TypeCast.py_list(self._application.GetAllTopLevelWindows(automation))
+        return [Window(raw_element=element) for element in parsed]
 
-    def get_main_window(self, automation: Any) -> AutomationElement:
+    def get_main_window(self, automation: Any) -> Window:
         """Gets the main window of the applications process.
 
         :param automation: The automation object to use.
@@ -90,7 +105,7 @@ class Application:
         """
 
         # TODO: Update this to return Window Element object
-        return AutomationElement(raw_element=self._application.GetMainWindow(automation))
+        return Window(raw_element=self._application.GetMainWindow(automation))
 
     def launch(self, executable: str, arguments: Optional[str] = None) -> None:
         """Launches the given executable.
@@ -145,7 +160,7 @@ class Application:
         """Waits until the main handle is set.
 
         :param time_out: An optional timeout. If null is passed, the timeout is infinite., defaults to None
-        :return: True a main window handle was found, false otherwise.
+        :return: True if a main window handle is found, else False.
         """
         return self._application.WaitWhileMainHandleIsMissing(time_out)
 
@@ -153,6 +168,6 @@ class Application:
         """Waits as long as the application is busy.
 
         :param time_out: An optional timeout. If null is passed, the timeout is infinite., defaults to None
-        :return: True if the application is idle, false otherwise.
+        :return: True if the application is idle, else False.
         """
         return self._application.WaitWhileBusy(time_out)

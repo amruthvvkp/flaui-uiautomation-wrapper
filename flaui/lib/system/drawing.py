@@ -1,5 +1,4 @@
-"""Wrapper class for System.Drawing namespace objects"""
-
+"""This module provides a wrapper class for System.Drawing namespace objects. It also defines an Enum class KnownColor that specifies the known system colors. Wrapper class for System.Drawing namespace objects"""
 from __future__ import annotations
 
 from enum import Enum
@@ -7,11 +6,7 @@ from typing import Any, Optional
 
 from pydantic import Field
 from pydantic_settings import BaseSettings
-from System.Drawing import (
-    Color as CSColor,  # pyright: ignore
-    KnownColor as CSKnownColor,  # pyright: ignore
-)
-
+from System.Drawing import Color as CSColor, KnownColor as CSKnownColor  # pyright: ignore
 
 class KnownColor(Enum):
     """Specifies the known system colors"""
@@ -214,7 +209,6 @@ class KnownColor(Enum):
 
 class Color(BaseSettings):
     """Represents an ARGB (alpha, red, green, blue) color."""
-
     cs_object: Any = Field(...)
 
     @property
@@ -299,13 +293,13 @@ class Color(BaseSettings):
         """
         return self.cs_object.G
 
-    def equals(self, another_color: ColorCollection) -> bool:
+    def equals(self, another_color: Color) -> bool:
         """Indicates whether the current object is equal to another object of the same type.
 
         :param another_color: An object to compare with this object.
         :return: True if the current object is equal to other; otherwise, False.
         """
-        return self.cs_object.Equals(another_color)
+        return self.cs_object.Equals(another_color.cs_object)
 
     def get_brightness(self) -> float:
         """Gets the hue-saturation-lightness (HSL) lightness value for this System.Drawing.Color
@@ -408,7 +402,7 @@ class Color(BaseSettings):
         :param known_color: An element of the System.Drawing.KnownColor enumeration.
         :return: The System.Drawing.Color that this method creates.
         """
-        return Color(cs_object=self.cs_object.FromKnownColor(known_color))
+        return Color(cs_object=self.cs_object.FromKnownColor(known_color.value))
 
     def from_name(self, name: str) -> Color:
         """Creates a System.Drawing.Color structure from the specified name of a predefined
@@ -420,8 +414,18 @@ class Color(BaseSettings):
         """
         return Color(cs_object=self.cs_object.FromName(name))
 
-
-class ColorCollection(Enum):
+# Treating this as an Enum class is resulting in the below error -
+# Unhandled Exception: System.ArgumentException: We should never receive instances of other managed types
+#    at Python.Runtime.Converter.ToManagedValue(BorrowedReference value, Type obType, Object& result, Boolean setError)
+#    at Python.Runtime.MethodBinder.TryConvertArgument(BorrowedReference op, Type parameterType, Object& arg, Boolean& isOut)
+#    at Python.Runtime.MethodBinder.TryConvertArguments(ParameterInfo[] pi, Boolean paramsArray, BorrowedReference args, Int32 pyArgCount, Dictionary`2 kwargDict, ArrayList defaultArgList, Int32& outs)
+#    at Python.Runtime.MethodBinder.Bind(BorrowedReference inst, BorrowedReference args, Dictionary`2 kwargDict, MethodBase[] methods, Boolean matchGenerics)
+#    at Python.Runtime.MethodBinder.Bind(BorrowedReference inst, BorrowedReference args, BorrowedReference kw, MethodBase info, MethodBase[] methodinfo)
+#    at Python.Runtime.MethodBinder.Invoke(BorrowedReference inst, BorrowedReference args, BorrowedReference kw, MethodBase info, MethodBase[] methodinfo)
+#    at Python.Runtime.MethodObject.Invoke(BorrowedReference target, BorrowedReference args, BorrowedReference kw, MethodBase info)
+#    at Python.Runtime.MethodObject.Invoke(BorrowedReference inst, BorrowedReference args, BorrowedReference kw)
+#    at Python.Runtime.ClassBase.tp_richcompare(BorrowedReference ob, BorrowedReference other, Int32 op)
+class ColorCollection:
     """Represents an ARGB (alpha, red, green, blue) color"""
 
     AliceBlue = Color(cs_object=CSColor.AliceBlue)

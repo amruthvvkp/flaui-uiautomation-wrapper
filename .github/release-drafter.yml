@@ -5,7 +5,7 @@ template: |
   # Changelog
   $CHANGES
 
-  See details of [all code changes](https://github.com/sophos-internal/labs.qa.aws-client/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION) since previous release
+  See details of [all code changes](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION) since previous release
 
 categories:
   - title: Exciting New Features 🎉
