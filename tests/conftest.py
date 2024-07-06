@@ -1,7 +1,7 @@
 """Fixtures for the test suite."""
 
 import os
-from typing import Any, Generator, Literal
+from typing import Any, Generator
 
 from flaui.lib.pythonnet_bridge import setup_pythonnet_bridge
 import psutil
@@ -27,7 +27,7 @@ def close_test_application_process():
 
 
 @pytest.fixture(scope="package")
-def ui_automation_type() -> Generator[Literal[UIAutomationTypes.UIA3, UIAutomationTypes.UIA2], None, None]:
+def ui_automation_type():
     """Fixture to yield the UI Automation type.
 
     :yield: UI Automation type
