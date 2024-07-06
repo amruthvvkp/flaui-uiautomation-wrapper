@@ -101,6 +101,7 @@ pytest = [
   { version = "^7.2.0", python = "<3.8" },
 ]
 pytest-cov = "^4.0.0"
+psutil = "^6.0.0"
 
 [tool.poetry.group.unit_test]
 optional = true
@@ -121,7 +122,7 @@ requires = ["poetry-core>=1.0.0", "setuptools", "wheel"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
-minversion = "8.0"
+minversion = "7.0"
 addopts = "-ra -q -p no:warnings --junitxml=test-results.xml"
 testpaths = ["tests/unit_tests/"]
 
