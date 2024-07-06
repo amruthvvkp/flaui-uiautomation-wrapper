@@ -102,7 +102,7 @@ build_script:
       dotnet --version
 
   - ps: |
-      & "C:\\projects\\FlaUI\\build.ps1"
+      & "C:\\projects\\FlaUI\\build.ps1" --target "Build"
 
 after_build:
   - ps: |
