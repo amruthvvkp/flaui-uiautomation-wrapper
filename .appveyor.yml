@@ -75,22 +75,31 @@ install:
 before_build:
   - cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI
 
-  # Create global.json to specify .NET SDK version
+  # PowerShell script to find and select the desired .NET SDK version
   - ps: |
-      $globalJson = @{
+      $dotnetVersions = dotnet --list-sdks
+      $desiredVersions = $dotnetVersions | Where-Object { $_ -match "6\." -or $_ -match "7\." }
+      $desiredVersion = ($desiredVersions | Sort-Object -Descending | Select-Object -First 1).Trim()
+      Write-Output "Selected .NET SDK version: $desiredVersion"
+
+      # Extract only the version number
+      $desiredVersionNumber = ($desiredVersion -split '[\[\]]')[0].Trim()
+      Write-Output "Extracted version number: $desiredVersionNumber"
+
+      # Create or update global.json with the selected SDK version
+      $globalJsonContent = @{
           sdk = @{
-              version = "7.0.403"  # Specify the desired .NET SDK version
+              version = $desiredVersionNumber
+              rollForward = "latestFeature"
           }
       } | ConvertTo-Json -Compress
-      Set-Content -Path "C:\projects\FlaUI\global.json" -Value $globalJson
-      Get-Content "C:\projects\FlaUI\global.json"
+
+      Set-Content -Path "C:\projects\FlaUI\global.json" -Value $globalJsonContent
 
 build_script:
   - ps: |
       cd "C:\projects\FlaUI"
       dotnet --version
-      Get-Command dotnet
-      Get-Content "C:\projects\FlaUI\global.json"
 
   - ps: |
       & "C:\\projects\\FlaUI\\build.ps1"
