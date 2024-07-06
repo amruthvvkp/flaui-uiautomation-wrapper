@@ -83,14 +83,26 @@ before_build:
           }
       } | ConvertTo-Json -Compress
       Set-Content -Path "C:\projects\FlaUI\global.json" -Value $globalJson
+      Get-Content "C:\projects\FlaUI\global.json"
+
+  # Install the specified .NET SDK version
+  - ps: |
+      choco install dotnet-sdk -version 7.0.403 -y
+      RefreshEnv.cmd
 
 build_script:
   - ps: |
       dotnet --version
+      Get-Command dotnet
+      Get-Content "C:\projects\FlaUI\global.json"
 
-  # Run PowerShell script
+  # Run PowerShell script with error handling
   - ps: |
-      & "C:\\projects\\FlaUI\\build.ps1"
+      try {
+          & "C:\\projects\\FlaUI\\build.ps1"
+      } catch {
+          Write-Error $_
+      }
 
 after_build:
   - ps: |
