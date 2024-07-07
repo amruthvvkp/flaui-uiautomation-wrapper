@@ -73,7 +73,7 @@ install:
       python --version
 
 before_build:
-  - ps: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI
+  - cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI
 
   # PowerShell script to find and select the desired .NET SDK version
   - ps: |
