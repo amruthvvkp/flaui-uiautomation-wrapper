@@ -73,7 +73,7 @@ install:
       python --version
 
 before_build:
-  - cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI
+  - ps: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI
 
   # PowerShell script to find and select the desired .NET SDK version
   - ps: |
@@ -112,11 +112,16 @@ after_build:
       Copy-Item -Path "C:\projects\FlaUI\src\TestApplications\WinFormsApplication\bin\*" -Destination "C:\projects\flaui-uiautomation-wrapper\test_applications\WinFormsApplication" -Recurse -Force
 
 before_test:
-  - cmd: cd "C:\projects\flaui-uiautomation-wrapper" && python -m pip install --upgrade pip && python -m pip install -r requirements.txt && python -m pip install -r requirements-unit-test.txt
+  - ps: |
+      cd "C:\projects\flaui-uiautomation-wrapper"
+      python -m pip install --upgrade pip
+      python -m pip install -r requirements.txt -r requirements-unit-test.txt
+      pip list
 
 test_script:
-  - cmd: >-
-      cd "C:\projects\flaui-uiautomation-wrapper" && python -m pytest --cov=flaui --cov-report=xml --cov-report=html --cov-report=term-missing --junitxml=test-results.xml
+  - ps: |
+      ls
+      python -m pytest --cov=flaui --cov-report=xml --cov-report=html --cov-report=term-missing --junitxml=test-results.xml -vv
 
 artifacts:
   - path: test-results.xml
