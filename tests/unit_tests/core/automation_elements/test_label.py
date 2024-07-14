@@ -7,9 +7,8 @@ from flaui.lib.enums import UIAutomationTypes
 from flaui.modules.automation import Automation
 import pytest
 
-from tests.assets.element_map.wpf_application.base import WPFApplicationElements
+from tests.assets.elements.wpf_application.base import WPFApplicationElements
 from tests.config import test_settings
-
 
 @pytest.fixture(scope="class")
 def wpf_application(ui_automation_type: UIAutomationTypes) -> Generator[Automation, None, None]:
@@ -43,7 +42,7 @@ def main_window(wpf_application: Automation, automation: Any) -> Generator[Windo
 
 
 @pytest.fixture(scope="class")
-def wpf_element_map(main_window: Window) -> Generator[Any, None, None]:
+def wpf_elements(main_window: Window) -> Generator[Any, None, None]:
     """Generates the WPF application element map.
 
     :param main_window: The main window of the test application.
@@ -55,10 +54,10 @@ def wpf_element_map(main_window: Window) -> Generator[Any, None, None]:
 class TestLabel:
     """Tests for the Label control."""
 
-    def test_get_text(self, wpf_element_map: WPFApplicationElements):
+    def test_get_text(self, wpf_elements: WPFApplicationElements):
         """Tests the get_text method.
 
-        :param wpf_element_map: WPF application element map.
+        :param wpf_elements: WPF application element map.
         """
-        label_element = wpf_element_map.simple_controls_tab.test_label
+        label_element = wpf_elements.simple_controls_tab.test_label
         assert label_element.text == "Test Label"

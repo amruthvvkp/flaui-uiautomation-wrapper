@@ -1,5 +1,5 @@
-"""Tests for the Radio Button control."""
-
+"""Tests for the Spinner control."""
+# TODO: This is Winforms only tests, update this accordingly
 
 from typing import Any, Generator
 
@@ -50,23 +50,30 @@ def wpf_elements(main_window: Window) -> Generator[Any, None, None]:
     """
     yield WPFApplicationElements(main_window=main_window)
 
-class TestRadioButton:
-    """Tests for RadioButton control."""
+class TestSpinner:
+    """Tests for Spinner control."""
 
-    def test_select_single_radio_button(self, wpf_elements: WPFApplicationElements):
-        """Tests the select single radio button."""
-        element = wpf_elements.simple_controls_tab.radio_button_1
-        assert element.is_checked is False
-        element.is_checked = True
-        assert element.is_checked is True
+    def test_set_value(self, wpf_elements: WPFApplicationElements):
+        """Tests the value setting on Spinner control."""
+        spinner = wpf_elements.simple_controls_tab.spinner
+        for value_to_set in [6.0, 4.0]:
+            spinner.value = value_to_set
+            assert spinner.value == value_to_set
 
-    def test_select_radio_button_group(self, wpf_elements: WPFApplicationElements):
-        """Tests the select radio button group."""
-        radio_button_1 = wpf_elements.simple_controls_tab.radio_button_1
-        radio_button_2 = wpf_elements.simple_controls_tab.radio_button_2
+    def test_increment(self, wpf_elements: WPFApplicationElements):
+        """Tests incremental increase of Spinner controls"""
+        spinner = wpf_elements.simple_controls_tab.spinner
+        value_to_set = 5.0
+        spinner.value = value_to_set
+        assert spinner.value == value_to_set
+        spinner.increment()
+        assert spinner.value == float(value_to_set + 1)
 
-        assert radio_button_2.is_checked is False
-        radio_button_1.is_checked = True
-        assert radio_button_1.is_checked is True and radio_button_2.is_checked is False
-        radio_button_2.is_checked = True
-        assert radio_button_1.is_checked is False and radio_button_2.is_checked is True
+    def test_decrement(self, wpf_elements: WPFApplicationElements):
+        """Tests incremental decrease of Spinner controls"""
+        spinner = wpf_elements.simple_controls_tab.spinner
+        value_to_set = 5.0
+        spinner.value = value_to_set
+        assert spinner.value == value_to_set
+        spinner.decrement()
+        assert spinner.value == float(value_to_set - 1)

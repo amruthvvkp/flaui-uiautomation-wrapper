@@ -1,15 +1,10 @@
-version: 1.0.{build}
+version: 1.0.{build:semver}
 branches:
   except:
     - master
 image: Visual Studio 2022
 environment:
   matrix:
-    - job_name: Python 3.7 x86
-      PYTHON: "C:\\Python37"
-      PYTHON_VERSION: 3.7
-      PYTHON_ARCH: 32
-
     - job_name: Python 3.8 x86
       PYTHON: "C:\\Python38"
       PYTHON_VERSION: 3.8
@@ -34,11 +29,6 @@ environment:
       PYTHON: "C:\\Python312"
       PYTHON_VERSION: 3.12
       PYTHON_ARCH: 32
-
-    - job_name: Python 3.7 x64
-      PYTHON: "C:\\Python37-x64"
-      PYTHON_VERSION: 3.7
-      PYTHON_ARCH: 64
 
     - job_name: Python 3.8 x64
       PYTHON: "C:\\Python38-x64"
@@ -68,18 +58,51 @@ environment:
 init:
   - ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%
 install:
-- cmd: >-
-    set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
+  - cmd: >-
+      set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
+      python --version
 
-    python --version
+  - ps: |
+      If ($env:PYTHON_PATH -match "Microsoft.*Store.*Python") {
+          pip install --user pipx
+      } else {
+          py -m pip install --user pipx
+      }
+
+  - cmd: pipx install poetry
+  - cmd: poetry --version
 
 before_build:
-- cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI
+  - cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI
+
+  # PowerShell script to find and select the desired .NET SDK version
+  - ps: |
+      $dotnetVersions = dotnet --list-sdks
+      $desiredVersions = $dotnetVersions | Where-Object { $_ -match "6\." -or $_ -match "7\." }
+      $desiredVersion = ($desiredVersions | Sort-Object -Descending | Select-Object -First 1).Trim()
+      Write-Output "Selected .NET SDK version: $desiredVersion"
+      # Extract only the version number
+      $desiredVersionNumber = ($desiredVersion -split '[\[\]]')[0].Trim()
+      Write-Output "Extracted version number: $desiredVersionNumber"
+      # Create or update global.json with the selected SDK version
+      $globalJsonContent = @{
+          sdk = @{
+              version = $desiredVersionNumber
+              rollForward = "latestFeature"
+          }
+      } | ConvertTo-Json -Compress
+      Set-Content -Path "C:\projects\FlaUI\global.json" -Value $globalJsonContent
 
 build_script:
   - ps: |
-      # Run PowerShell script
-      & "C:\\projects\\FlaUI\\build.ps1"
+      cd "C:\projects\FlaUI"
+      dotnet --version
+  - ps: |
+      & "C:\\projects\\FlaUI\\build.ps1" --target "Build"
+
+  - ps: |
+      $script: "poetry config virtualenvs.prefer-active true"
+      poetry build  # Build the wheel file
 
 after_build:
   - ps: |
@@ -89,11 +112,15 @@ after_build:
       Copy-Item -Path "C:\projects\FlaUI\src\TestApplications\WinFormsApplication\bin\*" -Destination "C:\projects\flaui-uiautomation-wrapper\test_applications\WinFormsApplication" -Recurse -Force
 
 before_test:
-  - cmd: cd "C:\projects\flaui-uiautomation-wrapper" && python -m pip install --upgrade pip && python -m pip install -r requirements.txt && python -m pip install -r requirements-unit-test.txt
+  - cmd: cd "C:\projects\flaui-uiautomation-wrapper
+  - ps: |
+      $wheelPath = Get-ChildItem -Path $(poetry config directories.dist) -Filter "*.whl" | Select-Object -First 1  # Get the first wheel file
+      pip install $wheelPath
+      poetry install --only unit_test
 
 test_script:
   - cmd: >-
-      cd "C:\projects\flaui-uiautomation-wrapper" && python -m pytest --cov=flaui --cov-report=xml --cov-report=html --cov-report=term-missing --junitxml=test-results.xml
+      poetry run python -m pytest --cov=flaui --cov-report=xml --cov-report=html --cov-report=term-missing --junitxml=test-results.xml
 
 artifacts:
   - path: test-results.xml
@@ -105,21 +132,26 @@ artifacts:
   - path: htmlcov
     name: coverage-html
 
-  - path: test_applications
+  - path: test_applications/
     name: test-applications
 
+  - path: dist/
+    name: wheels
+
+cache:
+  - C:\Users\appveyor\.nuget\packages # Cache the NuGet packages
+  - C:\projects\FlaUI\**\bin
+  - C:\projects\FlaUI\**\obj
+  - C:\projects\FlaUI\src\TestApplications
+
 on_finish:
-- ps: >-
-    $wc = New-Object 'System.Net.WebClient'
+  - ps: >-
+      $wc = New-Object 'System.Net.WebClient'
 
-    if (Test-Path .test-results.xml) {
-      $wc.UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .test-results.xml))
-    }
+      if (Test-Path .\test-results.xml) {
+        $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\test-results.xml))
+      }
 
-    if (Test-Path .coverage.xml) {
-      $wc.UploadFile("https://ci.appveyor.com/api/testresults/coverage/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .coverage.xml))
-    }
-
-    if (Test-Path "C:/projects/FlaUI/artifacts/UnitTestResult.xml") {
-      $wc.UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", "C:/projects/FlaUI/artifacts/UnitTestResult.xml")
-    }
+      if (Test-Path .\coverage.xml) {
+        $wc.UploadFile("https://ci.appveyor.com/api/testresults/coverage/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\coverage.xml))
+      }

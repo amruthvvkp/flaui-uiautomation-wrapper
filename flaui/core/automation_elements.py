@@ -20,7 +20,7 @@ from flaui.core.definitions import ControlType, ExpandCollapseState, RowOrColumn
 from flaui.core.framework_types import FrameworkType
 from flaui.lib.collections import TypeCast
 from flaui.lib.exceptions import ElementNotFoundError
-from flaui.lib.system.drawing import Color, ColorCollection
+from flaui.lib.system.drawing import Color, ColorData
 
 # ================================================================================
 #   Element base Pydantic abstract class
@@ -227,7 +227,7 @@ class ToggleAutomationElement(ElementModel, abc.ABC):  # pragma: no cover
 
     @property
     def toggle_state(self) -> ToggleState:
-        """Gets or sets the current toggle state.
+        """Gets the current toggle state.
 
         :return: ToggleState
         """
@@ -242,7 +242,7 @@ class ToggleAutomationElement(ElementModel, abc.ABC):  # pragma: no cover
         self.raw_element.ToggleState = value.value
 
     def is_toggled(self) -> bool:
-        """Gets or sets if the element is toggled.
+        """Gets if the element is toggled.
 
         :return: True if toggled, else False
         """
@@ -350,7 +350,7 @@ class AutomationElement(ElementBase):
         """
         self.raw_element.DoubleClick(move_mouse)
 
-    def draw_highlight(self, color: Color = ColorCollection.Red, duration: int = 2000) -> None:
+    def draw_highlight(self, color: ColorData = Color.Red, duration: int = 2000) -> None:
         """Draw a highlight around the element with the given settings.
 
         :param color: Color object, defaults to ColorCollection.Red
@@ -1234,7 +1234,7 @@ class DataGridViewCell(AutomationElement):
 
     @value.setter
     def value(self, value: str) -> None:
-        """Value in the cell.
+        """Sets the Value in the cell.
 
         :param value: Cell value
         """
@@ -1887,12 +1887,13 @@ class Slider(AutomationElement):
         """
         return Button(raw_element=self.raw_element.LargeDecreaseButton())
 
+    @property
     def thumb(self) -> Thumb:
         """The element used to drag.
 
         :return: Thumb element
         """
-        return Thumb(raw_element=self.raw_element.Thumb())
+        return Thumb(raw_element=self.raw_element.Thumb)
 
     @property
     def is_only_value(self) -> bool:
@@ -1905,11 +1906,20 @@ class Slider(AutomationElement):
 
     @property
     def value(self) -> float:
-        """Gets or sets the current value.
+        """Gets the current value.
 
         :return: Value of the element
         """
         return self.raw_element.Value
+
+    @value.setter
+    def value(self, value: float) -> None:
+        """Sets the value of the slider
+
+        :param value: Value to set
+        """
+        self.raw_element.Value = value
+
 
     def small_increment(self):
         """Performs a small increment."""
@@ -1980,11 +1990,19 @@ class Spinner(AutomationElement):
 
     @property
     def value(self) -> float:
-        """Gets or sets the current value.
+        """Gets the current value.
 
         :return: Value of the element
         """
         return self.raw_element.Value
+
+    @value.setter
+    def value(self, value: float) -> None:
+        """Sets the value of the spinner
+
+        :param value: Value to set
+        """
+        self.raw_element.Value = value
 
     def increment(self):
         """Performs a increment."""
@@ -2018,7 +2036,7 @@ class Tab(AutomationElement):
 
         :return: List of TabItem elements
         """
-        return [TabItem(raw_element=_) for _ in self.raw_element.TabItems()]
+        return [TabItem(raw_element=_) for _ in self.raw_element.TabItems]
 
     def select_tab_item(self, index: Optional[int] = None, value: Optional[str] = None):
         """Selects a TabItem by index
@@ -2026,6 +2044,8 @@ class Tab(AutomationElement):
         :param index: Selects by index value
         :param value: Selects by tab value
         """
+        if index is None and value is None:
+            raise ValueError("Either index or value have to be set for selected TabItem")
         self.raw_element.SelectTabItem(index) if index else self.raw_element.SelectTabItem(value)
 
 
@@ -2039,22 +2059,30 @@ class TextBox(AutomationElement):
     """Class to interact with a textbox element."""
 
     @property
-    def Text(self) -> str:
-        """Gets or sets the text of the element.
+    def text(self) -> str:
+        """Gets the text of the element.
 
         :return: Element text
         """
         return self.raw_element.Text
 
+    @text.setter
+    def text(self, value: str) -> None:
+        """Sets the text of the element
+
+        :param value: Value to set
+        """
+        self.raw_element.Text = value
+
     @property
-    def IsReadOnly(self) -> bool:
+    def is_read_only(self) -> bool:
         """Gets if the element is read only or not.
 
         :return: True if element is read only else False
         """
         return self.raw_element.IsReadOnly
 
-    def Enter(self, value: str):
+    def enter(self, value: str):
         """Simulate typing in text. This is slower than setting Text but raises more events.
 
         :param value: Value to enter in the element
@@ -2145,12 +2173,13 @@ class Tree(AutomationElement):
 class TreeItem(AutomationElement):
     """Class to interact with a treeitem element."""
 
+    @property
     def items(self) -> List[TreeItem]:
         """All child TreeItem" /> objects from this TreeItem" />.
 
         :return: List of TreeItem elements
         """
-        return [TreeItem(raw_element=_) for _ in self.raw_element.Items()]
+        return [TreeItem(raw_element=_) for _ in self.raw_element.Items]
 
     @property
     def text(self) -> str:
@@ -2204,11 +2233,19 @@ class TreeItem(AutomationElement):
 
     @property
     def is_checked(self) -> bool:
-        """Gets or sets if the tree item is checked, if checking is supported.
+        """Gets if the tree item is checked, if checking is supported.
 
         :return: True if checked else False
         """
-        return self.raw_element.IsChecked  # TODO: Check Get/Set methods for checked property
+        return self.raw_element.IsChecked
+
+    @is_checked.setter
+    def is_checked(self, value: bool) -> None:
+        """Sets the tree item as checked, if checking is supported
+
+        :param value: Value to set, True/False
+        """
+        self.raw_element.IsChecked = value
 
 
 class Window(AutomationElement):

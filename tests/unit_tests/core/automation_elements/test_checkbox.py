@@ -8,9 +8,8 @@ from flaui.lib.enums import UIAutomationTypes
 from flaui.modules.automation import Automation
 import pytest
 
-from tests.assets.element_map.wpf_application.base import WPFApplicationElements
+from tests.assets.elements.wpf_application.base import WPFApplicationElements
 from tests.config import test_settings
-
 
 @pytest.fixture(scope="class")
 def wpf_application(ui_automation_type: UIAutomationTypes) -> Generator[Automation, None, None]:
@@ -44,7 +43,7 @@ def main_window(wpf_application: Automation, automation: Any) -> Generator[Windo
 
 
 @pytest.fixture(scope="class")
-def wpf_element_map(main_window: Window) -> Generator[Any, None, None]:
+def wpf_elements(main_window: Window) -> Generator[Any, None, None]:
     """Generates the WPF application element map.
 
     :param main_window: The main window of the test application.
@@ -79,22 +78,22 @@ class TestCalendarElements:
     #     main_window = wpf_application.application.get_main_window(automation)
     #     return WPFApplicationElements(main_window=main_window)
 
-    def test_toggle_element(self, wpf_element_map: WPFApplicationElements):
+    def test_toggle_element(self, wpf_elements: WPFApplicationElements):
         """Tests the toggle method of the Checkbox class.
 
-        :param wpf_element_map: The WPF application element map.
+        :param wpf_elements: The WPF application element map.
         """
-        checkbox = wpf_element_map.simple_controls_tab.test_check_box
+        checkbox = wpf_elements.simple_controls_tab.test_check_box
         assert checkbox.toggle_state == ToggleState.Off
         checkbox.toggle()
         assert checkbox.toggle_state == ToggleState.On
 
-    def test_set_state(self, wpf_element_map: WPFApplicationElements):
+    def test_set_state(self, wpf_elements: WPFApplicationElements):
         """Tests the set_state method of the Checkbox class.
 
-        :param wpf_element_map: The WPF application element map.
+        :param wpf_elements: The WPF application element map.
         """
-        checkbox = wpf_element_map.simple_controls_tab.test_check_box
+        checkbox = wpf_elements.simple_controls_tab.test_check_box
         checkbox.toggle_state = ToggleState.On
         assert checkbox.toggle_state == ToggleState.On
         checkbox.toggle_state = ToggleState.Off
@@ -102,24 +101,24 @@ class TestCalendarElements:
         checkbox.toggle_state = ToggleState.On
         assert checkbox.toggle_state == ToggleState.On
 
-    def test_three_way_toggle(self, wpf_element_map: WPFApplicationElements):
+    def test_three_way_toggle(self, wpf_elements: WPFApplicationElements):
         """Tests the three_way_toggle method of the Checkbox class.
 
-        :param wpf_element_map: The WPF application element map.
+        :param wpf_elements: The WPF application element map.
         """
-        checkbox = wpf_element_map.simple_controls_tab.three_way_check_box
+        checkbox = wpf_elements.simple_controls_tab.three_way_check_box
         assert checkbox.toggle_state == ToggleState.Off
         checkbox.toggle()
         assert checkbox.toggle_state == ToggleState.On
         checkbox.toggle()
         assert checkbox.toggle_state == ToggleState.Indeterminate
 
-    def test_three_way_set_state(self, wpf_element_map: WPFApplicationElements):
+    def test_three_way_set_state(self, wpf_elements: WPFApplicationElements):
         """Tests the three_way_set_state method of the Checkbox class.
 
-        :param wpf_element_map: The WPF application element map.
+        :param wpf_elements: The WPF application element map.
         """
-        checkbox = wpf_element_map.simple_controls_tab.three_way_check_box
+        checkbox = wpf_elements.simple_controls_tab.three_way_check_box
         checkbox.toggle_state = ToggleState.On
         assert checkbox.toggle_state == ToggleState.On
         checkbox.toggle_state = ToggleState.Off

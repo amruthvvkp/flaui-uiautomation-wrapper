@@ -1,13 +1,12 @@
 from flaui.core.automation_elements import AutomationElement, Button, TitleBar, Window
 from pydantic_settings import BaseSettings
 
-
 class TitleBarElements(BaseSettings):
     """This class is used to store the element locators for the title bar."""
 
     main_window: Window
 
-    def _condition_factory(self):
+    def _cf(self):
         """Returns the condition factory for the title bar.
 
         :return: The condition factory for the title bar.
@@ -21,7 +20,7 @@ class TitleBarElements(BaseSettings):
         :return: The title bar element.
         """
         return self.main_window.find_first_child(
-            condition=self._condition_factory.by_automation_id("TitleBar")
+            condition=self._cf.by_automation_id("TitleBar")
         ).as_title_bar()
 
     @property
@@ -31,7 +30,7 @@ class TitleBarElements(BaseSettings):
         :return: The minimize button element.
         """
         return self.parent_element.find_first_child(
-            condition=self._condition_factory.by_automation_id("Minimize-Restore")
+            condition=self._cf.by_automation_id("Minimize-Restore")
         ).as_button()
 
     @property
@@ -41,7 +40,7 @@ class TitleBarElements(BaseSettings):
         :return: The maximize button element.
         """
         return self.parent_element.find_first_child(
-            condition=self._condition_factory.by_automation_id("Maximize-Restore")
+            condition=self._cf.by_automation_id("Maximize-Restore")
         ).as_button()
 
     @property
@@ -51,7 +50,7 @@ class TitleBarElements(BaseSettings):
         :return: The close button element.
         """
         return self.parent_element.find_first_child(
-            condition=self._condition_factory.by_automation_id("Close")
+            condition=self._cf.by_automation_id("Close")
         ).as_button()
 
     @property
@@ -60,4 +59,4 @@ class TitleBarElements(BaseSettings):
 
         :return: The menu bar element.
         """
-        return self.parent_element.find_first_child(condition=self._condition_factory.by_automation_id("SystemMenuBar"))
+        return self.parent_element.find_first_child(condition=self._cf.by_automation_id("SystemMenuBar"))

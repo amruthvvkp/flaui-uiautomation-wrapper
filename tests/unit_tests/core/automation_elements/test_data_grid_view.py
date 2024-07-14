@@ -7,9 +7,8 @@ from flaui.lib.enums import UIAutomationTypes
 from flaui.modules.automation import Automation
 import pytest
 
-from tests.assets.element_map.wpf_application.base import WPFApplicationElements
+from tests.assets.elements.wpf_application.base import WPFApplicationElements
 from tests.config import test_settings
-
 
 @pytest.fixture(scope="class")
 def wpf_application(ui_automation_type: UIAutomationTypes) -> Generator[Automation, None, None]:
@@ -43,7 +42,7 @@ def main_window(wpf_application: Automation, automation: Any) -> Generator[Windo
 
 
 @pytest.fixture(scope="class")
-def wpf_element_map(main_window: Window) -> Generator[Any, None, None]:
+def wpf_elements(main_window: Window) -> Generator[Any, None, None]:
     """Generates the WPF application element map.
 
     :param main_window: The main window of the test application.
@@ -55,9 +54,9 @@ def wpf_element_map(main_window: Window) -> Generator[Any, None, None]:
 class TestDataGridView:
     """Tests for the Data Grid View element."""
 
-    def test_header_and_columns(self, wpf_element_map: WPFApplicationElements):
+    def test_header_and_columns(self, wpf_elements: WPFApplicationElements):
         """Tests the header and columns property."""
-        data_grid_view = wpf_element_map.complex_controls_tab.data_grid_view
+        data_grid_view = wpf_elements.complex_controls_tab.data_grid_view
         header = data_grid_view.header
         columns = header.columns
         assert header is not None
@@ -78,9 +77,9 @@ class TestDataGridView:
         for cell_index, cell in enumerate(cells):
             assert cell.value == expected_cell_values[cell_index]
 
-    def test_rows_and_cells(self, wpf_element_map: WPFApplicationElements):
+    def test_rows_and_cells(self, wpf_elements: WPFApplicationElements):
         """Tests the rows and cells property."""
-        data_grid_view = wpf_element_map.complex_controls_tab.data_grid_view
+        data_grid_view = wpf_elements.complex_controls_tab.data_grid_view
         rows = data_grid_view.rows
         assert len(rows) == 3
 

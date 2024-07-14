@@ -48,7 +48,7 @@ repos:
         description: This hook checks that files have a docstring as the first statement.
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.0.283
+    rev: v0.5.1
     hooks:
       - id: ruff
         name: Ruff Attempt Auto-Fixes
@@ -57,7 +57,7 @@ repos:
         args: [--fix, --exit-non-zero-on-fix]
 
   - repo: https://github.com/econchick/interrogate
-    rev: 1.5.0
+    rev: 1.6.0
     hooks:
       - id: interrogate
         name: Interrogate

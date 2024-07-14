@@ -47,7 +47,6 @@ import os
 from pathlib import Path
 from typing import Any, Generator
 
-from tests.config import test_settings
 from flaui.core.automation_elements import (
     AutomationElement,
     Calendar,
@@ -86,6 +85,8 @@ from flaui.lib.enums import KnownClassNames, UIAutomationTypes
 from flaui.modules.automation import Automation
 from pydantic import ValidationError
 import pytest
+
+from tests.config import test_settings
 
 @pytest.fixture(scope="class")
 def wpf_application(ui_automation_type: UIAutomationTypes) -> Generator[Automation, None, None]:
@@ -223,10 +224,10 @@ class TestAutomationElement:
         :param main_window: The main window of the test application.
         :param condition_factory: The condition factory.
         """
-        elements = main_window.find_all(
+        wpf_elements = main_window.find_all(
             TreeScope.Descendants, condition_factory.by_control_type(ControlType.TabItem)
         )
-        for _ in elements:
+        for _ in wpf_elements:
             assert _.class_name == "TabItem"
 
     def test_find_all_by_x_path(self, main_window: Window):
@@ -234,8 +235,8 @@ class TestAutomationElement:
 
         :param main_window: The main window of the test application.
         """
-        elements = main_window.find_all_by_x_path("/Tab/TabItem[@Name='Simple Controls']")
-        for _ in elements:
+        wpf_elements = main_window.find_all_by_x_path("/Tab/TabItem[@Name='Simple Controls']")
+        for _ in wpf_elements:
             assert _.class_name == "TabItem"
 
     def test_find_all_children(self, main_window: Window, condition_factory: ConditionFactory):
@@ -244,9 +245,9 @@ class TestAutomationElement:
         :param main_window: The main window of the test application.
         :param condition_factory: The condition factory.
         """
-        elements = main_window.find_all_children(condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
-        assert len(elements) == 1
-        assert elements[0].class_name == KnownClassNames.TabControl.value
+        wpf_elements = main_window.find_all_children(condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
+        assert len(wpf_elements) == 1
+        assert wpf_elements[0].class_name == KnownClassNames.TabControl.value
 
     def test_find_all_descendants(self, main_window: Window, condition_factory: ConditionFactory):
         """Test the find_all_descendants method of the AutomationElement class.
@@ -254,9 +255,9 @@ class TestAutomationElement:
         :param main_window: The main window of the test application.
         :param condition_factory: The condition factory.
         """
-        elements = main_window.find_all_descendants(condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
-        assert len(elements) == 1
-        assert elements[0].class_name == KnownClassNames.TabControl.value
+        wpf_elements = main_window.find_all_descendants(condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
+        assert len(wpf_elements) == 1
+        assert wpf_elements[0].class_name == KnownClassNames.TabControl.value
 
     def test_find_all_nested(self, main_window: Window, condition_factory: ConditionFactory):
         """Test the find_all_nested method of the AutomationElement class.
@@ -264,9 +265,9 @@ class TestAutomationElement:
         :param main_window: The main window of the test application.
         :param condition_factory: The condition factory.
         """
-        elements = main_window.find_all_nested(condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
-        assert len(elements) == 1
-        assert elements[0].class_name == KnownClassNames.TabControl.value
+        wpf_elements = main_window.find_all_nested(condition_factory.by_class_name(class_name=KnownClassNames.TabControl))
+        assert len(wpf_elements) == 1
+        assert wpf_elements[0].class_name == KnownClassNames.TabControl.value
 
     def test_find_all_with_options(self, main_window: Window, condition_factory: ConditionFactory):
         """Test the find_all_with_options method of the AutomationElement class.
@@ -274,14 +275,14 @@ class TestAutomationElement:
         :param main_window: The main window of the test application.
         :param condition_factory: The condition factory.
         """
-        elements = main_window.find_all_with_options(
+        wpf_elements = main_window.find_all_with_options(
             TreeScope.Descendants,
             condition_factory.by_class_name(class_name=KnownClassNames.TabControl),
             TreeTraversalOptions.Default,
             main_window.raw_element,
         )
-        assert len(elements) == 1
-        assert elements[0].class_name == KnownClassNames.TabControl.value
+        assert len(wpf_elements) == 1
+        assert wpf_elements[0].class_name == KnownClassNames.TabControl.value
 
     def test_find_at(self, main_window: Window, condition_factory: ConditionFactory):
         """Test the find_at method of the AutomationElement class.

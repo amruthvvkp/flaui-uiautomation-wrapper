@@ -1,11 +1,14 @@
-"""Tests for the Radio Button control."""
+"""Tests for the Textbox control."""
 
 
 from typing import Any, Generator
 
 from flaui.core.automation_elements import Window
+from flaui.core.input import Wait
 from flaui.lib.enums import UIAutomationTypes
+from flaui.lib.system.drawing import Color
 from flaui.modules.automation import Automation
+from loguru import logger
 import pytest
 
 from tests.assets.elements.wpf_application.base import WPFApplicationElements
@@ -50,23 +53,42 @@ def wpf_elements(main_window: Window) -> Generator[Any, None, None]:
     """
     yield WPFApplicationElements(main_window=main_window)
 
-class TestRadioButton:
-    """Tests for RadioButton control."""
+class TestTextbox:
+    """Tests for Textbox control."""
 
-    def test_select_single_radio_button(self, wpf_elements: WPFApplicationElements):
-        """Tests the select single radio button."""
-        element = wpf_elements.simple_controls_tab.radio_button_1
-        assert element.is_checked is False
-        element.is_checked = True
-        assert element.is_checked is True
+    DEFAULT_TEXT_BOX_TEXT = "Test TextBox"
 
-    def test_select_radio_button_group(self, wpf_elements: WPFApplicationElements):
-        """Tests the select radio button group."""
-        radio_button_1 = wpf_elements.simple_controls_tab.radio_button_1
-        radio_button_2 = wpf_elements.simple_controls_tab.radio_button_2
+    def test_direct_set(self, wpf_elements: WPFApplicationElements):
+        """Tests direct set of Textbox controls"""
+        textbox = wpf_elements.simple_controls_tab.test_text_box
+        assert textbox.text == self.DEFAULT_TEXT_BOX_TEXT
 
-        assert radio_button_2.is_checked is False
-        radio_button_1.is_checked = True
-        assert radio_button_1.is_checked is True and radio_button_2.is_checked is False
-        radio_button_2.is_checked = True
-        assert radio_button_1.is_checked is False and radio_button_2.is_checked is True
+        text_to_set = "Hello World"
+        textbox.text = text_to_set
+        assert textbox.text == text_to_set
+
+        textbox.text = self.DEFAULT_TEXT_BOX_TEXT
+
+    def test_enter(self, wpf_elements: WPFApplicationElements):
+        """Tests enter method of Textbox controls"""
+        textbox = wpf_elements.simple_controls_tab.test_text_box
+        assert textbox.text == self.DEFAULT_TEXT_BOX_TEXT
+
+        text_to_set = "Hello World"
+        textbox.enter(text_to_set)
+        Wait.until_input_is_processed()
+        assert textbox.text == text_to_set
+
+        textbox.text = self.DEFAULT_TEXT_BOX_TEXT
+
+    def test_textbox_color(self, wpf_elements: WPFApplicationElements):
+        """Tests color of Textbox controls"""
+        if wpf_elements.process_name != "WpfApplication.exe":
+            logger.warning("WinForms currently does not report the color on text boxes")
+            return
+
+        textbox = wpf_elements.simple_controls_tab.test_text_box
+        text_range = textbox.patterns.Text.Pattern # TODO: Check if we can add a C# wrapper to Python
+        color_int = text_range.DocumentRange.GetAttributeValue(wpf_elements.main_window.automation.TextAttributeLibrary.ForegroundColor)
+        color = Color.from_argb(color_int)
+        assert color == Color.from_argb(alpha=0, base_color=Color.Green)

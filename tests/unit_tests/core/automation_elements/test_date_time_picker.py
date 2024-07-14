@@ -7,9 +7,8 @@ from flaui.lib.enums import UIAutomationTypes
 from flaui.modules.automation import Automation
 import pytest
 
-from tests.assets.element_map.wpf_application.base import WPFApplicationElements
+from tests.assets.elements.wpf_application.base import WPFApplicationElements
 from tests.config import test_settings
-
 
 @pytest.fixture(scope="class")
 def wpf_application(ui_automation_type: UIAutomationTypes) -> Generator[Automation, None, None]:
@@ -43,7 +42,7 @@ def main_window(wpf_application: Automation, automation: Any) -> Generator[Windo
 
 
 @pytest.fixture(scope="class")
-def wpf_element_map(main_window: Window) -> Generator[Any, None, None]:
+def wpf_elements(main_window: Window) -> Generator[Any, None, None]:
     """Generates the WPF application element map.
 
     :param main_window: The main window of the test application.
@@ -55,13 +54,13 @@ def wpf_element_map(main_window: Window) -> Generator[Any, None, None]:
 class TestDateTimePicker:
     """Tests for the date time picker control."""
 
-    def test_select_date(self, wpf_element_map: WPFApplicationElements):
+    def test_select_date(self, wpf_elements: WPFApplicationElements):
         """Tests the select date method.
 
-        :param wpf_element_map: The WPF application element map.
+        :param wpf_elements: The WPF application element map.
         """
 
         date = arrow.get(2021, 5, 17).date()
-        date_time_picker = wpf_element_map.more_controls_tab.date_picker
+        date_time_picker = wpf_elements.more_controls_tab.date_picker
         date_time_picker.selected_date = date
         assert date_time_picker.selected_date == date

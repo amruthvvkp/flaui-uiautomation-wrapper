@@ -8,9 +8,8 @@ from flaui.lib.enums import UIAutomationTypes
 from flaui.modules.automation import Automation
 import pytest
 
-from tests.assets.element_map.wpf_application.base import WPFApplicationElements
+from tests.assets.elements.wpf_application.base import WPFApplicationElements
 from tests.config import test_settings
-
 
 @pytest.fixture(scope="class")
 def wpf_application(ui_automation_type: UIAutomationTypes) -> Generator[Automation, None, None]:
@@ -44,7 +43,7 @@ def main_window(wpf_application: Automation, automation: Any) -> Generator[Windo
 
 
 @pytest.fixture(scope="class")
-def wpf_element_map(main_window: Window) -> Generator[Any, None, None]:
+def wpf_elements(main_window: Window) -> Generator[Any, None, None]:
     """Generates the WPF application element map.
 
     :param main_window: The main window of the test application.
@@ -55,12 +54,12 @@ def wpf_element_map(main_window: Window) -> Generator[Any, None, None]:
 class TestPopUp:
     """Tests for the PopUp control."""
 
-    def test_check_box_in_popup(self, wpf_element_map: WPFApplicationElements):
+    def test_check_box_in_popup(self, wpf_elements: WPFApplicationElements):
         """Tests the check box in the pop up."""
-        element = wpf_element_map.simple_controls_tab.popup_toggle_button1
+        element = wpf_elements.simple_controls_tab.popup_toggle_button1
         element.click()
         Wait.until_input_is_processed()
-        popup = wpf_element_map.main_window.popup
+        popup = wpf_elements.main_window.popup
         assert popup is not None
         popup_children = popup.find_all_children()
         assert len(popup_children) == 1
@@ -68,12 +67,12 @@ class TestPopUp:
         assert check.text == "This is a popup"
 
 
-    def test_menu_in_popup(self, wpf_element_map: WPFApplicationElements):
+    def test_menu_in_popup(self, wpf_elements: WPFApplicationElements):
         """Tests the menu in the pop up."""
-        element = wpf_element_map.simple_controls_tab.popup_toggle_button2
+        element = wpf_elements.simple_controls_tab.popup_toggle_button2
         element.click()
         Wait.until_input_is_processed()
-        popup = wpf_element_map.main_window.popup
+        popup = wpf_elements.main_window.popup
         assert popup is not None
         popup_children = popup.find_all_children()
         assert len(popup_children) == 1

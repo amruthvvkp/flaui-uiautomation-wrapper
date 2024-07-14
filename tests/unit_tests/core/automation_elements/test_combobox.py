@@ -7,9 +7,8 @@ from flaui.lib.enums import UIAutomationTypes
 from flaui.modules.automation import Automation
 import pytest
 
-from tests.assets.element_map.wpf_application.base import WPFApplicationElements
+from tests.assets.elements.wpf_application.base import WPFApplicationElements
 from tests.config import test_settings
-
 
 @pytest.fixture(scope="class")
 def wpf_application(ui_automation_type: UIAutomationTypes) -> Generator[Automation, None, None]:
@@ -43,7 +42,7 @@ def main_window(wpf_application: Automation, automation: Any) -> Generator[Windo
 
 
 @pytest.fixture(scope="class")
-def wpf_element_map(main_window: Window) -> Generator[Any, None, None]:
+def wpf_elements(main_window: Window) -> Generator[Any, None, None]:
     """Generates the WPF application element map.
 
     :param main_window: The main window of the test application.
@@ -56,72 +55,72 @@ class TestComboBoxElements:
     """Tests for the Combobox class."""
 
     @pytest.mark.parametrize("element", ("editable_combo_box", "non_editable_combo_box"))
-    def test_selected_item(self, wpf_element_map: WPFApplicationElements, element: str):
+    def test_selected_item(self, wpf_elements: WPFApplicationElements, element: str):
         """Tests the selected item property.
 
-        :param wpf_element_map: The WPF application element map.
+        :param wpf_elements: The WPF application element map.
         :param element: Element to test.
         """
-        combobox: ComboBox = getattr(wpf_element_map.simple_controls_tab, element)
+        combobox: ComboBox = getattr(wpf_elements.simple_controls_tab, element)
         combobox.items[1].select()
         selected_item = combobox.selected_item
         assert selected_item is not None
         assert selected_item.text == "Item 2"
 
     @pytest.mark.parametrize("element", ("editable_combo_box", "non_editable_combo_box"))
-    def test_select_by_index(self, wpf_element_map: WPFApplicationElements, element: str):
+    def test_select_by_index(self, wpf_elements: WPFApplicationElements, element: str):
         """Tests the select by index method.
 
-        :param wpf_element_map: The WPF application element map.
+        :param wpf_elements: The WPF application element map.
         :param element: Element to test.
         """
-        combobox: ComboBox = getattr(wpf_element_map.simple_controls_tab, element)
+        combobox: ComboBox = getattr(wpf_elements.simple_controls_tab, element)
         combobox.select(1)
         selected_item = combobox.selected_item
         assert selected_item is not None
         assert selected_item.text == "Item 2"
 
     @pytest.mark.parametrize("element", ("editable_combo_box", "non_editable_combo_box"))
-    def test_select_by_text(self, wpf_element_map: WPFApplicationElements, element: str):
+    def test_select_by_text(self, wpf_elements: WPFApplicationElements, element: str):
         """Tests the select by text method.
 
-        :param wpf_element_map: The WPF application element map.
+        :param wpf_elements: The WPF application element map.
         :param element: Element to test.
         """
-        combobox: ComboBox = getattr(wpf_element_map.simple_controls_tab, element)
+        combobox: ComboBox = getattr(wpf_elements.simple_controls_tab, element)
         combobox.select("Item 2")
         selected_item = combobox.selected_item
         assert selected_item is not None
         assert selected_item.text == "Item 2"
 
     @pytest.mark.parametrize("element", ("editable_combo_box", "non_editable_combo_box"))
-    def test_expand_collapse(self, wpf_element_map: WPFApplicationElements, element: str):
+    def test_expand_collapse(self, wpf_elements: WPFApplicationElements, element: str):
         """Tests the expand and collapse methods.
 
-        :param wpf_element_map: The WPF application element map.
+        :param wpf_elements: The WPF application element map.
         :param element: Element to test.
         """
-        combobox: ComboBox = getattr(wpf_element_map.simple_controls_tab, element)
+        combobox: ComboBox = getattr(wpf_elements.simple_controls_tab, element)
         combobox.expand()
         assert combobox.expand_collapse_state == ExpandCollapseState.Expanded
         combobox.collapse()
         assert combobox.expand_collapse_state == ExpandCollapseState.Collapsed
 
-    def test_editable_text(self, wpf_element_map: WPFApplicationElements):
+    def test_editable_text(self, wpf_elements: WPFApplicationElements):
         """Tests the editable text property.
 
-        :param wpf_element_map: The WPF application element map.
+        :param wpf_elements: The WPF application element map.
         """
-        combobox: ComboBox = wpf_element_map.simple_controls_tab.editable_combo_box
+        combobox: ComboBox = wpf_elements.simple_controls_tab.editable_combo_box
         assert combobox is not None
         combobox.editable_text = "Item 3"
         assert combobox.selected_item is not None
         assert combobox.selected_item.text == "Item 3"
 
-    def test_combo_box_item_is_not_offscreen(self, wpf_element_map: WPFApplicationElements):
+    def test_combo_box_item_is_not_offscreen(self, wpf_elements: WPFApplicationElements):
         """Tests the combo box item is not offscreen property.
 
-        :param wpf_element_map: The WPF application element map.
+        :param wpf_elements: The WPF application element map.
         """
-        combobox: ComboBox = wpf_element_map.simple_controls_tab.non_editable_combo_box
+        combobox: ComboBox = wpf_elements.simple_controls_tab.non_editable_combo_box
         assert combobox.is_offscreen is False

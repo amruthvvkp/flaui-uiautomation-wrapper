@@ -7,9 +7,8 @@ from flaui.lib.enums import UIAutomationTypes
 from flaui.modules.automation import Automation
 import pytest
 
-from tests.assets.element_map.wpf_application.base import WPFApplicationElements
+from tests.assets.elements.wpf_application.base import WPFApplicationElements
 from tests.config import test_settings
-
 
 @pytest.fixture(scope="class")
 def wpf_application(ui_automation_type: UIAutomationTypes) -> Generator[Automation, None, None]:
@@ -42,7 +41,7 @@ def main_window(wpf_application: Automation, automation: Any) -> Generator[Windo
     yield wpf_application.application.get_main_window(automation)
 
 @pytest.fixture(scope="class")
-def wpf_element_map(main_window: Window) -> Generator[Any, None, None]:
+def wpf_elements(main_window: Window) -> Generator[Any, None, None]:
     """Generates the WPF application element map.
 
     :param main_window: The main window of the test application.
@@ -53,14 +52,14 @@ def wpf_element_map(main_window: Window) -> Generator[Any, None, None]:
 class TestProgressBar:
     """Tests for ProgressBar control."""
 
-    def test_minimum_value(self, wpf_element_map: WPFApplicationElements):
+    def test_minimum_value(self, wpf_elements: WPFApplicationElements):
         """Tests the minimum value property."""
-        assert wpf_element_map.simple_controls_tab.progress_bar.minimum == 0
+        assert wpf_elements.simple_controls_tab.progress_bar.minimum == 0
 
-    def test_maximum_value(self, wpf_element_map: WPFApplicationElements):
+    def test_maximum_value(self, wpf_elements: WPFApplicationElements):
         """Tests the maximum value property."""
-        assert wpf_element_map.simple_controls_tab.progress_bar.maximum == 100
+        assert wpf_elements.simple_controls_tab.progress_bar.maximum == 100
 
-    def test_value(self, wpf_element_map: WPFApplicationElements):
+    def test_value(self, wpf_elements: WPFApplicationElements):
         """Tests the value property."""
-        assert wpf_element_map.simple_controls_tab.progress_bar.value == 50
+        assert wpf_elements.simple_controls_tab.progress_bar.value == 50

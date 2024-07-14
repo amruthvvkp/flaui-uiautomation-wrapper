@@ -8,9 +8,8 @@ from flaui.lib.enums import UIAutomationTypes
 from flaui.modules.automation import Automation
 import pytest
 
-from tests.assets.element_map.wpf_application.base import WPFApplicationElements
+from tests.assets.elements.wpf_application.base import WPFApplicationElements
 from tests.config import test_settings
-
 
 @pytest.fixture(scope="class")
 def wpf_application(ui_automation_type: UIAutomationTypes) -> Generator[Automation, None, None]:
@@ -44,7 +43,7 @@ def main_window(wpf_application: Automation, automation: Any) -> Generator[Windo
 
 
 @pytest.fixture(scope="class")
-def wpf_element_map(main_window: Window) -> Generator[Any, None, None]:
+def wpf_elements(main_window: Window) -> Generator[Any, None, None]:
     """Generates the WPF application element map.
 
     :param main_window: The main window of the test application.
@@ -56,9 +55,9 @@ def wpf_element_map(main_window: Window) -> Generator[Any, None, None]:
 class TestMenu:
     """Tests for the Menu control."""
 
-    def test_menu_with_sub_menus(self, wpf_element_map: WPFApplicationElements):
+    def test_menu_with_sub_menus(self, wpf_elements: WPFApplicationElements):
         """Tests the menu with sub menus."""
-        element = wpf_element_map.main_window.find_first_child(condition=wpf_element_map._condition_factory.menu()).as_menu()
+        element = wpf_elements.main_window.find_first_child(condition=wpf_elements._cf.menu()).as_menu()
         assert element is not None
         items = element.items
         assert len(items) == 2
@@ -85,9 +84,9 @@ class TestMenu:
         assert sub_sub_items[0].properties.name.value == "Plain"
         assert sub_sub_items[1].properties.name.value == "Fancy"
 
-    def test_menu_with_sub_menus_by_name(self, wpf_element_map: WPFApplicationElements):
+    def test_menu_with_sub_menus_by_name(self, wpf_elements: WPFApplicationElements):
         """Tests the menu with sub menus by name."""
-        element = wpf_element_map.main_window.find_first_child(condition=wpf_element_map._condition_factory.menu()).as_menu()
+        element = wpf_elements.main_window.find_first_child(condition=wpf_elements._cf.menu()).as_menu()
         edit = element.get_item_by_name("Edit")
         assert edit is not None
         assert edit.properties.name.value == "Edit"
@@ -98,12 +97,12 @@ class TestMenu:
         assert fancy is not None
         assert fancy.properties.name.value == "Fancy"
 
-    def test_checked_menu_item(self, wpf_element_map: WPFApplicationElements):
+    def test_checked_menu_item(self, wpf_elements: WPFApplicationElements):
         """Tests the checked menu item."""
-        if wpf_element_map.main_window.framework_type == FrameworkType.WinForms:
+        if wpf_elements.main_window.framework_type == FrameworkType.WinForms:
             pytest.skip("UI Automation currently does not support Toggle pattern on menu items in WinForms applications.")
 
-        element = wpf_element_map.main_window.find_first_child(condition=wpf_element_map._condition_factory.menu()).as_menu()
+        element = wpf_elements.main_window.find_first_child(condition=wpf_elements._cf.menu()).as_menu()
         edit = element.get_item_by_name("Edit")
         assert edit is not None
         show_label = edit.get_item_by_name("Show Label")

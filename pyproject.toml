@@ -31,7 +31,6 @@ classifiers = [
   "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
   "Operating System :: Microsoft :: Windows",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.7",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
@@ -56,30 +55,31 @@ alpha_version_format = '{version}a{distance}+{commit_hash}'
 version_format = '{version}'
 
 [tool.poetry.dependencies]
-python = ">=3.7,<3.13"
-loguru = "^0.6.0"
-pillow = "^9.3.0"
-arrow = "^1.2.3"
+python = ">=3.8,<3.13"
+loguru = "^0.7.2"
+pillow = "^10.3.0"
+arrow = "^1.3.0"
 pythonnet = "^3.0.3"
-pydantic = "^2.0.0"
-pydantic-settings = "^2.0.0"
-pydantic-extra-types = "^2.0.0"
+pydantic = "^2.8.2"
+pydantic-settings = "^2.3.4"
+pydantic-extra-types = "^2.8.2"
 
 [tool.poetry.group.dev.dependencies]
-mypy = "^0.991"
+mypy = "^1.10.0"
 jupyter = "^1.0.0"
 isort = "^5.10.1"
-pre-commit = { version = "^3.3.3", python = ">=3.8" }
-interrogate = "^1.5.0"
-ruff = "^0.0.288"
+pre-commit = "^3.3.3"
+interrogate = "^1.7.0"
+ruff = "^0.5.1"
 
 [tool.poetry.group.dev]
 optional = true
 
 [tool.poetry.group.unit_test.dependencies]
-pytest = "^7.2.0"
+pytest = "^8.2.2"
 pytest-cov = "^4.0.0"
 pytest-sugar = "^1.0.0"
+psutil = "^6.0.0"
 
 [tool.poetry.group.unit_test]
 optional = true
@@ -97,7 +97,7 @@ requires = ["poetry-core>=1.0.0", "setuptools", "wheel"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
-minversion = "6.0"
+minversion = "8.0"
 addopts = "-ra -q -p no:warnings --junitxml=test-results.xml"
 testpaths = ["tests/unit_tests/"]
 
@@ -140,7 +140,6 @@ py_version = 310
 [tool.black]
 # https://github.com/psf/black
 line-length = 120
-target_version = ['py310']
 exclude = '''
 (
   /(
@@ -160,7 +159,6 @@ plugins = ["pydantic.mypy"]
 
 follow_imports = "skip"
 warn_redundant_casts = true
-swarn_unused_ignores = true
 no_implicit_reexport = true
 
 [tool.pydantic-mypy]
@@ -176,13 +174,36 @@ max-complexity = 10
 
 
 [tool.ruff]
-select = [
-  "E", # pycodestyle errors
-  "W", # pycodestyle warnings
-  "F", # pyflakes
-  # "I",  # isort
-  "B", # flake8-bugbear
-]
+# Group violations by containing file.
+respect-gitignore = true
+src = ["flaui"]
+
+# Same as Black.
+line-length = 120
+
+# Assume Python 3.10.
+target-version = "py310"
+fix = true
+
+[tool.ruff.lint.mccabe]
+# Unlike Flake8, default to a complexity level of 10.
+max-complexity = 10
+
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "double"
+
+[tool.ruff.lint.isort]
+order-by-type = true
+combine-as-imports = true
+force-sort-within-sections = true
+lines-after-imports = 1
+force-single-line = false
+split-on-trailing-comma = false
+known-third-party = ["pydantic"]
+
+[tool.ruff.lint]
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 ignore = [
   "E501", # line too long, handled by black
   "B904", # Within an except clause, raise exceptions with raise ... from err or raise ... from None to distinguish them from errors in exception handling
@@ -192,32 +213,10 @@ ignore = [
   "E402", # Module level import not at top of file
 ]
 
-# Group violations by containing file.
-respect-gitignore = true
-src = ["flaui"]
-
-# Same as Black.
-line-length = 120
-
-# Allow unused variables when underscore-prefixed.
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-
-# Assume Python 3.10.
-target-version = "py310"
-fix = true
-
-[tool.ruff.mccabe]
-# Unlike Flake8, default to a complexity level of 10.
-max-complexity = 10
-
-[tool.ruff.flake8-quotes]
-docstring-quotes = "double"
-
-[tool.ruff.isort]
-order-by-type = true
-combine-as-imports = true
-force-sort-within-sections = true
-lines-after-imports = 1
-force-single-line = false
-split-on-trailing-comma = false
-known-third-party = ["pydantic"]
+select = [
+  "E", # pycodestyle errors
+  "W", # pycodestyle warnings
+  "F", # pyflakes
+  # "I",  # isort
+  "B", # flake8-bugbear
+]

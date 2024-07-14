@@ -1,4 +1,4 @@
-"""Tests for the Radio Button control."""
+"""Tests for the Window control."""
 
 
 from typing import Any, Generator
@@ -50,23 +50,8 @@ def wpf_elements(main_window: Window) -> Generator[Any, None, None]:
     """
     yield WPFApplicationElements(main_window=main_window)
 
-class TestRadioButton:
-    """Tests for RadioButton control."""
+class TestWindow:
+    """Tests for Window control."""
 
-    def test_select_single_radio_button(self, wpf_elements: WPFApplicationElements):
-        """Tests the select single radio button."""
-        element = wpf_elements.simple_controls_tab.radio_button_1
-        assert element.is_checked is False
-        element.is_checked = True
-        assert element.is_checked is True
-
-    def test_select_radio_button_group(self, wpf_elements: WPFApplicationElements):
-        """Tests the select radio button group."""
-        radio_button_1 = wpf_elements.simple_controls_tab.radio_button_1
-        radio_button_2 = wpf_elements.simple_controls_tab.radio_button_2
-
-        assert radio_button_2.is_checked is False
-        radio_button_1.is_checked = True
-        assert radio_button_1.is_checked is True and radio_button_2.is_checked is False
-        radio_button_2.is_checked = True
-        assert radio_button_1.is_checked is False and radio_button_2.is_checked is True
+    def test_context_menu(self, wpf_elements: WPFApplicationElements):
+        """Tests Context Menu of Window controls"""

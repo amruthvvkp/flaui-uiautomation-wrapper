@@ -1,4 +1,4 @@
-"""Tests for the Radio Button control."""
+"""Tests for the Tree control."""
 
 
 from typing import Any, Generator
@@ -50,23 +50,17 @@ def wpf_elements(main_window: Window) -> Generator[Any, None, None]:
     """
     yield WPFApplicationElements(main_window=main_window)
 
-class TestRadioButton:
-    """Tests for RadioButton control."""
+class TestTree:
+    """Tests for Tree control."""
 
-    def test_select_single_radio_button(self, wpf_elements: WPFApplicationElements):
-        """Tests the select single radio button."""
-        element = wpf_elements.simple_controls_tab.radio_button_1
-        assert element.is_checked is False
-        element.is_checked = True
-        assert element.is_checked is True
-
-    def test_select_radio_button_group(self, wpf_elements: WPFApplicationElements):
-        """Tests the select radio button group."""
-        radio_button_1 = wpf_elements.simple_controls_tab.radio_button_1
-        radio_button_2 = wpf_elements.simple_controls_tab.radio_button_2
-
-        assert radio_button_2.is_checked is False
-        radio_button_1.is_checked = True
-        assert radio_button_1.is_checked is True and radio_button_2.is_checked is False
-        radio_button_2.is_checked = True
-        assert radio_button_1.is_checked is False and radio_button_2.is_checked is True
+    def test_selection(self, wpf_elements: WPFApplicationElements):
+        """Tests Selection of Tree controls"""
+        tree = wpf_elements.complex_controls_tab.tree_elements
+        with pytest.raises(ValueError):
+            assert tree.selected_tree_item is None
+        assert len(tree.items) == 2
+        tree.items[0].expand()
+        tree.items[0].items[1].expand()
+        tree.items[0].items[1].items[0].select()
+        assert tree.selected_tree_item is not None
+        assert tree.selected_tree_item.text == "Lvl3 a"

@@ -8,6 +8,8 @@ from pydantic import Field
 from pydantic_settings import BaseSettings
 from System.Drawing import Color as CSColor, KnownColor as CSKnownColor  # pyright: ignore
 
+# Reference: https://learn.microsoft.com/en-us/dotnet/api/system.drawing.color?view=net-6.0
+# # TODO: Consider integrating PIL.ImageColor as a bridge for Python usage, https://pillow.readthedocs.io/en/stable/_modules/PIL/ImageColor.html
 class KnownColor(Enum):
     """Specifies the known system colors"""
 
@@ -207,8 +209,8 @@ class KnownColor(Enum):
     YellowGreen = CSKnownColor.YellowGreen
 
 
-class Color(BaseSettings):
-    """Represents an ARGB (alpha, red, green, blue) color."""
+class ColorData(BaseSettings):
+    """Represents an ARGB (alpha, red, green, blue) System.Drawing.Color color object."""
     cs_object: Any = Field(...)
 
     @property
@@ -293,7 +295,7 @@ class Color(BaseSettings):
         """
         return self.cs_object.G
 
-    def equals(self, another_color: Color) -> bool:
+    def equals(self, another_color: ColorData) -> bool:
         """Indicates whether the current object is equal to another object of the same type.
 
         :param another_color: An object to compare with this object.
@@ -363,57 +365,6 @@ class Color(BaseSettings):
         """
         return self.cs_object.ToString()
 
-    def from_argb(
-        self,
-        argb: Optional[int] = None,
-        alpha: Optional[int] = None,
-        base_color: Optional[ColorCollection] = None,
-        red: Optional[int] = None,
-        green: Optional[int] = None,
-        blue: Optional[int] = None,
-    ) -> Color:
-        """Creates a System.Drawing.Color structure from a 32-bit ARGB value.
-
-        :param argb: A value specifying the 32-bit ARGB value, defaults to None
-        :param alpha: The alpha component. Valid values are 0 through 255, defaults to None
-        :param base_color: The System.Drawing.Color from which to create the new System.Drawing.Color, defaults to None
-        :param red: The red component. Valid values are 0 through 255, defaults to None
-        :param green: The green component. Valid values are 0 through 255, defaults to None
-        :param blue: The blue component. Valid values are 0 through 255, defaults to None
-        :raises ValueError: On invalid input combination, input needs to be one among - argb or alpha+base_color or red+green+blue or alpha+red+green+blue
-        :return: The System.Drawing.Color that this method creates.
-        """
-        if all([alpha, red, green, blue]):
-            return Color(cs_object=self.cs_object.FromArgb(alpha, red, green, blue))
-        elif all([red, green, blue]):
-            return Color(cs_object=self.cs_object.FromArgb(red, green, blue))
-        elif all([alpha, base_color]):
-            return Color(cs_object=self.cs_object.FromArgb(alpha, base_color))
-        elif argb is not None and any([alpha, red, green, blue]) is False:
-            return Color(cs_object=self.cs_object.FromArgb(argb))
-        else:
-            raise ValueError(
-                "Invalid arguments sent as input, cannot fetch Color object from the given input parameters"
-            )
-
-    def from_known_color(self, known_color: KnownColor) -> Color:
-        """Creates a System.Drawing.Color structure from the specified predefined color.
-
-        :param known_color: An element of the System.Drawing.KnownColor enumeration.
-        :return: The System.Drawing.Color that this method creates.
-        """
-        return Color(cs_object=self.cs_object.FromKnownColor(known_color.value))
-
-    def from_name(self, name: str) -> Color:
-        """Creates a System.Drawing.Color structure from the specified name of a predefined
-        color.
-
-        :param name: A string that is the name of a predefined color. Valid names are the same as
-        the names of the elements of the System.Drawing.KnownColor enumeration.
-        :return: The System.Drawing.Color that this method creates.
-        """
-        return Color(cs_object=self.cs_object.FromName(name))
-
 # Treating this as an Enum class is resulting in the below error -
 # Unhandled Exception: System.ArgumentException: We should never receive instances of other managed types
 #    at Python.Runtime.Converter.ToManagedValue(BorrowedReference value, Type obType, Object& result, Boolean setError)
@@ -425,149 +376,215 @@ class Color(BaseSettings):
 #    at Python.Runtime.MethodObject.Invoke(BorrowedReference target, BorrowedReference args, BorrowedReference kw, MethodBase info)
 #    at Python.Runtime.MethodObject.Invoke(BorrowedReference inst, BorrowedReference args, BorrowedReference kw)
 #    at Python.Runtime.ClassBase.tp_richcompare(BorrowedReference ob, BorrowedReference other, Int32 op)
-class ColorCollection:
-    """Represents an ARGB (alpha, red, green, blue) color"""
+class Color:
+    """Represents an ARGB (alpha, red, green, blue) color from System.Drawing.Color object"""
+    # X11 colour table from https://drafts.csswg.org/css-color-4/, with
+    # gray/grey spelling issues fixed.  This is a superset of HTML 4.0
+    # colour names used in CSS 1.
+    AliceBlue = ColorData(cs_object=CSColor.AliceBlue)
+    AntiqueWhite = ColorData(cs_object=CSColor.AntiqueWhite)
+    Aqua = ColorData(cs_object=CSColor.Aqua)
+    Aquamarine = ColorData(cs_object=CSColor.Aquamarine)
+    Azure = ColorData(cs_object=CSColor.Azure)
+    Beige = ColorData(cs_object=CSColor.Beige)
+    Bisque = ColorData(cs_object=CSColor.Bisque)
+    Black = ColorData(cs_object=CSColor.Black)
+    BlanchedAlmond = ColorData(cs_object=CSColor.BlanchedAlmond)
+    Blue = ColorData(cs_object=CSColor.Blue)
+    BlueViolet = ColorData(cs_object=CSColor.BlueViolet)
+    Brown = ColorData(cs_object=CSColor.Brown)
+    BurlyWood = ColorData(cs_object=CSColor.BurlyWood)
+    CadetBlue = ColorData(cs_object=CSColor.CadetBlue)
+    Chartreuse = ColorData(cs_object=CSColor.Chartreuse)
+    Chocolate = ColorData(cs_object=CSColor.Chocolate)
+    Coral = ColorData(cs_object=CSColor.Coral)
+    CornflowerBlue = ColorData(cs_object=CSColor.CornflowerBlue)
+    Cornsilk = ColorData(cs_object=CSColor.Cornsilk)
+    Crimson = ColorData(cs_object=CSColor.Crimson)
+    Cyan = ColorData(cs_object=CSColor.Cyan)
+    DarkBlue = ColorData(cs_object=CSColor.DarkBlue)
+    DarkCyan = ColorData(cs_object=CSColor.DarkCyan)
+    DarkGoldenrod = ColorData(cs_object=CSColor.DarkGoldenrod)
+    DarkGray = ColorData(cs_object=CSColor.DarkGray)
+    DarkGreen = ColorData(cs_object=CSColor.DarkGreen)
+    DarkKhaki = ColorData(cs_object=CSColor.DarkKhaki)
+    DarkMagenta = ColorData(cs_object=CSColor.DarkMagenta)
+    DarkOliveGreen = ColorData(cs_object=CSColor.DarkOliveGreen)
+    DarkOrange = ColorData(cs_object=CSColor.DarkOrange)
+    DarkOrchid = ColorData(cs_object=CSColor.DarkOrchid)
+    DarkRed = ColorData(cs_object=CSColor.DarkRed)
+    DarkSalmon = ColorData(cs_object=CSColor.DarkSalmon)
+    DarkSeaGreen = ColorData(cs_object=CSColor.DarkSeaGreen)
+    DarkSlateBlue = ColorData(cs_object=CSColor.DarkSlateBlue)
+    DarkSlateGray = ColorData(cs_object=CSColor.DarkSlateGray)
+    DarkTurquoise = ColorData(cs_object=CSColor.DarkTurquoise)
+    DarkViolet = ColorData(cs_object=CSColor.DarkViolet)
+    DeepPink = ColorData(cs_object=CSColor.DeepPink)
+    DeepSkyBlue = ColorData(cs_object=CSColor.DeepSkyBlue)
+    DimGray = ColorData(cs_object=CSColor.DimGray)
+    DodgerBlue = ColorData(cs_object=CSColor.DodgerBlue)
+    Firebrick = ColorData(cs_object=CSColor.Firebrick)
+    FloralWhite = ColorData(cs_object=CSColor.FloralWhite)
+    ForestGreen = ColorData(cs_object=CSColor.ForestGreen)
+    Fuchsia = ColorData(cs_object=CSColor.Fuchsia)
+    Gainsboro = ColorData(cs_object=CSColor.Gainsboro)
+    GhostWhite = ColorData(cs_object=CSColor.GhostWhite)
+    Gold = ColorData(cs_object=CSColor.Gold)
+    Goldenrod = ColorData(cs_object=CSColor.Goldenrod)
+    Gray = ColorData(cs_object=CSColor.Gray)
+    Green = ColorData(cs_object=CSColor.Green)
+    GreenYellow = ColorData(cs_object=CSColor.GreenYellow)
+    Honeydew = ColorData(cs_object=CSColor.Honeydew)
+    HotPink = ColorData(cs_object=CSColor.HotPink)
+    IndianRed = ColorData(cs_object=CSColor.IndianRed)
+    Indigo = ColorData(cs_object=CSColor.Indigo)
+    Ivory = ColorData(cs_object=CSColor.Ivory)
+    Khaki = ColorData(cs_object=CSColor.Khaki)
+    Lavender = ColorData(cs_object=CSColor.Lavender)
+    LavenderBlush = ColorData(cs_object=CSColor.LavenderBlush)
+    LawnGreen = ColorData(cs_object=CSColor.LawnGreen)
+    LemonChiffon = ColorData(cs_object=CSColor.LemonChiffon)
+    LightBlue = ColorData(cs_object=CSColor.LightBlue)
+    LightCoral = ColorData(cs_object=CSColor.LightCoral)
+    LightCyan = ColorData(cs_object=CSColor.LightCyan)
+    LightGoldenrodYellow = ColorData(cs_object=CSColor.LightGoldenrodYellow)
+    LightGray = ColorData(cs_object=CSColor.LightGray)
+    LightGreen = ColorData(cs_object=CSColor.LightGreen)
+    LightPink = ColorData(cs_object=CSColor.LightPink)
+    LightSalmon = ColorData(cs_object=CSColor.LightSalmon)
+    LightSeaGreen = ColorData(cs_object=CSColor.LightSeaGreen)
+    LightSkyBlue = ColorData(cs_object=CSColor.LightSkyBlue)
+    LightSlateGray = ColorData(cs_object=CSColor.LightSlateGray)
+    LightSteelBlue = ColorData(cs_object=CSColor.LightSteelBlue)
+    LightYellow = ColorData(cs_object=CSColor.LightYellow)
+    Lime = ColorData(cs_object=CSColor.Lime)
+    LimeGreen = ColorData(cs_object=CSColor.LimeGreen)
+    Linen = ColorData(cs_object=CSColor.Linen)
+    Magenta = ColorData(cs_object=CSColor.Magenta)
+    Maroon = ColorData(cs_object=CSColor.Maroon)
+    MediumAquamarine = ColorData(cs_object=CSColor.MediumAquamarine)
+    MediumBlue = ColorData(cs_object=CSColor.MediumBlue)
+    MediumOrchid = ColorData(cs_object=CSColor.MediumOrchid)
+    MediumPurple = ColorData(cs_object=CSColor.MediumPurple)
+    MediumSeaGreen = ColorData(cs_object=CSColor.MediumSeaGreen)
+    MediumSlateBlue = ColorData(cs_object=CSColor.MediumSlateBlue)
+    MediumSpringGreen = ColorData(cs_object=CSColor.MediumSpringGreen)
+    MediumTurquoise = ColorData(cs_object=CSColor.MediumTurquoise)
+    MediumVioletRed = ColorData(cs_object=CSColor.MediumVioletRed)
+    MemberwiseClone = ColorData(cs_object=CSColor.MemberwiseClone)
+    MidnightBlue = ColorData(cs_object=CSColor.MidnightBlue)
+    MintCream = ColorData(cs_object=CSColor.MintCream)
+    MistyRose = ColorData(cs_object=CSColor.MistyRose)
+    Moccasin = ColorData(cs_object=CSColor.Moccasin)
+    NavajoWhite = ColorData(cs_object=CSColor.NavajoWhite)
+    Navy = ColorData(cs_object=CSColor.Navy)
+    OldLace = ColorData(cs_object=CSColor.OldLace)
+    Olive = ColorData(cs_object=CSColor.Olive)
+    OliveDrab = ColorData(cs_object=CSColor.OliveDrab)
+    Orange = ColorData(cs_object=CSColor.Orange)
+    OrangeRed = ColorData(cs_object=CSColor.OrangeRed)
+    Orchid = ColorData(cs_object=CSColor.Orchid)
+    Overloads = ColorData(cs_object=CSColor.Overloads)
+    PaleGoldenrod = ColorData(cs_object=CSColor.PaleGoldenrod)
+    PaleGreen = ColorData(cs_object=CSColor.PaleGreen)
+    PaleTurquoise = ColorData(cs_object=CSColor.PaleTurquoise)
+    PaleVioletRed = ColorData(cs_object=CSColor.PaleVioletRed)
+    PapayaWhip = ColorData(cs_object=CSColor.PapayaWhip)
+    PeachPuff = ColorData(cs_object=CSColor.PeachPuff)
+    Peru = ColorData(cs_object=CSColor.Peru)
+    Pink = ColorData(cs_object=CSColor.Pink)
+    Plum = ColorData(cs_object=CSColor.Plum)
+    PowderBlue = ColorData(cs_object=CSColor.PowderBlue)
+    Purple = ColorData(cs_object=CSColor.Purple)
+    Red = ColorData(cs_object=CSColor.Red)
+    RosyBrown = ColorData(cs_object=CSColor.RosyBrown)
+    RoyalBlue = ColorData(cs_object=CSColor.RoyalBlue)
+    SaddleBrown = ColorData(cs_object=CSColor.SaddleBrown)
+    Salmon = ColorData(cs_object=CSColor.Salmon)
+    SandyBrown = ColorData(cs_object=CSColor.SandyBrown)
+    SeaGreen = ColorData(cs_object=CSColor.SeaGreen)
+    SeaShell = ColorData(cs_object=CSColor.SeaShell)
+    Sienna = ColorData(cs_object=CSColor.Sienna)
+    Silver = ColorData(cs_object=CSColor.Silver)
+    SkyBlue = ColorData(cs_object=CSColor.SkyBlue)
+    SlateBlue = ColorData(cs_object=CSColor.SlateBlue)
+    SlateGray = ColorData(cs_object=CSColor.SlateGray)
+    Snow = ColorData(cs_object=CSColor.Snow)
+    SpringGreen = ColorData(cs_object=CSColor.SpringGreen)
+    SteelBlue = ColorData(cs_object=CSColor.SteelBlue)
+    Tan = ColorData(cs_object=CSColor.Tan)
+    Teal = ColorData(cs_object=CSColor.Teal)
+    Thistle = ColorData(cs_object=CSColor.Thistle)
+    Tomato = ColorData(cs_object=CSColor.Tomato)
+    Transparent = ColorData(cs_object=CSColor.Transparent)
+    Turquoise = ColorData(cs_object=CSColor.Turquoise)
+    Violet = ColorData(cs_object=CSColor.Violet)
+    Wheat = ColorData(cs_object=CSColor.Wheat)
+    White = ColorData(cs_object=CSColor.White)
+    WhiteSmoke = ColorData(cs_object=CSColor.WhiteSmoke)
+    Yellow = ColorData(cs_object=CSColor.Yellow)
+    YellowGreen = ColorData(cs_object=CSColor.YellowGreen)
 
-    AliceBlue = Color(cs_object=CSColor.AliceBlue)
-    AntiqueWhite = Color(cs_object=CSColor.AntiqueWhite)
-    Aqua = Color(cs_object=CSColor.Aqua)
-    Aquamarine = Color(cs_object=CSColor.Aquamarine)
-    Azure = Color(cs_object=CSColor.Azure)
-    Beige = Color(cs_object=CSColor.Beige)
-    Bisque = Color(cs_object=CSColor.Bisque)
-    Black = Color(cs_object=CSColor.Black)
-    BlanchedAlmond = Color(cs_object=CSColor.BlanchedAlmond)
-    Blue = Color(cs_object=CSColor.Blue)
-    BlueViolet = Color(cs_object=CSColor.BlueViolet)
-    Brown = Color(cs_object=CSColor.Brown)
-    BurlyWood = Color(cs_object=CSColor.BurlyWood)
-    CadetBlue = Color(cs_object=CSColor.CadetBlue)
-    Chartreuse = Color(cs_object=CSColor.Chartreuse)
-    Chocolate = Color(cs_object=CSColor.Chocolate)
-    Coral = Color(cs_object=CSColor.Coral)
-    CornflowerBlue = Color(cs_object=CSColor.CornflowerBlue)
-    Cornsilk = Color(cs_object=CSColor.Cornsilk)
-    Crimson = Color(cs_object=CSColor.Crimson)
-    Cyan = Color(cs_object=CSColor.Cyan)
-    DarkBlue = Color(cs_object=CSColor.DarkBlue)
-    DarkCyan = Color(cs_object=CSColor.DarkCyan)
-    DarkGoldenrod = Color(cs_object=CSColor.DarkGoldenrod)
-    DarkGray = Color(cs_object=CSColor.DarkGray)
-    DarkGreen = Color(cs_object=CSColor.DarkGreen)
-    DarkKhaki = Color(cs_object=CSColor.DarkKhaki)
-    DarkMagenta = Color(cs_object=CSColor.DarkMagenta)
-    DarkOliveGreen = Color(cs_object=CSColor.DarkOliveGreen)
-    DarkOrange = Color(cs_object=CSColor.DarkOrange)
-    DarkOrchid = Color(cs_object=CSColor.DarkOrchid)
-    DarkRed = Color(cs_object=CSColor.DarkRed)
-    DarkSalmon = Color(cs_object=CSColor.DarkSalmon)
-    DarkSeaGreen = Color(cs_object=CSColor.DarkSeaGreen)
-    DarkSlateBlue = Color(cs_object=CSColor.DarkSlateBlue)
-    DarkSlateGray = Color(cs_object=CSColor.DarkSlateGray)
-    DarkTurquoise = Color(cs_object=CSColor.DarkTurquoise)
-    DarkViolet = Color(cs_object=CSColor.DarkViolet)
-    DeepPink = Color(cs_object=CSColor.DeepPink)
-    DeepSkyBlue = Color(cs_object=CSColor.DeepSkyBlue)
-    DimGray = Color(cs_object=CSColor.DimGray)
-    DodgerBlue = Color(cs_object=CSColor.DodgerBlue)
-    Firebrick = Color(cs_object=CSColor.Firebrick)
-    FloralWhite = Color(cs_object=CSColor.FloralWhite)
-    ForestGreen = Color(cs_object=CSColor.ForestGreen)
-    Fuchsia = Color(cs_object=CSColor.Fuchsia)
-    Gainsboro = Color(cs_object=CSColor.Gainsboro)
-    GhostWhite = Color(cs_object=CSColor.GhostWhite)
-    Gold = Color(cs_object=CSColor.Gold)
-    Goldenrod = Color(cs_object=CSColor.Goldenrod)
-    Gray = Color(cs_object=CSColor.Gray)
-    Green = Color(cs_object=CSColor.Green)
-    GreenYellow = Color(cs_object=CSColor.GreenYellow)
-    Honeydew = Color(cs_object=CSColor.Honeydew)
-    HotPink = Color(cs_object=CSColor.HotPink)
-    IndianRed = Color(cs_object=CSColor.IndianRed)
-    Indigo = Color(cs_object=CSColor.Indigo)
-    Ivory = Color(cs_object=CSColor.Ivory)
-    Khaki = Color(cs_object=CSColor.Khaki)
-    Lavender = Color(cs_object=CSColor.Lavender)
-    LavenderBlush = Color(cs_object=CSColor.LavenderBlush)
-    LawnGreen = Color(cs_object=CSColor.LawnGreen)
-    LemonChiffon = Color(cs_object=CSColor.LemonChiffon)
-    LightBlue = Color(cs_object=CSColor.LightBlue)
-    LightCoral = Color(cs_object=CSColor.LightCoral)
-    LightCyan = Color(cs_object=CSColor.LightCyan)
-    LightGoldenrodYellow = Color(cs_object=CSColor.LightGoldenrodYellow)
-    LightGray = Color(cs_object=CSColor.LightGray)
-    LightGreen = Color(cs_object=CSColor.LightGreen)
-    LightPink = Color(cs_object=CSColor.LightPink)
-    LightSalmon = Color(cs_object=CSColor.LightSalmon)
-    LightSeaGreen = Color(cs_object=CSColor.LightSeaGreen)
-    LightSkyBlue = Color(cs_object=CSColor.LightSkyBlue)
-    LightSlateGray = Color(cs_object=CSColor.LightSlateGray)
-    LightSteelBlue = Color(cs_object=CSColor.LightSteelBlue)
-    LightYellow = Color(cs_object=CSColor.LightYellow)
-    Lime = Color(cs_object=CSColor.Lime)
-    LimeGreen = Color(cs_object=CSColor.LimeGreen)
-    Linen = Color(cs_object=CSColor.Linen)
-    Magenta = Color(cs_object=CSColor.Magenta)
-    Maroon = Color(cs_object=CSColor.Maroon)
-    MediumAquamarine = Color(cs_object=CSColor.MediumAquamarine)
-    MediumBlue = Color(cs_object=CSColor.MediumBlue)
-    MediumOrchid = Color(cs_object=CSColor.MediumOrchid)
-    MediumPurple = Color(cs_object=CSColor.MediumPurple)
-    MediumSeaGreen = Color(cs_object=CSColor.MediumSeaGreen)
-    MediumSlateBlue = Color(cs_object=CSColor.MediumSlateBlue)
-    MediumSpringGreen = Color(cs_object=CSColor.MediumSpringGreen)
-    MediumTurquoise = Color(cs_object=CSColor.MediumTurquoise)
-    MediumVioletRed = Color(cs_object=CSColor.MediumVioletRed)
-    MemberwiseClone = Color(cs_object=CSColor.MemberwiseClone)
-    MidnightBlue = Color(cs_object=CSColor.MidnightBlue)
-    MintCream = Color(cs_object=CSColor.MintCream)
-    MistyRose = Color(cs_object=CSColor.MistyRose)
-    Moccasin = Color(cs_object=CSColor.Moccasin)
-    NavajoWhite = Color(cs_object=CSColor.NavajoWhite)
-    Navy = Color(cs_object=CSColor.Navy)
-    OldLace = Color(cs_object=CSColor.OldLace)
-    Olive = Color(cs_object=CSColor.Olive)
-    OliveDrab = Color(cs_object=CSColor.OliveDrab)
-    Orange = Color(cs_object=CSColor.Orange)
-    OrangeRed = Color(cs_object=CSColor.OrangeRed)
-    Orchid = Color(cs_object=CSColor.Orchid)
-    Overloads = Color(cs_object=CSColor.Overloads)
-    PaleGoldenrod = Color(cs_object=CSColor.PaleGoldenrod)
-    PaleGreen = Color(cs_object=CSColor.PaleGreen)
-    PaleTurquoise = Color(cs_object=CSColor.PaleTurquoise)
-    PaleVioletRed = Color(cs_object=CSColor.PaleVioletRed)
-    PapayaWhip = Color(cs_object=CSColor.PapayaWhip)
-    PeachPuff = Color(cs_object=CSColor.PeachPuff)
-    Peru = Color(cs_object=CSColor.Peru)
-    Pink = Color(cs_object=CSColor.Pink)
-    Plum = Color(cs_object=CSColor.Plum)
-    PowderBlue = Color(cs_object=CSColor.PowderBlue)
-    Purple = Color(cs_object=CSColor.Purple)
-    Red = Color(cs_object=CSColor.Red)
-    RosyBrown = Color(cs_object=CSColor.RosyBrown)
-    RoyalBlue = Color(cs_object=CSColor.RoyalBlue)
-    SaddleBrown = Color(cs_object=CSColor.SaddleBrown)
-    Salmon = Color(cs_object=CSColor.Salmon)
-    SandyBrown = Color(cs_object=CSColor.SandyBrown)
-    SeaGreen = Color(cs_object=CSColor.SeaGreen)
-    SeaShell = Color(cs_object=CSColor.SeaShell)
-    Sienna = Color(cs_object=CSColor.Sienna)
-    Silver = Color(cs_object=CSColor.Silver)
-    SkyBlue = Color(cs_object=CSColor.SkyBlue)
-    SlateBlue = Color(cs_object=CSColor.SlateBlue)
-    SlateGray = Color(cs_object=CSColor.SlateGray)
-    Snow = Color(cs_object=CSColor.Snow)
-    SpringGreen = Color(cs_object=CSColor.SpringGreen)
-    SteelBlue = Color(cs_object=CSColor.SteelBlue)
-    Tan = Color(cs_object=CSColor.Tan)
-    Teal = Color(cs_object=CSColor.Teal)
-    Thistle = Color(cs_object=CSColor.Thistle)
-    Tomato = Color(cs_object=CSColor.Tomato)
-    Transparent = Color(cs_object=CSColor.Transparent)
-    Turquoise = Color(cs_object=CSColor.Turquoise)
-    Violet = Color(cs_object=CSColor.Violet)
-    Wheat = Color(cs_object=CSColor.Wheat)
-    White = Color(cs_object=CSColor.White)
-    WhiteSmoke = Color(cs_object=CSColor.WhiteSmoke)
-    Yellow = Color(cs_object=CSColor.Yellow)
-    YellowGreen = Color(cs_object=CSColor.YellowGreen)
+    @staticmethod
+    def from_argb(
+        argb: Optional[int] = None,
+        alpha: Optional[int] = None,
+        base_color: Optional[ColorData] = None,
+        red: Optional[int] = None,
+        green: Optional[int] = None,
+        blue: Optional[int] = None,
+    ) -> ColorData:
+        """
+        Creates a ColorData object from various input formats matching C# System.Drawing.Color
+
+        :param argb: A value specifying the 32-bit ARGB value, defaults to None
+        :param alpha: The alpha component. Valid values are 0 through 255, defaults to None
+        :param base_color: The System.Drawing.Color from which to create the new System.Drawing.Color, defaults to None
+        :param red: The red component. Valid values are 0 through 255, defaults to None
+        :param green: The green component. Valid values are 0 through 255, defaults to None
+        :param blue: The blue component. Valid values are 0 through 255, defaults to None
+        :raises ValueError: On invalid input combination
+        :return: The ColorData object representing the color.
+        """
+
+        # Check for valid input combinations
+        if all(x is not None for x in [alpha, red, green, blue]):  # Check if all components are provided (including None)
+            # ARGB with all components provided
+            return ColorData(cs_object=CSColor.FromArgb(alpha, red, green, blue))
+        elif all(x is not None for x in [red, green, blue]) and alpha is None:
+            # RGB with implicit alpha 255
+            return ColorData(cs_object=CSColor.FromArgb(red, green, blue))
+        elif alpha is not None and base_color is not None:
+            # Set alpha for existing color
+            return ColorData(cs_object=CSColor.FromArgb(alpha, base_color.cs_object))
+        elif argb is not None and any([alpha, red, green, blue]) is False:
+
+            # Single ARGB value
+            alpha = (argb >> 24) & 0xFF  # Extract alpha (shift 24 bits and mask with 0xFF)
+            red = (argb >> 16) & 0xFF    # Extract red (shift 16 bits and mask with 0xFF)
+            green = (argb >> 8) & 0xFF   # Extract green (shift 8 bits and mask with 0xFF)
+            blue = argb & 0xFF           # Extract blue (mask with 0xFF)
+            return ColorData(cs_object=CSColor.FromArgb(alpha, red, green, blue))
+        else:
+            raise ValueError(
+                "Invalid arguments sent as input, cannot create ColorData object."
+            )
+    @staticmethod
+    def from_known_color(known_color: KnownColor) -> ColorData:
+        """Creates a System.Drawing.Color structure from the specified predefined color.
+
+        :param known_color: An element of the System.Drawing.KnownColor enumeration.
+        :return: The System.Drawing.Color that this method creates.
+        """
+        return ColorData(cs_object=CSColor.FromKnownColor(known_color.value))
+
+    @staticmethod
+    def from_name(name: str) -> ColorData:
+        """Creates a System.Drawing.Color structure from the specified name of a predefined
+        color.
+
+        :param name: A string that is the name of a predefined color. Valid names are the same as
+        the names of the elements of the System.Drawing.KnownColor enumeration.
+        :return: The System.Drawing.Color that this method creates.
+        """
+        return ColorData(cs_object=CSColor.FromName(name))

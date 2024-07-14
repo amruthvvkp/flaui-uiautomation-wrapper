@@ -7,9 +7,8 @@ from flaui.lib.enums import UIAutomationTypes
 from flaui.modules.automation import Automation
 import pytest
 
-from tests.assets.element_map.wpf_application.base import WPFApplicationElements
+from tests.assets.elements.wpf_application.base import WPFApplicationElements
 from tests.config import test_settings
-
 
 @pytest.fixture(scope="class")
 def wpf_application(ui_automation_type: UIAutomationTypes) -> Generator[Automation, None, None]:
@@ -43,7 +42,7 @@ def main_window(wpf_application: Automation, automation: Any) -> Generator[Windo
 
 
 @pytest.fixture(scope="class")
-def wpf_element_map(main_window: Window) -> Generator[Any, None, None]:
+def wpf_elements(main_window: Window) -> Generator[Any, None, None]:
     """Generates the WPF application element map.
 
     :param main_window: The main window of the test application.
@@ -55,21 +54,21 @@ def wpf_element_map(main_window: Window) -> Generator[Any, None, None]:
 class TestGrid:
     """Tests for the grid control."""
 
-    def test_grid_pattern(self, wpf_element_map: WPFApplicationElements):
+    def test_grid_pattern(self, wpf_elements: WPFApplicationElements):
         """Tests the grid pattern.
 
-        :param wpf_element_map: WPF application element map.
+        :param wpf_elements: WPF application element map.
         """
-        grid = wpf_element_map.complex_controls_tab.list_view_grid
+        grid = wpf_elements.complex_controls_tab.list_view_grid
         assert grid.column_count == 2
         assert grid.row_count == 3
 
-    def test_header_and_columns(self, wpf_element_map: WPFApplicationElements):
+    def test_header_and_columns(self, wpf_elements: WPFApplicationElements):
         """Tests the grid header and columns.
 
-        :param wpf_element_map: WPF application element map.
+        :param wpf_elements: WPF application element map.
         """
-        grid = wpf_element_map.complex_controls_tab.list_view_grid
+        grid = wpf_elements.complex_controls_tab.list_view_grid
         header = grid.header
         columns = header.columns
         assert header is not None
@@ -77,12 +76,12 @@ class TestGrid:
         assert columns[0].name == "Key"
         assert columns[1].name == "Value"
 
-    def test_rows_and_cells(self, wpf_element_map: WPFApplicationElements):
+    def test_rows_and_cells(self, wpf_elements: WPFApplicationElements):
         """Tests the grid rows and cells.
 
-        :param wpf_element_map: WPF application element map.
+        :param wpf_elements: WPF application element map.
         """
-        grid = wpf_element_map.complex_controls_tab.list_view_grid
+        grid = wpf_elements.complex_controls_tab.list_view_grid
         rows = grid.rows
         assert len(rows) == 3
         expected_cell_values = [["1", "10"], ["2", "20"], ["3", "30"]]
@@ -96,23 +95,23 @@ class TestGrid:
         for cell_index, cell in enumerate(cells):
             assert cell.value == expected_values[cell_index]
 
-    def test_select_by_index(self, wpf_element_map: WPFApplicationElements):
+    def test_select_by_index(self, wpf_elements: WPFApplicationElements):
         """Tests the grid select by index method.
 
-        :param wpf_element_map: WPF application element map.
+        :param wpf_elements: WPF application element map.
         """
-        grid = wpf_element_map.complex_controls_tab.list_view_grid
+        grid = wpf_elements.complex_controls_tab.list_view_grid
         for k, v in {1: ["2", "20"], 2: ["3", "30"]}.items():
             grid.select(k)
             selected_row = grid.selected_item
             self._check_row_content(selected_row, v)
 
-    def test_select_by_text(self, wpf_element_map: WPFApplicationElements):
+    def test_select_by_text(self, wpf_elements: WPFApplicationElements):
         """Tests the grid select by text method.
 
-        :param wpf_element_map: WPF application element map.
+        :param wpf_elements: WPF application element map.
         """
-        grid = wpf_element_map.complex_controls_tab.list_view_grid
+        grid = wpf_elements.complex_controls_tab.list_view_grid
         for _ in [["2", "20"], ["3", "30"]]:
             grid.select(column_index=1, text_to_find=_[1])
             selected_row = grid.selected_item

@@ -1,12 +1,16 @@
 """This module acts as a wrapper for classes listed in FlaUI.Core.Input namespace. It provides methods to interact with the keyboard and mouse."""
 
-from FlaUI.Core.Input import Wait as CSWait  # pyright: ignore
 import time
-from typing import Optional, Any
+from typing import Any, Optional
+
+from FlaUI.Core.Input import Wait as CSWait  # pyright: ignore
 
 from flaui.core.automation_elements import AutomationElement
 
+
 class Wait:
+    """Various helper tools used in various places, wrapper over Wait class in FlaUI.Core.Input namespace"""
+
     DEFAULT_TIMEOUT = 1  # in seconds
 
     @staticmethod
@@ -28,7 +32,9 @@ class Wait:
         :param timeout_in_secs: The timeout of the waiting.
         :return: True if the element was responsive, false otherwise.
         """
-        return CSWait.UntilResponsive(automation_element, timeout_in_secs if timeout_in_secs is not None else Wait.DEFAULT_TIMEOUT)
+        return CSWait.UntilResponsive(
+            automation_element, timeout_in_secs if timeout_in_secs is not None else Wait.DEFAULT_TIMEOUT
+        )
 
     @staticmethod
     def until_responsive_hwnd(hWnd: Any, timeout: Optional[float] = None):
@@ -40,3 +46,11 @@ class Wait:
         :return: True if the hwnd was responsive, false otherwise.
         """
         return CSWait.UntilResponsiveHwnd(hWnd, timeout if timeout is not None else Wait.DEFAULT_TIMEOUT)
+
+
+class Keyboard:
+    """Simulates Key input, wrapper over Wait class in FlaUI.Core.Input namespace"""
+
+    @staticmethod
+    def type(text: str):
+        pass
