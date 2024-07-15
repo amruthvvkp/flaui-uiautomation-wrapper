@@ -12,7 +12,7 @@ from typing import Any, Callable, List, Optional, Tuple, TypeVar, Union
 
 import arrow
 from pydantic import BaseModel, Field, field_validator
-from System import DateTime as CSDateTime, NullReferenceException, TimeSpan  # pyright: ignore
+from System import DateTime as CSDateTime, NullReferenceException  # pyright: ignore
 
 from flaui.core.automation_type import AutomationType
 from flaui.core.condition_factory import ConditionFactory, PropertyCondition
@@ -385,7 +385,7 @@ class AutomationElement(ElementBase):
         """
         return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllByXPath(x_path)]
 
-    def find_all_children(self, condition: Optional[PropertyCondition]=None) -> List[AutomationElement]:
+    def find_all_children(self, condition: Optional[PropertyCondition] = None) -> List[AutomationElement]:
         """Finds all children with the condition.
 
         :param condition: The search condition.
@@ -1029,7 +1029,7 @@ class ComboBox(AutomationElement):
     """Class to interact with a combobox element"""
 
     @property
-    def animation_duration(self, time_span: int = 100) -> Any:
+    def animation_duration(self) -> Any:
         """Timespan to wait until the animation for opening/closing is finished.
 
         :param time_span: Timespan in milliseconds, defaults to 100
@@ -1043,7 +1043,7 @@ class ComboBox(AutomationElement):
 
         :param time_span: Timespan in milliseconds, defaults to 100
         """
-        self.raw_element.AnimationDuration = TimeSpan.FromMilliseconds(time_span)
+        self.raw_element.AnimationDuration = TypeCast.cs_timespan(time_span)
 
     @property
     def editable_text(self) -> str:
@@ -1694,6 +1694,7 @@ class Menu(AutomationElement):
         """
         self.raw_element.IsWin32Menu = value
 
+
 class MenuItem(AutomationElement):
     """Class to interact with a menu item element."""
 
@@ -1919,7 +1920,6 @@ class Slider(AutomationElement):
         :param value: Value to set
         """
         self.raw_element.Value = value
-
 
     def small_increment(self):
         """Performs a small increment."""
@@ -2344,6 +2344,7 @@ class Window(AutomationElement):
         """
         self.raw_element.SetTransparency(alpha)
 
+
 class IAutomationProperty(BaseModel, abc.ABC):
     """Interface for an automation property."""
 
@@ -2372,7 +2373,7 @@ class IAutomationProperty(BaseModel, abc.ABC):
 
 
 class AutomationProperty(IAutomationProperty):
-    raw_property : Any
+    raw_property: Any
 
     @property
     def framework_automation_element(self) -> AutomationElement:
@@ -2442,6 +2443,7 @@ class AutomationProperty(IAutomationProperty):
 
     def __str__(self):
         return str(self.value_or_default)
+
 
 class Properties(BaseModel):
     raw_properties: Any

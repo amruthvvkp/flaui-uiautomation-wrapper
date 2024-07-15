@@ -1,15 +1,16 @@
 """Tests for the Window control."""
 
-
 from typing import Any, Generator
 
 from flaui.core.automation_elements import Window
+from flaui.core.input import Mouse, MouseButton, Wait
 from flaui.lib.enums import UIAutomationTypes
 from flaui.modules.automation import Automation
 import pytest
 
 from tests.assets.elements.wpf_application.base import WPFApplicationElements
 from tests.config import test_settings
+
 
 @pytest.fixture(scope="class")
 def wpf_application(ui_automation_type: UIAutomationTypes) -> Generator[Automation, None, None]:
@@ -41,6 +42,7 @@ def main_window(wpf_application: Automation, automation: Any) -> Generator[Windo
     """
     yield wpf_application.application.get_main_window(automation)
 
+
 @pytest.fixture(scope="class")
 def wpf_elements(main_window: Window) -> Generator[Any, None, None]:
     """Generates the WPF application element map.
@@ -50,8 +52,20 @@ def wpf_elements(main_window: Window) -> Generator[Any, None, None]:
     """
     yield WPFApplicationElements(main_window=main_window)
 
+
 class TestWindow:
     """Tests for Window control."""
 
     def test_context_menu(self, wpf_elements: WPFApplicationElements):
         """Tests Context Menu of Window controls"""
+        button = wpf_elements.simple_controls_tab.context_menu_button
+        Mouse.click(button.get_clickable_point(), mouse_button=MouseButton.Right)
+        Wait.until_input_is_processed()
+        try:
+            context_menu = wpf_elements.main_window.context_menu
+        except ValueError:
+            pytest.fail("Context menu did not appear as expected")
+        else:
+            assert len(context_menu.items) == 2
+            assert len(context_menu.items[1].items) == 1
+            assert context_menu.items[1].items[0].text == "Inner Context"
