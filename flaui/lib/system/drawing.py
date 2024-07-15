@@ -1,12 +1,19 @@
 """This module provides a wrapper class for System.Drawing namespace objects. It also defines an Enum class KnownColor that specifies the known system colors. Wrapper class for System.Drawing namespace objects"""
+
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Optional
+from typing import Any, Optional, Tuple, Union
 
-from pydantic import Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from pydantic_settings import BaseSettings
-from System.Drawing import Color as CSColor, KnownColor as CSKnownColor  # pyright: ignore
+from System.Drawing import (  # pyright: ignore
+    Color as CSColor,
+    KnownColor as CSKnownColor,
+    Point as CSPoint,
+    Size as CSSize,
+)
+
 
 # Reference: https://learn.microsoft.com/en-us/dotnet/api/system.drawing.color?view=net-6.0
 # # TODO: Consider integrating PIL.ImageColor as a bridge for Python usage, https://pillow.readthedocs.io/en/stable/_modules/PIL/ImageColor.html
@@ -211,6 +218,7 @@ class KnownColor(Enum):
 
 class ColorData(BaseSettings):
     """Represents an ARGB (alpha, red, green, blue) System.Drawing.Color color object."""
+
     cs_object: Any = Field(...)
 
     @property
@@ -365,6 +373,7 @@ class ColorData(BaseSettings):
         """
         return self.cs_object.ToString()
 
+
 # Treating this as an Enum class is resulting in the below error -
 # Unhandled Exception: System.ArgumentException: We should never receive instances of other managed types
 #    at Python.Runtime.Converter.ToManagedValue(BorrowedReference value, Type obType, Object& result, Boolean setError)
@@ -378,6 +387,7 @@ class ColorData(BaseSettings):
 #    at Python.Runtime.ClassBase.tp_richcompare(BorrowedReference ob, BorrowedReference other, Int32 op)
 class Color:
     """Represents an ARGB (alpha, red, green, blue) color from System.Drawing.Color object"""
+
     # X11 colour table from https://drafts.csswg.org/css-color-4/, with
     # gray/grey spelling issues fixed.  This is a superset of HTML 4.0
     # colour names used in CSS 1.
@@ -548,7 +558,9 @@ class Color:
         """
 
         # Check for valid input combinations
-        if all(x is not None for x in [alpha, red, green, blue]):  # Check if all components are provided (including None)
+        if all(
+            x is not None for x in [alpha, red, green, blue]
+        ):  # Check if all components are provided (including None)
             # ARGB with all components provided
             return ColorData(cs_object=CSColor.FromArgb(alpha, red, green, blue))
         elif all(x is not None for x in [red, green, blue]) and alpha is None:
@@ -558,17 +570,15 @@ class Color:
             # Set alpha for existing color
             return ColorData(cs_object=CSColor.FromArgb(alpha, base_color.cs_object))
         elif argb is not None and any([alpha, red, green, blue]) is False:
-
             # Single ARGB value
             alpha = (argb >> 24) & 0xFF  # Extract alpha (shift 24 bits and mask with 0xFF)
-            red = (argb >> 16) & 0xFF    # Extract red (shift 16 bits and mask with 0xFF)
-            green = (argb >> 8) & 0xFF   # Extract green (shift 8 bits and mask with 0xFF)
-            blue = argb & 0xFF           # Extract blue (mask with 0xFF)
+            red = (argb >> 16) & 0xFF  # Extract red (shift 16 bits and mask with 0xFF)
+            green = (argb >> 8) & 0xFF  # Extract green (shift 8 bits and mask with 0xFF)
+            blue = argb & 0xFF  # Extract blue (mask with 0xFF)
             return ColorData(cs_object=CSColor.FromArgb(alpha, red, green, blue))
         else:
-            raise ValueError(
-                "Invalid arguments sent as input, cannot create ColorData object."
-            )
+            raise ValueError("Invalid arguments sent as input, cannot create ColorData object.")
+
     @staticmethod
     def from_known_color(known_color: KnownColor) -> ColorData:
         """Creates a System.Drawing.Color structure from the specified predefined color.
@@ -588,3 +598,287 @@ class Color:
         :return: The System.Drawing.Color that this method creates.
         """
         return ColorData(cs_object=CSColor.FromName(name))
+
+
+class Point(BaseModel):
+    """Represents a Point object, works with underlying C# System.Drawing.Point object.
+
+    Note that this doesn't handle PointF object and the methods are currently listed only for Point object."""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    raw_value: Union[int, Tuple[int, int], CSPoint, Size]
+
+    @field_validator("raw_value")
+    @classmethod
+    def parse_cs_object(cls, v: Union[int, Tuple[int, int], CSPoint, Size]) -> CSPoint:
+        """Parses C# Point object from System.Drawing namespace
+
+        :param v: Input value
+        :return: Parsed C# object
+        """
+        if isinstance(v, CSPoint):
+            return v
+        if isinstance(v, Size):
+            return CSPoint(v.raw_value)
+
+        return CSPoint(v) if isinstance(v, int) else CSPoint(v[0], v[1])
+
+    @property
+    def x(self) -> int:
+        """Gets x-cordinate of this Point
+
+        :return: x-cordinate of the Point
+        """
+        return self.raw_value.X  # type: ignore
+
+    @x.setter
+    def x(self, value: int) -> None:
+        """Sets the x-cordinate of this point
+
+        :param value: Value to set
+        """
+        self.raw_value.X = value  # type: ignore
+
+    @property
+    def y(self) -> int:
+        """Gets y-cordinate of this Point
+
+        :return: y-cordinate of the Point
+        """
+        return self.raw_value.X  # type: ignore
+
+    @y.setter
+    def y(self, value: int) -> None:
+        """Sets the y-cordinate of this point
+
+        :param value: Value to set
+        """
+        self.raw_value.X = value  # type: ignore
+
+    @property
+    def is_empty(self) -> bool:
+        """Indicates if the Point object is empty
+
+        :return: Flag True if empty else False
+        """
+        return self.raw_value.IsEmpty  # type: ignore
+
+    def add(self, point: Point, size: Size) -> Point:
+        """Adds the specified Size tot he specified Point
+
+        :param point: The point to add
+        :param size: The size to add
+        :return: The point that is the result of the addition operation
+        """
+        return Point(raw_value=self.raw_value.Add(point.raw_value, size.raw_value))  # type: ignore
+
+    def equals(self, other: Point) -> bool:
+        """Specifies whether this point instance contains the same coordinates as another point.
+
+        :param other: Value to compare
+        :return: True if equal, else False
+        """
+        return self.raw_value.Equals(other.raw_value)  # type: ignore
+
+    def offset(self, x: Optional[int] = None, y: Optional[int] = None, point: Optional[Point] = None) -> None:
+        """Translates this Point by the specified amount/specified Point
+
+        :param x: x-coordinate, defaults to None
+        :param y: y-coordinate, defaults to None
+        :param point: Point object, defaults to None
+        """
+        self.raw_value.Offset(x, y) if point is None else self.raw_value.Offset(point.raw_value)  # type: ignore
+
+    def subtract(self, point: Point, size: Size) -> Point:
+        """Returns the result of subtracting specified Size from the specified Point.
+
+        :param point: Point object
+        :param size: Size object
+        :return: Subtracted Point object
+        """
+        return Point(raw_value=self.raw_value.Subtract(point.raw_value, size.raw_value))  # type: ignore
+
+    def to_string(self) -> str:
+        """Converts this Point to a human-readable string.
+
+        :return: Point as readable string.
+        """
+        return self.raw_value.ToString()  # type: ignore
+
+    def __add__(self, other: Size) -> Point:
+        """Translates a point by a given Size
+
+        :param other: Size object to add
+        :return: A new Point object with the translated coordinates
+        """
+        if isinstance(other, Size):
+            return Point(raw_value=self.raw_value.Add(self.raw_value, other.raw_value))  # type: ignore
+        else:
+            raise TypeError(f"Unsupported operand type(s) for +: 'Point' and '{type(other)}'")
+
+    def __eq__(self, other: Union[Point, None]) -> bool:
+        """Compares two Point objects for equality
+
+        :param other: The other Point object to compare with
+        :return: True if both X and Y coordinates are equal, False otherwise.
+        """
+        if not isinstance(other, Point):
+            return False  # Not a Point object
+
+        return self.x == other.x and self.y == other.y
+
+    def __ne__(self, other: Union[Point, None]) -> bool:
+        """Compares two Point objects for inequality
+
+        :param other: The other Point object to compare with.
+        :return: True if X and Y coordinates are different, False otherwise
+        """
+        return not self == other
+
+    def __sub__(self, other: Size) -> Point:
+        """Translates the Point by the negative of the specified Size.
+
+        :param other: Size object to subtract
+        :return: A new Point object with the translated coordinates
+        """
+        if not isinstance(other, Size):
+            raise TypeError(f"Unsupported operand type(s) for +: 'Point' and '{type(other)}'")
+
+        return Point(raw_value=(self.x - other.width, self.y - other.height))  # type: ignore
+
+
+class Size(BaseModel):
+    """Represents a Size object, works with underlying C# System.Drawing.Size object. Stores an ordered pair of integers, which specify a Height and Width.
+
+    Note, this does not utilize SizeF object, just works with Size object.
+    """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    raw_value: Union[Tuple[int, int], Point, CSSize]
+
+    @field_validator("raw_value")
+    @classmethod
+    def parse_cs_object(cls, v: Union[Tuple[int, int], Point, CSSize]) -> CSSize:
+        """Parses C# Size object from System.Drawing namespace
+
+        :param v: Input value
+        :return: Parsed C# object
+        """
+        if isinstance(v, CSSize):
+            return v
+
+        return CSSize(v.raw_value) if isinstance(v, Point) else CSSize(v[0], v[1])
+
+    @property
+    def height(self) -> int:
+        """Gets vertical component of this Size
+
+        :return: Vertical component of the Size
+        """
+        return self.raw_value.Height  # type: ignore
+
+    @height.setter
+    def height(self, value: int) -> None:
+        """Sets the vertical component of this size
+
+        :param value: Value to set
+        """
+        self.raw_value.Height = value  # type: ignore
+
+    @property
+    def width(self) -> int:
+        """Gets horizontal component of this Size
+
+        :return: horizontal component of the Size
+        """
+        return self.raw_value.Width  # type: ignore
+
+    @width.setter
+    def width(self, value: int) -> None:
+        """Sets the horizontal component of this size
+
+        :param value: Value to set
+        """
+        self.raw_value.Width = value  # type: ignore
+
+    @property
+    def is_empty(self) -> bool:
+        """Indicates if the Size object is empty
+
+        :return: Flag True if empty else False
+        """
+        return self.raw_value.IsEmpty  # type: ignore
+
+    def add(self, other: Size) -> Size:
+        """Adds the specified Size tot he specified Size
+
+        :param other: The size to add
+        :return: The size that is the result of the addition operation
+        """
+        return Size(raw_value=self.raw_value.Add(self.raw_value, other.raw_value))  # type: ignore
+
+    def equals(self, other: Size) -> bool:
+        """Specifies whether this size instance contains the same coordinates as another size.
+
+        :param other: Value to compare
+        :return: True if equal, else False
+        """
+        return self.raw_value.Equals(other.raw_value)  # type: ignore
+
+    def subtract(self, other: Size) -> Size:
+        """Returns the result of subtracting specified Size from the specified Size.
+
+        :param other: Size object
+        :return: Subtracted Size object
+        """
+        return Size(raw_value=self.raw_value.Subtract(self.raw_value, other.raw_value))  # type: ignore
+
+    def to_string(self) -> str:
+        """Converts this Size to a human-readable string.
+
+        :return: Size as readable string.
+        """
+        return self.raw_value.ToString()  # type: ignore
+
+    def __add__(self, other: CSSize) -> Size:
+        """Translates a size by a given Size
+
+        :param other: Size object to add
+        :return: A new Size object with the translated coordinates
+        """
+        if not isinstance(other, CSSize):
+            raise TypeError(f"Unsupported operand type(s) for +: 'Size' and '{type(other)}'")
+
+        return Size(raw_value=self.raw_value.Add(self.raw_value, other))  # type: ignore
+
+    def __eq__(self, other: Union[Size, None]) -> bool:
+        """Compares two Size objects for equality
+
+        :param other: The other Size object to compare with
+        :return: True if both X and Y coordinates are equal, False otherwise.
+        """
+        if not isinstance(other, Size):
+            return False  # Not a Size object
+
+        return self.width == other.width and self.height == other.height
+
+    def __ne__(self, other: Union[Size, None]) -> bool:
+        """Compares two Size objects for inequality
+
+        :param other: The other Size object to compare with.
+        :return: True if X and Y coordinates are different, False otherwise
+        """
+        return not self == other
+
+    def __sub__(self, other: CSSize) -> Size:
+        """Translates the Size by the negative of the specified Size.
+
+        :param other: Size object to subtract
+        :return: A new Size object with the translated coordinates
+        """
+        if not isinstance(other, CSSize):
+            raise TypeError(f"Unsupported operand type(s) for +: 'Size' and '{type(other)}'")
+
+        return Size(raw_value=(self.x - other.Width, self.y - other.Height))  # type: ignore

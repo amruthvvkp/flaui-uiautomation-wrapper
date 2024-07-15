@@ -103,8 +103,6 @@ class Application:
         :param automation: The automation object to use.
         :return: The main window object as Window element or null if no main window was found within the timeout.
         """
-
-        # TODO: Update this to return Window Element object
         return Window(raw_element=self._application.GetMainWindow(automation))
 
     def launch(self, executable: str, arguments: Optional[str] = None) -> None:

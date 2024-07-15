@@ -20,7 +20,7 @@ from flaui.core.definitions import ControlType, ExpandCollapseState, RowOrColumn
 from flaui.core.framework_types import FrameworkType
 from flaui.lib.collections import TypeCast
 from flaui.lib.exceptions import ElementNotFoundError
-from flaui.lib.system.drawing import Color, ColorData
+from flaui.lib.system.drawing import Color, ColorData, Point
 
 # ================================================================================
 #   Element base Pydantic abstract class
@@ -80,7 +80,7 @@ class ElementBase(ElementModel, abc.ABC):  # pragma: no cover
         return AutomationType[self.raw_element.AutomationType.ToString()]
 
     @property
-    def bounding_rectangle(self) -> Any:
+    def bounding_rectangle(self) -> Any:  # TODO: Put in a BoundingRectangle object
         """The bounding rectangle of this element
 
         :return: Bounding Rectangle
@@ -357,7 +357,7 @@ class AutomationElement(ElementBase):
         :param duration: Duration to highlight (in ms), defaults to 2000
         """
         self.raw_element.Automation.OverlayManager.Show(
-            self.raw_element.Properties.BoundingRectangle.Value, color.cs_object, duration
+            self.raw_element.Properties.BoundingRectangle.Value, color.cs_object, TypeCast.cs_timespan(duration)
         )
 
     def equals(self, another_element: AutomationElement) -> bool:
@@ -513,12 +513,12 @@ class AutomationElement(ElementBase):
         """Sets the focus by using the Win32 SetFocus() method"""
         self.raw_element.FocusNative()
 
-    def get_clickable_point(self) -> Any:
+    def get_clickable_point(self) -> Point:
         """Gets a clickable point of the element.
 
         :return: Clickable point object
         """
-        return self.raw_element.GetClickablePoint()
+        return Point(raw_value=self.raw_element.GetClickablePoint())
 
     def get_current_metadata_value(self, property_id: Any, meta_data_id: int) -> Any:
         """Gets metadata from the UI Automation element that indicates how the information should be interpreted.
@@ -663,12 +663,13 @@ class AutomationElement(ElementBase):
         """
         return self.raw_element.ToString()
 
-    def try_get_clickable_point(self) -> Tuple[bool, Any]:  # TODO: Return C# Point class
+    def try_get_clickable_point(self) -> Tuple[bool, Point]:
         """Tries to get a clickable point of the element.
 
         :return: Tuple[flag, Point] - True if a point was found, false otherwise; The clickable point or null, if no point was found
         """
-        return self.raw_element.TryGetClickablePoint()
+        flag, point = self.raw_element.TryGetClickablePoint()
+        return (flag, Point(raw_value=point))
 
     def as_button(self) -> Button:
         """Converts the element to a Button.

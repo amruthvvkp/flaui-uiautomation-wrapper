@@ -15,6 +15,7 @@ from FlaUI.Core.Input import (  # pyright: ignore
 from flaui.core.automation_elements import AutomationElement
 from flaui.core.windows_api import VirtualKeyShort
 from flaui.lib.collections import TypeCast
+from flaui.lib.system.drawing import Point
 
 
 class Wait:
@@ -165,9 +166,7 @@ class MouseButton(Enum):
 class Mouse:
     """Mouse class to simulate mouse input, wrapper over Mouse class in FlaUI.Core.Input namespace"""
 
-    position: Any = (
-        CSMouse.Position
-    )  # The current position of the mouse cursor.# TODO: This should return a Point object
+    position: Point = Point(raw_value=CSMouse.Position)  # The current position of the mouse cursor
     are_buttons_swapped: bool = CSMouse.AreButtonsSwapped  # Flag to indicate if the buttons are swapped (left-handed).
 
     @staticmethod
@@ -180,9 +179,7 @@ class Mouse:
         CSMouse.MoveBy(delta_x, delta_y)
 
     @staticmethod
-    def move_to(
-        new_x: Optional[int] = None, new_y: Optional[int] = None, new_position: Optional[Any] = None
-    ) -> None:  # TODO: new_position has to be a Point object
+    def move_to(new_x: Optional[int] = None, new_y: Optional[int] = None, new_position: Optional[Point] = None) -> None:
         """Moves the mouse to a new position.
 
         :param new_x: The new position on x-axis
@@ -190,33 +187,29 @@ class Mouse:
         :param new_position: The new position for the mouse.
         """
         if (new_x is not None and new_y is not None) or new_position is not None:
-            CSMouse.MoveTo(new_position) if new_position is not None else CSMouse.MoveTo(new_x, new_y)
+            CSMouse.MoveTo(new_position.raw_value) if new_position is not None else CSMouse.MoveTo(new_x, new_y)
         else:
             raise ValueError(
                 "`new_x, new_y or new_position argument needs to be sent for the Mouse to move to a new position`"
             )
 
     @staticmethod
-    def click(
-        point: Optional[Any] = None, mouse_button: MouseButton = MouseButton.Left
-    ) -> None:  # TODO: Point has to be point object
+    def click(point: Optional[Point] = None, mouse_button: MouseButton = MouseButton.Left) -> None:
         """Clicks the specified mouse button at the current location.
 
         :param point:The position to move to before clicking.
         :param mouse_button: The mouse button to click. Defaults to the left button, defaults to MouseButton.Left
         """
-        CSMouse.Click(mouse_button.value) if point is None else CSMouse.Click(point, mouse_button.value)
+        CSMouse.Click(mouse_button.value) if point is None else CSMouse.Click(point.raw_value, mouse_button.value)
 
     @staticmethod
-    def double_click(
-        point: Optional[Any] = None, mouse_button: MouseButton = MouseButton.Left
-    ) -> None:  # TODO: Point has to be point object
+    def double_click(point: Optional[Point] = None, mouse_button: MouseButton = MouseButton.Left) -> None:
         """Double-Clicks the specified mouse button at the current location.
 
         :param point:The position to move to before clicking.
         :param mouse_button: The mouse button to click. Defaults to the left button, defaults to MouseButton.Left
         """
-        CSMouse.DoubleClick(mouse_button.value) if point is None else CSMouse.Click(point, mouse_button.value)
+        CSMouse.DoubleClick(mouse_button.value) if point is None else CSMouse.Click(point.raw_value, mouse_button.value)
 
     @staticmethod
     def down(mouse_button: MouseButton = MouseButton.Left) -> None:
@@ -251,37 +244,33 @@ class Mouse:
         CSMouse.HorizontalScroll(lines)
 
     @staticmethod
-    def drag_horizontally(
-        starting_point: Any, distance: int, mouse_button: MouseButton = MouseButton.Left
-    ) -> None:  # TODO: starting_point is a Point object
+    def drag_horizontally(starting_point: Point, distance: int, mouse_button: MouseButton = MouseButton.Left) -> None:
         """Drags the mouse horizontally.
 
         :param starting_point: Starting point of the drag
         :param distance: The distance to drag, + for right, - for left
         :param mouse_button: The mouse button to use for dragging, defaults to MouseButton.Left
         """
-        CSMouse.DragHorizontally(starting_point, distance, mouse_button.value)
+        CSMouse.DragHorizontally(starting_point.raw_value, distance, mouse_button.value)
 
     @staticmethod
-    def drag_vertically(
-        starting_point: Any, distance: int, mouse_button: MouseButton = MouseButton.Left
-    ) -> None:  # TODO: starting_point is a Point object
+    def drag_vertically(starting_point: Point, distance: int, mouse_button: MouseButton = MouseButton.Left) -> None:
         """Drags the mouse vertically.
 
         :param starting_point: Starting point of the drag
         :param distance: The distance to drag, + for right, - for left
         :param mouse_button: The mouse button to use for dragging, defaults to MouseButton.Left
         """
-        CSMouse.DragVertically(starting_point, distance, mouse_button.value)
+        CSMouse.DragVertically(starting_point.raw_value, distance, mouse_button.value)
 
     @staticmethod
     def drag(
-        starting_point: Any,
+        starting_point: Point,
         distance_x: Optional[int] = None,
         distance_y: Optional[int] = None,
-        ending_point: Optional[Any] = None,
+        ending_point: Optional[Point] = None,
         mouse_button: MouseButton = MouseButton.Left,
-    ) -> None:  # TODO: starting_point, ending_point is a Point object
+    ) -> None:
         """Drags the mouse vertically.
 
         :param starting_point: Starting point of the drag
@@ -292,70 +281,70 @@ class Mouse:
         """
         if (distance_x is not None and distance_y is not None) or ending_point is not None:
             CSMouse.DragVertically(
-                starting_point, distance_x, distance_y, mouse_button.value
-            ) if ending_point is None else CSMouse.DragVertically(starting_point, ending_point, mouse_button.value)
+                starting_point.raw_value, distance_x, distance_y, mouse_button.value
+            ) if ending_point is None else CSMouse.DragVertically(
+                starting_point.raw_value, ending_point.raw_value, mouse_button.value
+            )
         else:
             raise ValueError(
                 "`distance_x and distance_y or ending_point has to be sent to the arguments to drag the mouse."
             )
 
     @staticmethod
-    def left_click(point: Optional[Any]) -> None:  # TODO: point is a Point object
+    def left_click(point: Optional[Point]) -> None:
         """Performs a left click.
 
         :param: point: The position to move before clicking.
         """
-        CSMouse.LeftClick() if point is None else CSMouse.LeftClick(point)
+        CSMouse.LeftClick() if point is None else CSMouse.LeftClick(point.raw_value)
 
     @staticmethod
-    def left_double_click(point: Optional[Any]) -> None:  # TODO: point is a Point object
+    def left_double_click(point: Optional[Point]) -> None:
         """Performs a left double click.
 
         :param: point: The position to move before clicking.
         """
-        CSMouse.LeftDoubleClick() if point is None else CSMouse.LeftDoubleClick(point)
+        CSMouse.LeftDoubleClick() if point is None else CSMouse.LeftDoubleClick(point.raw_value)
 
     @staticmethod
-    def right_click(point: Optional[Any]) -> None:  # TODO: point is a Point object
+    def right_click(point: Optional[Point]) -> None:
         """Performs a right click.
 
         :param: point: The position to move before clicking.
         """
-        CSMouse.RightClick() if point is None else CSMouse.RightClick(point)
+        CSMouse.RightClick() if point is None else CSMouse.RightClick(point.raw_value)
 
     @staticmethod
-    def right_double_click(point: Optional[Any]) -> None:  # TODO: point is a Point object
+    def right_double_click(point: Optional[Point]) -> None:
         """Performs a right double click.
 
         :param: point: The position to move before clicking.
         """
-        CSMouse.RightDoubleClick() if point is None else CSMouse.RightDoubleClick(point)
+        CSMouse.RightDoubleClick() if point is None else CSMouse.RightDoubleClick(point.raw_value)
 
 
 class Touch:
     """Touch class to simulate touch input, wrapper over Touch class in FlaUI.Core.Input namespace"""
 
     @staticmethod
-    def tap(points: Optional[List[Any]] = None) -> None:  # TODO: points is a Point object
+    def tap(points: Optional[List[Point]] = None) -> None:
         """Performs a tap on the given point or points.
 
         :param points: Point to touch, defaults to None
         """
-        CSTouch.Tap() if points is None else CSTouch.Tap(points)
+        CSTouch.Tap() if points is None else CSTouch.Tap([_.raw_value for _ in points])
 
     @staticmethod
-    def hold(duration: int, points: Optional[List[Any]] = None) -> None:  # TODO: points is a Point object
+    def hold(duration: int, points: Optional[List[Point]] = None) -> None:
         """Performs a hold on the given point or points.
 
         :param duration: The duration of the hold in milliseconds
         :param points: Point to touch, defaults to None
         """
-        CSTouch.Hold(TypeCast.cs_timespan(duration), points)
+        CSTouch.Hold(TypeCast.cs_timespan(duration), [_.raw_value for _ in points] if points else None)
 
     @staticmethod
-    def pinch(
-        center: Any, start_radius: int, end_radius: int, duration: int, angle: int = 45
-    ) -> None:  # TODO: center is a Point object
+    def pinch(center: Point, start_radius: int, end_radius: int, duration: int, angle: int = 45) -> None:
         """Performs a pinch with two fingers.
 
         :param center: The center point of the pinch.
@@ -364,35 +353,29 @@ class Touch:
         :param duration: The duration of the action.
         :param angle: The angle of the two points, relative to the x-axis, defaults to 45
         """
-        CSTouch.Pinch(center, start_radius, end_radius, TypeCast.cs_timespan(duration), angle)
+        CSTouch.Pinch(center.raw_value, start_radius, end_radius, TypeCast.cs_timespan(duration), angle)
 
     @staticmethod
-    def transition(
-        duration: int, start_end_points: Tuple[Any, Any]
-    ) -> None:  # TODO: start_end_points is a Tuple of Point object
+    def transition(duration: int, start_end_points: Tuple[Point, Point]) -> None:
         """Transitions all the points from the start point to the end points.
 
         :param duration: The duration for the action.
         :param start_end_points: The list of start/end point tuples.
         """
-        CSTouch.Transition(TypeCast.cs_timespan(duration), [start_end_points])
+        CSTouch.Transition(TypeCast.cs_timespan(duration), [_.raw_value for _ in start_end_points])
 
     @staticmethod
-    def drag(
-        duration: int, start_point: Any, end_point: Any
-    ) -> None:  # TODO: start_point and end_point is a Point object
+    def drag(duration: int, start_point: Point, end_point: Point) -> None:
         """Performs a touch-drag from the start point to the end point.
 
         :param duration: The duration of the action.
         :param start_point: The starting point of the drag.
         :param end_point: The end point of the drag.
         """
-        CSTouch.Drag(TypeCast.cs_timespan(duration), start_point, end_point)
+        CSTouch.Drag(TypeCast.cs_timespan(duration), start_point.raw_value, end_point.raw_value)
 
     @staticmethod
-    def rotate(
-        center: Any, radius: int, start_angle: int, end_angle: int, duration: int
-    ) -> None:  # TODO: center is a Point object
+    def rotate(center: Point, radius: int, start_angle: int, end_angle: int, duration: int) -> None:
         """Performs a 2-finger rotation around the given point where the first finger is at the center and the second is rotated around.
 
         :param center: The center point of the rotation.
@@ -401,4 +384,4 @@ class Touch:
         :param end_angle: The ending angle (in rad).
         :param duration: The total duration for the transition.
         """
-        CSTouch.Rotate(center, radius, start_angle, end_angle, TypeCast.cs_timespan(duration))
+        CSTouch.Rotate(center.raw_value, radius, start_angle, end_angle, TypeCast.cs_timespan(duration))
