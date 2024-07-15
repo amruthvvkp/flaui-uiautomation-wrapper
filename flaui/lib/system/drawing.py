@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from pydantic_settings import BaseSettings
@@ -11,6 +11,7 @@ from System.Drawing import (  # pyright: ignore
     Color as CSColor,
     KnownColor as CSKnownColor,
     Point as CSPoint,
+    Rectangle as CSRectangle,
     Size as CSSize,
 )
 
@@ -681,6 +682,13 @@ class Point(BaseModel):
         """
         return self.raw_value.Equals(other.raw_value)  # type: ignore
 
+    def get_hash_code(self) -> int:
+        """Returns a hash code for this Point.
+
+        :return: An integer value that specifies the hash code for this Point.
+        """
+        return self.raw_value.GetHashCode()  # type: ignore
+
     def offset(self, x: Optional[int] = None, y: Optional[int] = None, point: Optional[Point] = None) -> None:
         """Translates this Point by the specified amount/specified Point
 
@@ -746,6 +754,13 @@ class Point(BaseModel):
             raise TypeError(f"Unsupported operand type(s) for +: 'Point' and '{type(other)}'")
 
         return Point(raw_value=(self.x - other.width, self.y - other.height))  # type: ignore
+
+    def to_size(self) -> Size:
+        """Explicitly converts the specified Point structure to Size structure
+
+        :return: Size object
+        """
+        return Size(raw_value=self.raw_value)
 
 
 class Size(BaseModel):
@@ -827,6 +842,13 @@ class Size(BaseModel):
         """
         return self.raw_value.Equals(other.raw_value)  # type: ignore
 
+    def get_hash_code(self) -> int:
+        """Returns a hash code for this Size.
+
+        :return: An integer value that specifies the hash code for this Size.
+        """
+        return self.raw_value.GetHashCode()  # type: ignore
+
     def subtract(self, other: Size) -> Size:
         """Returns the result of subtracting specified Size from the specified Size.
 
@@ -882,3 +904,279 @@ class Size(BaseModel):
             raise TypeError(f"Unsupported operand type(s) for +: 'Size' and '{type(other)}'")
 
         return Size(raw_value=(self.x - other.Width, self.y - other.Height))  # type: ignore
+
+    def to_point(self) -> Point:
+        """Explicitly converts Size structure to Point structure
+
+        :return: Parsed Point object
+        """
+        return Point(raw_value=self.raw_value)
+
+
+class Rectangle(BaseModel):
+    """Represents a Rectangle object, works with underlying C# System.Drawing.Rectangle object.
+
+    Note that this doesn't handle RectangleF object and the methods are currently listed only for Rectangle object."""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    raw_value: Union[List[int], Tuple[Point, Size], CSRectangle]
+
+    @field_validator("raw_value")
+    @classmethod
+    def parse_cs_object(cls, v: Union[int, Tuple[int, int], CSPoint, Size]) -> CSPoint:
+        """Parses C# Rectangle object from System.Drawing namespace
+
+        :param v: Input value
+        :return: Parsed C# object
+        """
+        if isinstance(v, CSRectangle):
+            return v
+        if isinstance(v, List) and len(v) == 4:
+            return CSRectangle(*v)
+        elif (isinstance(v, List) or isinstance(v, Tuple)) and (
+            len(v) == 2 and isinstance(v[0], Point) and isinstance(v[1], Size)
+        ):
+            return CSRectangle(v[0].raw_value, v[1].raw_value)
+
+        raise ValueError(f"Unable to parse input value to Rectable C# object, invalid input - {v}")
+
+    @property
+    def bottom(self) -> int:
+        """Gets the y-coordinate that is the sum of the Y and Height property values of this Rectangle structure.
+
+        :return: Parsed value
+        """
+        return self.raw_value.Bottom  # type: ignore
+
+    @property
+    def height(self) -> int:
+        """Gets vertical component of this Size
+
+        :return: Vertical component of the Size
+        """
+        return self.raw_value.Height  # type: ignore
+
+    @height.setter
+    def height(self, value: int) -> None:
+        """Sets the vertical component of this size
+
+        :param value: Value to set
+        """
+        self.raw_value.Height = value  # type: ignore
+
+    @property
+    def is_empty(self) -> bool:
+        """Indicates if the Point object is empty
+
+        :return: Flag True if empty else False
+        """
+        return self.raw_value.IsEmpty  # type: ignore
+
+    @property
+    def left(self) -> int:
+        """Gets the x-coordinate of the left edge of this Rectangle structure.
+
+        :return: X-coordinate
+        """
+        return self.raw_value.Left  # type: ignore
+
+    @property
+    def location(self) -> Point:
+        """Gets or sets the coordinates of the upper-left corner of this Rectangle structure.
+
+        :return: Point object
+        """
+        return Point(raw_value=self.raw_value.Location)  # type: ignore
+
+    @property
+    def right(self) -> int:
+        """Gets the x-coordinate that is the sum of X and Width property values of this Rectangle structure.
+
+        :return: X-coordinate
+        """
+        return self.raw_value.Right  # type: ignore
+
+    @property
+    def size(self) -> Size:
+        """Gets the size of this Rectangle.
+
+        :return: Size objects
+        """
+        return Size(raw_value=self.raw_value.Size)  # type: ignore
+
+    @size.setter
+    def size(self, value: Size) -> None:
+        """Sets the size of this Rectangle.
+
+        :param value: Value of size to set
+        """
+        self.raw_value.Size = value.raw_value  # type: ignore
+
+    @property
+    def top(self) -> int:
+        """Gets the y-coordinate of the top edge of this Rectangle structure.
+
+        :return: Y-coordinate
+        """
+        return self.raw_value.Top  # type: ignore
+
+    @property
+    def width(self) -> int:
+        """Gets the width of this Rectangle structure.
+
+        :return: Width value
+        """
+        return self.raw_value.Width  # type: ignore
+
+    @width.setter
+    def width(self, value: int) -> None:
+        """Sets the width of this Rectangle structure.
+
+        :param value: Value to set
+        """
+        self.raw_value.Width = value  # type: ignore
+
+    @property
+    def x(self) -> int:
+        """Gets the x of this Rectangle structure.
+
+        :return: X value
+        """
+        return self.raw_value.X  # type: ignore
+
+    @x.setter
+    def x(self, value: int) -> None:
+        """Sets the x of this Rectangle structure.
+
+        :param value: Value to set
+        """
+        self.raw_value.X = value  # type: ignore
+
+    @property
+    def y(self) -> int:
+        """Gets the y of this Rectangle structure.
+
+        :return: Y value
+        """
+        return self.raw_value.Y  # type: ignore
+
+    @y.setter
+    def y(self, value: int) -> None:
+        """Sets the y of this Rectangle structure.
+
+        :param value: Value to set
+        """
+        self.raw_value.Y = value  # type: ignore
+
+    def contains(self, other: Union[Tuple[int, int], Point]) -> bool:
+        """Determines if the specified point is contained within this Rectangle structure.
+
+        :param other: Value to compare
+        :return: True if it contains, else False
+        """
+        return (
+            self.raw_value.Contains(other.raw_value)  # type: ignore
+            if (isinstance(other, Point) or isinstance(other, Rectangle))
+            else self.raw_value.Contains(other[0], other[1])  # type: ignore
+        )
+
+    def equals(self, other: Rectangle) -> bool:
+        """Specifies whether this Rectangle instance contains the same coordinates as another point.
+
+        :param other: Value to compare
+        :return: True if equal, else False
+        """
+        return self.raw_value.Equals(other.raw_value)  # type: ignore
+
+    def from_ltrb(self, value: List[int]) -> Rectangle:
+        """Creates a Rectangle structure with the specified edge locations.
+
+        :param value: Value to set
+        :return: Rectangle object
+        """
+        if not len(value) == 4:
+            raise ValueError(
+                f"The input values have to be a list of 4 integers to create a Rectangle structure, current input - {value}"
+            )
+
+        return Rectangle(raw_value=self.raw_value.FromLTRB(*value))  # type: ignore
+
+    def get_hash_code(self) -> int:
+        """Returns a hash code for this Rectangle.
+
+        :return: An integer value that specifies the hash code for this Rectangle.
+        """
+        return self.raw_value.GetHashCode()  # type: ignore
+
+    def inflate(self, value: Tuple[int, int]) -> Rectangle:
+        """Enlarges this Rectangle by the specified amount.
+
+        :param value: Value to enlarge
+        :return: Enlarged Rectangle
+        """
+        return Rectangle(raw_value=self.raw_value.Inflate(*value))  # type: ignore
+
+    def interset(self, other: Union[Rectangle, Tuple[Rectangle, Rectangle]]) -> Rectangle:
+        """Replaces this Rectangle with the intersection of itself and the specified Rectangle.
+        Returns a third Rectangle structure that represents the intersection of two other Rectangle structures. If there is no intersection, an empty Rectangle is returned.
+
+        :param other: Value to intersect with
+        :return: Updated rectangle
+        """
+        return Rectangle(
+            raw_value=self.raw_value.Intersect(other.raw_value)  # type: ignore
+            if isinstance(other, Rectangle)
+            else self.raw_value.Intersect(*[_.raw_value for _ in other])  # type: ignore
+        )
+
+    def intersects_with(self, other: Rectangle) -> bool:
+        """Determines if this rectangle intersects with rect.
+
+        :param other: Value to check
+        :return: True if there is any intersection, otherwise False
+        """
+        return self.raw_value.IntersectsWith(other.raw_value)  # type: ignore
+
+    def offset(self, x: Optional[int] = None, y: Optional[int] = None, point: Optional[Point] = None) -> None:
+        """Adjusts the location of this rectangle by the specified amount.
+
+        :param x: x-coordinate, defaults to None
+        :param y: y-coordinate, defaults to None
+        :param point: Point object, defaults to None
+        """
+        self.raw_value.Offset(x, y) if point is None else self.raw_value.Offset(point.raw_value)  # type: ignore
+
+    def to_string(self) -> str:
+        """Converts the attributes of this Rectangle to a human-readable string.
+
+        :return: Point as readable string.
+        """
+        return self.raw_value.ToString()  # type: ignore
+
+    def union(self, others: Tuple[Rectangle, Rectangle]) -> Rectangle:
+        """Gets a Rectangle structure that contains the union of two Rectangle structures.
+
+        :param others: Tuple of rectangles to compare
+        :return: A Rectangle structure that bounds the union of the two Rectangle structures.
+        """
+        return Rectangle(raw_value=self.raw_value.Union(*[_.raw_value for _ in others]))  # type: ignore
+
+    def __eq__(self, other: Union[Rectangle, None]) -> bool:
+        """Tests whether two Rectangle structures have equal location and size.
+
+        :param other: The other Rectangle object to compare with
+        :return: True if both X and Y coordinates are equal, False otherwise.
+        """
+        if not isinstance(other, Rectangle):
+            return False  # Not a Point object
+
+        return self.left == other.left and self.right == other.right
+
+    def __ne__(self, other: Union[Rectangle, None]) -> bool:
+        """Compares two Point objects for inequality
+
+        :param other: The other Point object to compare with.
+        :return: True if X and Y coordinates are different, False otherwise
+        """
+        return not self == other

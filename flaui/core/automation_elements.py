@@ -20,7 +20,7 @@ from flaui.core.definitions import ControlType, ExpandCollapseState, RowOrColumn
 from flaui.core.framework_types import FrameworkType
 from flaui.lib.collections import TypeCast
 from flaui.lib.exceptions import ElementNotFoundError
-from flaui.lib.system.drawing import Color, ColorData, Point
+from flaui.lib.system.drawing import Color, ColorData, Point, Rectangle
 
 # ================================================================================
 #   Element base Pydantic abstract class
@@ -80,12 +80,12 @@ class ElementBase(ElementModel, abc.ABC):  # pragma: no cover
         return AutomationType[self.raw_element.AutomationType.ToString()]
 
     @property
-    def bounding_rectangle(self) -> Any:  # TODO: Put in a BoundingRectangle object
+    def bounding_rectangle(self) -> Rectangle:
         """The bounding rectangle of this element
 
         :return: Bounding Rectangle
         """
-        return self.raw_element.BoundingRectangle
+        return Rectangle(raw_value=self.raw_element.BoundingRectangle)
 
     @property
     def cached_children(self) -> Any:
@@ -207,8 +207,6 @@ class ElementBase(ElementModel, abc.ABC):  # pragma: no cover
         :return: UIA Properties
         """
         return Properties(raw_properties=self.raw_element.Properties)
-
-    # TODO: Get actual ControlType, ConditionalFactory class, BoundingRectangle object
 
 
 # =====================================================================================================
