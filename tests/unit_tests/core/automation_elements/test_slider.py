@@ -1,6 +1,5 @@
 """Tests for the Slider control."""
 
-
 from typing import Any, Generator
 
 from flaui.core.automation_elements import Slider, Window
@@ -10,6 +9,7 @@ import pytest
 
 from tests.assets.elements.wpf_application.base import WPFApplicationElements
 from tests.config import test_settings
+
 
 @pytest.fixture(scope="class")
 def wpf_application(ui_automation_type: UIAutomationTypes) -> Generator[Automation, None, None]:
@@ -41,6 +41,7 @@ def main_window(wpf_application: Automation, automation: Any) -> Generator[Windo
     """
     yield wpf_application.application.get_main_window(automation)
 
+
 @pytest.fixture(scope="class")
 def wpf_elements(main_window: Window) -> Generator[Any, None, None]:
     """Generates the WPF application element map.
@@ -50,6 +51,7 @@ def wpf_elements(main_window: Window) -> Generator[Any, None, None]:
     """
     yield WPFApplicationElements(main_window=main_window)
 
+
 class TestSlider:
     """Tests for Slider control."""
 
@@ -57,6 +59,7 @@ class TestSlider:
         """Tests slider thumb control."""
         slider = wpf_elements.simple_controls_tab.slider
         thumb = slider.thumb
+        thumb.properties.bounding_rectangle.value.center()
         # old_position = thumb.properties.bounding_rectangle.value.Center() # TODO: Update this with C# Point class
         thumb.slide_horizontally(50)
         # Complete the assertion when C# Point class is ready

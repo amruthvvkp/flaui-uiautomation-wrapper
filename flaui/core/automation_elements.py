@@ -20,7 +20,17 @@ from flaui.core.definitions import ControlType, ExpandCollapseState, RowOrColumn
 from flaui.core.framework_types import FrameworkType
 from flaui.lib.collections import TypeCast
 from flaui.lib.exceptions import ElementNotFoundError
-from flaui.lib.system.drawing import Color, ColorData, Point, Rectangle
+from flaui.lib.system.drawing import (
+    Color,
+    ColorData,
+    CSColor,  # pyright: ignore
+    CSPoint,  # pyright: ignore
+    CSRectangle,  # pyright: ignore
+    CSSize,  # pyright: ignore
+    Point,
+    Rectangle,
+    Size,
+)
 
 # ================================================================================
 #   Element base Pydantic abstract class
@@ -2406,13 +2416,31 @@ class AutomationProperty(IAutomationProperty):
         """
         return self.raw_property.ToString()
 
+    @staticmethod
+    def cast_to_py_wrapper(value):
+        """Casts any possible value to Python equivalent wrapper if available
+
+        :param value: Value to cast
+        :return: Parsed value or raw Value
+        """
+        if isinstance(value, CSColor):
+            return ColorData(cs_object=value)
+        elif isinstance(value, CSPoint):
+            return Point(raw_value=value)
+        elif isinstance(value, CSSize):
+            return Size(raw_value=value)
+        elif isinstance(value, CSRectangle):
+            return Rectangle(raw_value=value)
+        else:
+            return value
+
     @property
     def value(self):
         """Returns the value of the property.
 
         :return: The value of the property.
         """
-        return self.raw_property.Value
+        return self.cast_to_py_wrapper(self.raw_property.Value)
 
     @property
     def value_or_default(self):
@@ -2420,7 +2448,7 @@ class AutomationProperty(IAutomationProperty):
 
         :return: The value of the property or a default value if the value is None.
         """
-        return self.raw_property.ValueOrDefault
+        return self.cast_to_py_wrapper(self.raw_property.ValueOrDefault)
 
     def try_get_value(self) -> Tuple[bool, str]:
         """Tries to get the value of the property.
@@ -2437,7 +2465,7 @@ class AutomationProperty(IAutomationProperty):
         :return: True if the current AutomationProperty is equal to the other AutomationProperty, False otherwise.
         """
         if isinstance(other, AutomationProperty):
-            return self.value == other.value
+            return self.value == other.value  # pyright: ignore
         return False
 
     def __str__(self):

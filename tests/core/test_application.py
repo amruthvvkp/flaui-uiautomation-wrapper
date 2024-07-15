@@ -4,10 +4,11 @@ from time import sleep
 from typing import Any, Generator, List, Optional
 
 from flaui.core.application import Application
-from flaui.core.automation_elements import AutomationElement
+from flaui.core.automation_elements import Window
 from flaui.modules.automation import Automation
 import pytest
 from System import InvalidOperationException  # pyright: ignore
+
 
 @pytest.fixture(scope="module")
 def wordpad_application(wordpad: Automation) -> Generator[Application, None, None]:
@@ -32,6 +33,7 @@ class TestApplication:
         assert wordpad_application.has_exited is False
         assert wordpad_application.main_window_handle is not None
         from System import InvalidOperationException  # pyright: ignore
+
         with pytest.raises(InvalidOperationException):
             assert wordpad_application.exit_code
         assert wordpad_application.close_timeout is not None
@@ -44,7 +46,7 @@ class TestApplication:
         """
         timeout = 30
         timer = 0
-        windows: Optional[List[AutomationElement]] = []
+        windows: Optional[List[Window]] = []
         while timer != timeout and windows == []:
             windows = wordpad_application.get_all_top_level_windows(automation)
             if windows != []:
@@ -52,7 +54,7 @@ class TestApplication:
             timer = timer + 10
             sleep(10)
         assert len(windows) == 1  # type: ignore
-        # TODO: assert return type is window element and validate title
+        assert isinstance(windows[0], Window)
 
     def test_get_main_window(self, wordpad_application: Application, automation: Any):
         """Test the get_main_window method.

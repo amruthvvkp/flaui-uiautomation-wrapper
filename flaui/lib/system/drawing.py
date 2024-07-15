@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from enum import Enum
+from math import pow, sqrt
 from typing import Any, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -608,11 +609,11 @@ class Point(BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    raw_value: Union[int, Tuple[int, int], CSPoint, Size]
+    raw_value: Union[int, Tuple[int, int], Tuple[float, float], CSPoint, Size]
 
     @field_validator("raw_value")
     @classmethod
-    def parse_cs_object(cls, v: Union[int, Tuple[int, int], CSPoint, Size]) -> CSPoint:
+    def parse_cs_object(cls, v: Union[int, Tuple[int, int], Tuple[float, float], CSPoint, Size]) -> CSPoint:
         """Parses C# Point object from System.Drawing namespace
 
         :param v: Input value
@@ -623,7 +624,7 @@ class Point(BaseModel):
         if isinstance(v, Size):
             return CSPoint(v.raw_value)
 
-        return CSPoint(v) if isinstance(v, int) else CSPoint(v[0], v[1])
+        return CSPoint(v) if isinstance(v, int) else CSPoint(round(v[0]), round(v[1]))
 
     @property
     def x(self) -> int:
@@ -762,6 +763,27 @@ class Point(BaseModel):
         """
         return Size(raw_value=self.raw_value)
 
+    def distance(
+        self, other_x: Optional[int] = None, other_y: Optional[int] = None, other_point: Optional[Point] = None
+    ) -> float:
+        """Calculates the distance between two points or the distance between a point and an x/y coordinate pair.
+
+        This is similar to Distance method listed in FlaUI.Core.Tools.ExtensionMethods.
+
+        :param other_x: The x-coordinate of the second point., defaults to None
+        :param other_y: The y-coordinate of the second point., defaults to None
+        :param other_point: The second point, defaults to None
+        :return: Distance calculated
+        """
+        if other_x is not None and other_y is not None:
+            return sqrt((pow(self.x - other_x, 2) + pow(self.y - other_y, 2)))
+        elif other_point is not None:
+            return sqrt((pow(self.x - other_point.x, 2) + pow(self.y - other_point.y, 2)))
+        else:
+            raise ValueError(
+                "Invalid arguments passed to measure distance, you need to pass x-coordinate & y-coordinate or Point object"
+            )
+
 
 class Size(BaseModel):
     """Represents a Size object, works with underlying C# System.Drawing.Size object. Stores an ordered pair of integers, which specify a Height and Width.
@@ -771,11 +793,11 @@ class Size(BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    raw_value: Union[Tuple[int, int], Point, CSSize]
+    raw_value: Union[Tuple[int, int], Tuple[float, float], Point, CSSize]
 
     @field_validator("raw_value")
     @classmethod
-    def parse_cs_object(cls, v: Union[Tuple[int, int], Point, CSSize]) -> CSSize:
+    def parse_cs_object(cls, v: Union[Tuple[int, int], Tuple[float, float], Point, CSSize]) -> CSSize:
         """Parses C# Size object from System.Drawing namespace
 
         :param v: Input value
@@ -784,7 +806,7 @@ class Size(BaseModel):
         if isinstance(v, CSSize):
             return v
 
-        return CSSize(v.raw_value) if isinstance(v, Point) else CSSize(v[0], v[1])
+        return CSSize(v.raw_value) if isinstance(v, Point) else CSSize(round(v[0]), round(v[1]))
 
     @property
     def height(self) -> int:
@@ -924,7 +946,7 @@ class Rectangle(BaseModel):
 
     @field_validator("raw_value")
     @classmethod
-    def parse_cs_object(cls, v: Union[int, Tuple[int, int], CSPoint, Size]) -> CSPoint:
+    def parse_cs_object(cls, v: Union[List[int], Tuple[Point, Size], CSRectangle]) -> CSPoint:
         """Parses C# Rectangle object from System.Drawing namespace
 
         :param v: Input value
@@ -1180,3 +1202,119 @@ class Rectangle(BaseModel):
         :return: True if X and Y coordinates are different, False otherwise
         """
         return not self == other
+
+    def center(self) -> Point:
+        """Returns center of this rectangle as a Point object
+
+        :return: Point object
+        """
+        return Point(raw_value=(self.width / 2 + self.left, self.height / 2 + self.top))
+
+    def north(self, by: int = 0) -> Point:
+        """Returns North of the rectangle as a Point object
+
+        :param by: Move by, defaults to 0
+        :return: Point object
+        """
+        return Point(raw_value=(self.center().x, self.top + by))
+
+    def east(self, by: int = 0) -> Point:
+        """Returns East of the rectangle as a Point object
+
+        :param by: Move by, defaults to 0
+        :return: Point object
+        """
+        return Point(raw_value=(self.right + by, self.center().y))
+
+    def south(self, by: int = 0) -> Point:
+        """Returns South of the rectangle as a Point object
+
+        :param by: Move by, defaults to 0
+        :return: Point object
+        """
+        return Point(raw_value=(self.center().x, self.bottom + by))
+
+    def west(self, by: int = 0) -> Point:
+        """Returns West of the rectangle as a Point object
+
+        :param by: Move by, defaults to 0
+        :return: Point object
+        """
+        return Point(raw_value=(self.left, self.center().y))
+
+    def immediate_exterior_north(self) -> Point:
+        """Returns immediate exterior North
+
+        :return: Point object
+        """
+        return self.north(-1)
+
+    def immediate_interior_north(self) -> Point:
+        """Returns immediate interior North
+
+        :return: Point object
+        """
+        return self.north(1)
+
+    def immediate_exterior_east(self) -> Point:
+        """Returns immediate exterior East
+
+        :return: Point object
+        """
+        return self.east(1)
+
+    def immediate_interior_east(self) -> Point:
+        """Returns immediate interior East
+
+        :return: Point object
+        """
+        return self.east(-1)
+
+    def immediate_exterior_south(self) -> Point:
+        """Returns immediate exterior South
+
+        :return: Point object
+        """
+        return self.south(1)
+
+    def immediate_interior_south(self) -> Point:
+        """Returns immediate interior South
+
+        :return: Point object
+        """
+        return self.south(-1)
+
+    def immediate_exterior_west(self) -> Point:
+        """Returns immediate exterior West
+
+        :return: Point object
+        """
+        return self.west(-1)
+
+    def immediate_interior_west(self) -> Point:
+        """Returns immediate interior West
+
+        :return: Point object
+        """
+        return self.west(1)
+
+    def make_even(self) -> Rectangle:
+        """
+        Makes the width and height of a rectangle a multiple of 2, if not already.
+
+        This is a direct coversion of Even method listed in FlaUI.Core.Tools.ExtensionMethods class.
+
+        :return: A new Rectangle object with even dimensions (optional), or None if the input rectangle is None.
+        """
+        # In-place modification (if possible)
+        try:
+            if self.width % 2 == 1:
+                self.width -= 1
+            if self.height % 2 == 1:
+                self.height -= 1
+
+        except AttributeError:  # Handle cases where width/height are not modifiable
+            raise ValueError("Something went wrong modifying width/height for the rectangle making it even.")
+        else:
+            # Create a new self if in-place modification is not possible
+            return Rectangle(raw_value=self.raw_value)
