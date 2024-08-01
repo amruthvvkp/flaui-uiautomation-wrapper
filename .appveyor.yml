@@ -63,8 +63,10 @@ install:
   - python --version
   - python -m pip install --upgrade pip
   - pip install --user pipx
+  - SET PATH=%USERPROFILE%\.local\bin;%PATH%
   - pipx --version
   - pipx install poetry
+  - SET PATH=%USERPROFILE%\.local\bin;%PATH%
   - poetry --version
 
 before_build:
@@ -92,12 +94,12 @@ build_script:
   - ps: |
       cd "C:\projects\FlaUI"
       dotnet --version
-  - ps: |
       & "C:\\projects\\FlaUI\\build.ps1" --target "Build"
-
   - ps: |
-      $script: "poetry config virtualenvs.prefer-active true"
-      poetry build  # Build the wheel file
+      cd "C:\projects\flaui-uiautomation-wrapper"
+      $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
+      poetry config virtualenvs.in-project true
+      poetry build
 
 after_build:
   - ps: |
@@ -107,21 +109,24 @@ after_build:
       Copy-Item -Path "C:\projects\FlaUI\src\TestApplications\WinFormsApplication\bin\*" -Destination "C:\projects\flaui-uiautomation-wrapper\test_applications\WinFormsApplication" -Recurse -Force
 
 before_test:
-  - cmd: cd "C:\projects\flaui-uiautomation-wrapper
+  - cd "C:\projects\flaui-uiautomation-wrapper"
   - ps: |
-      $wheelPath = Get-ChildItem -Path $(poetry config directories.dist) -Filter "*.whl" | Select-Object -First 1  # Get the first wheel file
-      pip install $wheelPath
+      $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
+      $wheelPath = Get-ChildItem -Path "dist" -Filter "*.whl" | Select-Object -First 1
+      pip install $wheelPath.FullName
       poetry install --only unit_test
 
 test_script:
-  - cmd: >-
-      poetry run coverage run -m pytest --test-app-uia-version=UIA2 --junitxml=test-results-uia2.xml &&
+  - ps: |
+      $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
+      poetry run coverage run -m pytest --test-app-uia-version=UIA2 --junitxml=test-results-uia2.xml
       poetry run coverage run -m pytest --test-app-uia-version=UIA3 --junitxml=test-results-uia3.xml
 
 after_test:
-  - cmd: >-
-      poetry run coverage combine &&
-      poetry run coverage xml &&
+  - ps: |
+      $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
+      poetry run coverage combine
+      poetry run coverage xml
       poetry run coverage html
 
 artifacts:
