@@ -56,21 +56,16 @@ environment:
       PYTHON_ARCH: 64
 
 init:
+  - SET PATH=%PYTHON%;%PYTHON%\Scripts;%USERPROFILE%\AppData\Roaming\Python\Python%PYTHON_VERSION:.=%\Scripts;%PATH%
   - ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%
+
 install:
-  - cmd: >-
-      set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
-      python --version
-
-  - ps: |
-      If ($env:PYTHON_PATH -match "Microsoft.*Store.*Python") {
-          pip install --user pipx
-      } else {
-          py -m pip install --user pipx
-      }
-
-  - cmd: pipx install poetry
-  - cmd: poetry --version
+  - python --version
+  - python -m pip install --upgrade pip
+  - pip install --user pipx
+  - pipx --version
+  - pipx install poetry
+  - poetry --version
 
 before_build:
   - cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI
