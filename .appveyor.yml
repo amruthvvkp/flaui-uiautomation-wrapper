@@ -99,6 +99,7 @@ build_script:
       cd "C:\projects\flaui-uiautomation-wrapper"
       $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
       poetry config virtualenvs.in-project true
+      poetry install --only unit_test
       poetry build
 
 after_build:
@@ -109,12 +110,11 @@ after_build:
       Copy-Item -Path "C:\projects\FlaUI\src\TestApplications\WinFormsApplication\bin\*" -Destination "C:\projects\flaui-uiautomation-wrapper\test_applications\WinFormsApplication" -Recurse -Force
 
 before_test:
-  - cd "C:\projects\flaui-uiautomation-wrapper"
   - ps: |
+      cd "C:\projects\flaui-uiautomation-wrapper"
       $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
       $wheelPath = Get-ChildItem -Path "dist" -Filter "*.whl" | Select-Object -First 1
-      pip install $wheelPath.FullName
-      poetry install --only unit_test
+      poetry run pip install $wheelPath.FullName
 
 test_script:
   - ps: |
