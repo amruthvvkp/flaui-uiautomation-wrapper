@@ -11,6 +11,7 @@ from tests.assets.elements.wpf_application.more_controls import MoreControlsElem
 from tests.assets.elements.wpf_application.simple_controls import SimpleControlsElements
 from tests.assets.elements.wpf_application.title_bar import TitleBarElements
 
+
 class WPFApplicationElements(BaseSettings):
     """This class is used to store the element locators for the WPF application."""
 
@@ -48,9 +49,7 @@ class WPFApplicationElements(BaseSettings):
 
         :return: The status bar element.
         """
-        return self.main_window.find_first_child(
-            condition=self._cf.by_control_type(ControlType.StatusBar)
-        )
+        return self.main_window.find_first_child(condition=self._cf.by_control_type(ControlType.StatusBar))
 
     @property
     def tab(self) -> Tab:

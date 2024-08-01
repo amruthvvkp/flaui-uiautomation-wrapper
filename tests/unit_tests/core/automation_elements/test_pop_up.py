@@ -9,7 +9,8 @@ from flaui.modules.automation import Automation
 import pytest
 
 from tests.assets.elements.wpf_application.base import WPFApplicationElements
-from tests.config import test_settings
+from tests.assets.config import test_settings
+
 
 @pytest.fixture(scope="class")
 def wpf_application(ui_automation_type: UIAutomationTypes) -> Generator[Automation, None, None]:
@@ -51,6 +52,7 @@ def wpf_elements(main_window: Window) -> Generator[Any, None, None]:
     """
     yield WPFApplicationElements(main_window=main_window)
 
+
 class TestPopUp:
     """Tests for the PopUp control."""
 
@@ -65,7 +67,6 @@ class TestPopUp:
         assert len(popup_children) == 1
         check = popup_children[0].as_check_box()
         assert check.text == "This is a popup"
-
 
     def test_menu_in_popup(self, wpf_elements: WPFApplicationElements):
         """Tests the menu in the pop up."""

@@ -5,13 +5,14 @@ This module contains unit tests for the drawing.py module. It tests the followin
 - ColorCollection
 """
 
-
 from flaui.lib.system.drawing import Color, ColorData, KnownColor
 from System.Drawing import Color as CSColor, KnownColor as CSKnownColor  # pyright: ignore
+
 
 def test_known_color():
     """Unit tests for the class KnownColor"""
     assert all([_ in KnownColor.__members__ for _ in list(vars(CSKnownColor).keys()) if "_" not in _])
+
 
 def test_color_model():
     """Unit tests for the Pydantic model Color"""
@@ -40,9 +41,10 @@ def test_color_model():
     assert color.to_known_color() == KnownColor["AliceBlue"]
     assert color.to_string() == "Color [AliceBlue]"
 
-    assert color.from_argb(-984833) == color.from_argb(alpha=255, red=240, green=248, blue=255)
-    assert color.from_known_color(KnownColor["AliceBlue"]) == ColorData(cs_object=CSColor.AliceBlue)
-    assert color.from_name("AliceBlue") == ColorData(cs_object=CSColor.AliceBlue)
+    assert Color.from_argb(-984833) == Color.from_argb(alpha=255, red=240, green=248, blue=255)
+    assert Color.from_known_color(KnownColor["AliceBlue"]) == ColorData(cs_object=CSColor.AliceBlue)
+    assert Color.from_name("AliceBlue") == ColorData(cs_object=CSColor.AliceBlue)
+
 
 def test_color_collection():
     """Unit tests for the mapped class ColorCollection"""
@@ -50,5 +52,27 @@ def test_color_collection():
     actual_keys = [_ for _ in list(vars(Color).keys()) if "_" not in _]
 
     # These excluded keys are a part of the C# Class but we don't need them at this moment
-    excluded_keys = ["R", "G", "B", "A", "IsKnownColor", "IsEmpty", "IsNamedColor", "IsSystemColor", "Name", "Empty", "FromArgb", "FromKnownColor", "FromName", "Equals", "GetBrightness", "GetHashCode", "GetHue", "GetSaturation", "ToArgb", "ToKnownColor", "ToString"]
+    excluded_keys = [
+        "R",
+        "G",
+        "B",
+        "A",
+        "IsKnownColor",
+        "IsEmpty",
+        "IsNamedColor",
+        "IsSystemColor",
+        "Name",
+        "Empty",
+        "FromArgb",
+        "FromKnownColor",
+        "FromName",
+        "Equals",
+        "GetBrightness",
+        "GetHashCode",
+        "GetHue",
+        "GetSaturation",
+        "ToArgb",
+        "ToKnownColor",
+        "ToString",
+    ]
     assert all([_ in actual_keys for _ in expected_keys if _ not in excluded_keys])

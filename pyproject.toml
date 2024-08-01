@@ -77,9 +77,9 @@ optional = true
 
 [tool.poetry.group.unit_test.dependencies]
 pytest = "^8.2.2"
-pytest-cov = "^4.0.0"
 pytest-sugar = "^1.0.0"
 psutil = "^6.0.0"
+coverage = "^7.6.0"
 
 [tool.poetry.group.unit_test]
 optional = true
@@ -220,3 +220,25 @@ select = [
   # "I",  # isort
   "B", # flake8-bugbear
 ]
+
+[tool.coverage.run]
+disable_warnings = ["no-data-collected"]
+branch = true
+source = ["flaui"]
+command_line = "-m pytest"
+relative_files = true
+
+[tool.coverage.html]
+directory = "htmlcov"
+skip_empty = true
+title = "FlaUI Python Wrapper Coverage Report"
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+[tool.coverage.lcov]
+output = "coverage.lcov"
+
+[tool.coverage.report]
+exclude_also = []
+omit = []

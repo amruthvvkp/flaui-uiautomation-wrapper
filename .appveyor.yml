@@ -120,11 +120,21 @@ before_test:
 
 test_script:
   - cmd: >-
-      poetry run python -m pytest --cov=flaui --cov-report=xml --cov-report=html --cov-report=term-missing --junitxml=test-results.xml
+      poetry run coverage run -m pytest --test-app-uia-version=UIA2 --junitxml=test-results-uia2.xml &&
+      poetry run coverage run -m pytest --test-app-uia-version=UIA3 --junitxml=test-results-uia3.xml
+
+after_test:
+  - cmd: >-
+      poetry run coverage combine &&
+      poetry run coverage xml &&
+      poetry run coverage html
 
 artifacts:
-  - path: test-results.xml
-    name: test-results
+  - path: test-results-uia2.xml
+    name: test-results-uia2
+
+  - path: test-results-uia3.xml
+    name: test-results-uia3
 
   - path: coverage.xml
     name: coverage
@@ -148,8 +158,12 @@ on_finish:
   - ps: >-
       $wc = New-Object 'System.Net.WebClient'
 
-      if (Test-Path .\test-results.xml) {
-        $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\test-results.xml))
+      if (Test-Path .\test-results-uia2.xml) {
+        $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\test-results-uia2.xml))
+      }
+
+      if (Test-Path .\test-results-uia3.xml) {
+        $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\test-results-uia3.xml))
       }
 
       if (Test-Path .\coverage.xml) {
