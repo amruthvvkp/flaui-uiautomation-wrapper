@@ -8,7 +8,6 @@ from __future__ import annotations
 from typing import Any, List, Optional, Union
 
 from flaui.core.automation_elements import Window
-from flaui.lib.collections import TypeCast
 
 # isort: off
 from FlaUI.Core import Application as CSApplication  # pyright: ignore
@@ -94,7 +93,7 @@ class Application:
         :param automation: The automation object to use.
         :return: Get's all top level windows form the application
         """
-        parsed = TypeCast.py_list(self._application.GetAllTopLevelWindows(automation))
+        parsed = self._application.GetAllTopLevelWindows(automation)
         return [Window(raw_element=element) for element in parsed]
 
     def get_main_window(self, automation: Any) -> Window:

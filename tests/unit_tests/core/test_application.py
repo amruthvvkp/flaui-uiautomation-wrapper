@@ -3,6 +3,7 @@ This module contains unit tests for the Application class in the flaui.core.appl
 The Application class is responsible for launching, attaching, and interacting with applications.
 It also provides methods for getting information about the application, such as its process ID and main window handle.
 """
+
 from time import sleep
 from typing import Any, List, Optional
 
@@ -12,6 +13,7 @@ from flaui.lib.enums import UIAutomationTypes
 from flaui.modules.automation import Automation
 import pytest
 from System import InvalidOperationException  # pyright: ignore
+
 
 @pytest.fixture(scope="package")
 def wordpad(ui_automation_type: UIAutomationTypes):
@@ -26,6 +28,7 @@ def wordpad(ui_automation_type: UIAutomationTypes):
 
     wordpad.application.kill()
 
+
 class TestApplication:
     """Tests for the Application class in the flaui.core.application module."""
 
@@ -36,7 +39,6 @@ class TestApplication:
         :param wordpad: The wordpad automation instance.
         """
         self.application: Application = wordpad.application
-
 
     def test_class_properties(self):
         """Test the class properties of the Application class."""
