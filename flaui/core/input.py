@@ -2,7 +2,7 @@
 
 from enum import Enum
 import time
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple, Union
 
 from FlaUI.Core.Input import (  # pyright: ignore
     Keyboard as CSKeyboard,
@@ -62,7 +62,7 @@ class Keyboard:
     """Simulates Key input, wrapper over Keyboard class in FlaUI.Core.Input namespace"""
 
     @staticmethod
-    def type(text: str | List[VirtualKeyShort]) -> None:
+    def type(text: Union[str, List[VirtualKeyShort]]) -> None:
         """Types the given character.
 
         :param text: Text/Charecters/VirtualKeyShort key to enter
