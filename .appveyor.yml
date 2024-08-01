@@ -66,6 +66,7 @@ install:
       (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
       $env:PATH = "$env:APPDATA\Python\Scripts;$env:PATH"
   - poetry --version
+  - poetry self add poetry-git-version-plugin
 
 before_build:
   - cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI
@@ -95,10 +96,11 @@ build_script:
       & "C:\\projects\\FlaUI\\build.ps1" --target "Build"
   - ps: |
       cd "C:\projects\flaui-uiautomation-wrapper"
-      $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
-      poetry config virtualenvs.in-project true
+      poetry config virtualenvs.create false --local
       poetry install --only unit_test
       poetry build
+      $env:PACKAGE_VERSION = (poetry version --short)
+      Write-Host "PACKAGE_VERSION=$env:PACKAGE_VERSION"
 
 after_build:
   - ps: |
@@ -110,7 +112,6 @@ after_build:
 before_test:
   - ps: |
       cd "C:\projects\flaui-uiautomation-wrapper"
-      $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
       $wheelPath = Get-ChildItem -Path "dist" -Filter "*.whl" | Select-Object -First 1
       poetry run pip install $wheelPath.FullName
 
