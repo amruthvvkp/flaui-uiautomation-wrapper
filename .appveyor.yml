@@ -62,11 +62,9 @@ init:
 install:
   - python --version
   - python -m pip install --upgrade pip
-  - pip install --user pipx
-  - SET PATH=%USERPROFILE%\.local\bin;%PATH%
-  - pipx --version
-  - pipx install poetry
-  - SET PATH=%USERPROFILE%\.local\bin;%PATH%
+  - ps: |
+      (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
+      $env:PATH = "$env:APPDATA\Python\Scripts;$env:PATH"
   - poetry --version
 
 before_build:
