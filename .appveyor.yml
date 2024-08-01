@@ -97,7 +97,6 @@ build_script:
   - ps: |
       $ErrorActionPreference = 'SilentlyContinue'
       cd "C:\projects\flaui-uiautomation-wrapper"
-      poetry config virtualenvs.create false --local
       poetry install --only unit_test
       poetry build
       $env:PACKAGE_VERSION = (poetry version --short)
