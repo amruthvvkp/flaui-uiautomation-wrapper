@@ -2,14 +2,18 @@
 
 import time
 
+from flaui.core.application import Application
+from flaui.core.automation_elements import Window
 from flaui.core.automation_type import AutomationType
 from flaui.core.definitions import ControlType
 from flaui.core.tools import Retry
+from flaui.modules.automation import Automation
 import pytest
 from pytest_check import equal, is_false, is_true
 
-from tests.test_utilities.base import UITestBase
 from tests.test_utilities.config import ApplicationType
+from tests.test_utilities.elements.winforms_application.base import get_winforms_application_elements
+from tests.test_utilities.elements.wpf_application.base import get_wpf_application_elements
 
 
 @pytest.mark.parametrize(
@@ -20,21 +24,43 @@ from tests.test_utilities.config import ApplicationType
         (AutomationType.UIA3, ApplicationType.WinForms),
         (AutomationType.UIA3, ApplicationType.Wpf),
     ],
+    scope="session",
 )
-class TestAutomationElementEssentials(UITestBase):
-    """Mirrors essential UI tests from TestAutomation element in FlaUI"""
+class TestAutomationElement:
+    """Tests Automation elements"""
+
+    @pytest.fixture(autouse=True)
+    def setup_method(
+        self,
+        ui_test_base: tuple[Application, Automation],
+        automation_type: AutomationType,
+        application_type: ApplicationType,
+    ):
+        """Sets up essential properties for tests in this class.
+
+        :param ui_test_base: UI Test base fixture
+        :param automation_type: Automation Type
+        :param application_type: Application Type
+        """
+        application, automation = ui_test_base
+        self.application = application
+        self.main_window: Window = application.get_main_window(automation)
+        self.automation = automation
+        self._automation_type = automation_type
+        self._application_type = application_type
+        self.test_elements = (
+            get_wpf_application_elements(main_window=self.main_window)
+            if self._application_type == ApplicationType.Wpf
+            else get_winforms_application_elements(main_window=self.main_window)
+        )
 
     def test_parent(self):
-        """Tests if parent is Window"""
-        self.restart_application()
-        window = self.application.get_main_window(self.automation)
+        window = self.main_window
         child = window.find_first_child()
         equal(child.parent.control_type, ControlType.Window)
 
     def test_is_available(self):
-        """Tests if parent window is available"""
-        self.restart_application()
-        window = self.application.get_main_window(self.automation)
+        window = self.main_window
         is_true(window.is_available)
         window.close()
         Retry.WhileTrue(lambda: window.is_available, timeout=5)
@@ -50,9 +76,31 @@ class TestAutomationElementEssentials(UITestBase):
 #         (AutomationType.UIA3, ApplicationType.WinForms),
 #         (AutomationType.UIA3, ApplicationType.Wpf),
 #     ],
+#     scope="class",
 # )
-# class TestAutomationElementAdditional(UITestBase):
+# class TestAutomationElementAdditional:
 #     """Additional UI tests for all other properties in Python class"""
+
+#     @pytest.fixture(autouse=True)
+#     def setup_method(
+#         self,
+#         ui_test_base: tuple[Application, Automation],
+#         automation_type: UIAutomationTypes,
+#         application_type: ApplicationType,
+#     ):
+#         """Sets up essential properties for tests in this class.
+
+#         :param ui_test_base: UI Test base fixture
+#         :param automation_type: Automation Type
+#         :param application_type: Application Type
+#         """
+#         application, automation = ui_test_base
+#         self.application = application
+#         self.main_window: Window = application.get_main_window(automation)
+#         self.automation = automation
+#         self.condition_factory = self.main_window.condition_factory
+#         self._automation_type = automation_type
+#         self._application_type = application_type
 
 #     def test_class_properties(self):
 #         """Test the class properties of the AutomationElement class."""

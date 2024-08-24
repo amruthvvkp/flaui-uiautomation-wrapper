@@ -64,6 +64,7 @@ pydantic = "^2.8.2"
 pydantic-settings = "^2.3.4"
 pydantic-extra-types = "^2.8.2"
 
+pytest-html = "^4.1.1"
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.10.0"
 jupyter = "^1.0.0"
@@ -77,7 +78,7 @@ optional = true
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.2.2"
-pytest-sugar = "^1.0.0"
+# pytest-sugar = "^1.0.0"
 psutil = "^6.0.0"
 coverage = "^7.6.0"
 
@@ -101,7 +102,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 minversion = "8.0"
-addopts = "-ra -q -p no:warnings --junitxml=test-results.xml"
+addopts = "-ra -q -p no:warnings --junitxml=test-results.xml --html=report.html"
 testpaths = ["tests/"]
 
 [tool.interrogate]

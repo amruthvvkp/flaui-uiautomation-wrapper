@@ -1,8 +1,13 @@
 """This module contains collections which can effective handle data transition between C# and Python."""
 
+from datetime import date
 from typing import Any, Dict, List
 
-from System import TimeSpan  # pyright: ignore
+import arrow
+from System import (
+    DateTime as CSDateTime,
+    TimeSpan,  # pyright: ignore
+)
 
 
 class TypeCast:
@@ -37,3 +42,11 @@ class TypeCast:
             return None
 
         return TimeSpan.FromMilliseconds(value)
+
+    @staticmethod
+    def cs_datetime(date: date):
+        """Parses Python date as C# Datetime object
+
+        :param date: Python date
+        """
+        return CSDateTime.Parse(arrow.get(date).strftime("%Y-%m-%d"))

@@ -2,13 +2,16 @@
 
 from typing import List
 
-from flaui.core.automation_elements import DataGridViewRow
+from flaui.core.application import Application
+from flaui.core.automation_elements import DataGridViewRow, Window
 from flaui.core.automation_type import AutomationType
+from flaui.modules.automation import Automation
 import pytest
 from pytest_check import equal, is_not_none
 
-from tests.test_utilities.base import UITestBase
 from tests.test_utilities.config import ApplicationType
+from tests.test_utilities.elements.winforms_application.base import get_winforms_application_elements
+from tests.test_utilities.elements.wpf_application.base import get_wpf_application_elements
 
 
 @pytest.mark.parametrize(
@@ -18,9 +21,35 @@ from tests.test_utilities.config import ApplicationType
         (AutomationType.UIA3, ApplicationType.WinForms),
         (AutomationType.UIA3, ApplicationType.Wpf),
     ],
+    scope="session",
 )
-class TestDataGridView(UITestBase):
+class TestDataGridView:
     """Tests for the Data Grid View element."""
+
+    @pytest.fixture(autouse=True)
+    def setup_method(
+        self,
+        ui_test_base: tuple[Application, Automation],
+        automation_type: AutomationType,
+        application_type: ApplicationType,
+    ):
+        """Sets up essential properties for tests in this class.
+
+        :param ui_test_base: UI Test base fixture
+        :param automation_type: Automation Type
+        :param application_type: Application Type
+        """
+        application, automation = ui_test_base
+        self.application = application
+        self.main_window: Window = application.get_main_window(automation)
+        self.automation = automation
+        self._automation_type = automation_type
+        self._application_type = application_type
+        self.test_elements = (
+            get_wpf_application_elements(main_window=self.main_window)
+            if self._application_type == ApplicationType.Wpf
+            else get_winforms_application_elements(main_window=self.main_window)
+        )
 
     def test_header_and_columns(self):
         """Tests the header and columns property."""

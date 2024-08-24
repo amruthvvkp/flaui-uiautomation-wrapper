@@ -172,3 +172,5 @@ flaui_arch
 # Test Applications
 test_applications
 pytest.xml
+assets/style.css
+report.html

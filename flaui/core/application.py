@@ -7,12 +7,16 @@ from __future__ import annotations
 
 from typing import Any, List, Optional, Union
 
+from loguru import logger
+
 from flaui.core.automation_elements import Window
 
 # isort: off
 from FlaUI.Core import Application as CSApplication  # pyright: ignore
 from FlaUI.Core import AutomationBase  # pyright: ignore
 # isort: on
+
+from flaui.lib.collections import TypeCast
 
 
 class Application:
@@ -111,7 +115,13 @@ class Application:
             raise AttributeError(
                 "Invalid automation object sent to fetch main window, either send C# Automation object or Python automation object"
             )
-        return Window(raw_element=self._application.GetMainWindow(_automation))
+        try:
+            main_window = Window(raw_element=self._application.GetMainWindow(_automation))
+        except (OSError, Exception) as e:
+            logger.exception(e)
+            raise e
+        else:
+            return main_window
 
     def launch(self, executable: str, arguments: Optional[str] = None) -> None:
         """Launches the given executable.
@@ -162,20 +172,18 @@ class Application:
         """
         return self._application.Close(kill_if_close_fails)
 
-    def wait_while_main_handle_is_missing(
-        self, time_out: Optional[int] = None
-    ) -> bool:  # TODO: sending timeout is throwing an exception, need to fix later
+    def wait_while_main_handle_is_missing(self, time_out: Optional[int] = None) -> bool:
         """Waits until the main handle is set.
 
-        :param time_out: An optional timeout. If null is passed, the timeout is infinite., defaults to None
+        :param time_out: An optional timeout in milliseconds. If null is passed, the timeout is infinite., defaults to None
         :return: True if a main window handle is found, else False.
         """
-        return self._application.WaitWhileMainHandleIsMissing(time_out)
+        return self._application.WaitWhileMainHandleIsMissing(TypeCast.cs_timespan(time_out) if time_out else time_out)
 
     def wait_while_busy(self, time_out: Optional[int] = None) -> bool:
         """Waits as long as the application is busy.
 
-        :param time_out: An optional timeout. If null is passed, the timeout is infinite., defaults to None
+        :param time_out: An optional timeout in milliseconds. If null is passed, the timeout is infinite., defaults to None
         :return: True if the application is idle, else False.
         """
-        return self._application.WaitWhileBusy(time_out)
+        return self._application.WaitWhileBusy(TypeCast.cs_timespan(time_out) if time_out else time_out)

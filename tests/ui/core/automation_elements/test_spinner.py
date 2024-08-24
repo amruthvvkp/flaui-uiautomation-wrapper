@@ -3,7 +3,7 @@
 # from flaui.core.automation_type import AutomationType
 # import pytest
 
-# from tests.test_utilities.base import UITestBase
+#
 # from tests.test_utilities.config import ApplicationType
 # from pytest_check import equal
 
@@ -17,7 +17,7 @@
 # @pytest.xfail(
 #     "Somehow Spinner control is not visible from the descendants, need to verify"
 # )  # TODO: Find spinner control and fix this test case
-# class TestSpinner(UITestBase):
+# class TestSpinner:
 #     """Tests for Spinner control."""
 
 #     def test_set_value(self):

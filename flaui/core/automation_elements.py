@@ -12,7 +12,7 @@ from typing import Any, Callable, List, Optional, Tuple, TypeVar, Union
 
 import arrow
 from pydantic import BaseModel, Field, field_validator
-from System import DateTime as CSDateTime, NullReferenceException  # pyright: ignore
+from System import NullReferenceException  # pyright: ignore
 
 from flaui.core.automation_type import AutomationType
 from flaui.core.condition_factory import ConditionFactory, PropertyCondition
@@ -969,16 +969,6 @@ class Button(AutomationElement, InvokeAutomationElement):  # pragma: no cover
 class Calendar(AutomationElement):
     """Class to interact with a calendar element. Not supported for Windows Forms calendar"""
 
-    @staticmethod
-    def _parse_date(py_date: date) -> CSDateTime:
-        """Parses a Python date object to a C# DateTime object
-
-        :param py_date: Python date object
-        :return: CSDateTime object
-        """
-        # Use DateTime(*date.timetuple()[:6] + (date.microsecond/1000,)) for date objects
-        return CSDateTime(*arrow.get(py_date).date().timetuple()[:6])
-
     @property
     def selected_dates(self) -> List[date]:
         """Gets the selected dates in the calendar. For Win32 multiple selection calendar the returned array has two dates,
@@ -993,7 +983,7 @@ class Calendar(AutomationElement):
 
         :param date: Date object
         """
-        self.raw_element.SelectDate(self._parse_date(date))
+        self.raw_element.SelectDate(TypeCast.cs_datetime(date))
 
     def select_range(self, dates: List[date]) -> None:
         """For WPF calendar with SelectionMode="MultipleRange" this method deselects other selected dates and selects the specified range.
@@ -1004,7 +994,7 @@ class Calendar(AutomationElement):
 
         :param dates: Date ranges
         """
-        self.raw_element.SelectRange([self._parse_date(_) for _ in dates])
+        self.raw_element.SelectRange([TypeCast.cs_datetime(_) for _ in dates])
 
     def add_to_selection(self, date: date) -> None:
         """For WPF calendar with SelectionMode="MultipleRange" this method adds the specified date to current selection.
@@ -1013,7 +1003,7 @@ class Calendar(AutomationElement):
 
         :param date: Date object
         """
-        self.raw_element.AddToSelection(self._parse_date(date))
+        self.raw_element.AddToSelection(TypeCast.cs_datetime(date))
 
     def add_range_to_selection(self, dates: List[date]) -> None:
         """For WPF calendar with SelectionMode="MultipleRange" this method adds the specified range to current selection.
@@ -1022,7 +1012,7 @@ class Calendar(AutomationElement):
 
         :param dates: Date ranges
         """
-        self.raw_element.AddRangeToSelection([self._parse_date(_) for _ in dates])
+        self.raw_element.AddRangeToSelection([TypeCast.cs_datetime(_) for _ in dates])
 
 
 class CheckBox(AutomationElement, ToggleAutomationElement):
@@ -1283,7 +1273,7 @@ class DateTimePicker(AutomationElement):
 
         :return: date object if exists, else None
         """
-        self.raw_element.SelectedDate = CSDateTime.Parse(arrow.get(date).strftime("%Y-%m-%d"))
+        self.raw_element.SelectedDate = TypeCast.cs_datetime(date)
 
 
 class Grid(AutomationElement):
