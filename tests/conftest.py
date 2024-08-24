@@ -11,6 +11,26 @@ import pytest
 setup_pythonnet_bridge()
 
 from flaui.lib.enums import UIAutomationTypes
+from loguru import logger
+from _pytest.logging import LogCaptureFixture
+
+
+@pytest.fixture
+def caplog(caplog: LogCaptureFixture):
+    """Replaces caplog fixture from Pytest to Loguru
+
+    :param caplog: Pytest Caplog fixture
+    :yield: Caplog fixture
+    """
+    handler_id = logger.add(
+        caplog.handler,
+        format="{message}",
+        level=0,
+        filter=lambda record: record["level"].no >= caplog.handler.level,
+        enqueue=False,  # Set to 'True' if your test is spawning child processes.
+    )
+    yield caplog
+    logger.remove(handler_id)
 
 
 def pytest_addoption(parser):
@@ -24,6 +44,12 @@ def pytest_addoption(parser):
         action="store",
         default="UIA3",
         help="UIA version of the Test Application to load for this session",
+    )
+    parser.addoption(
+        "--test-app-uia-type",
+        action="store",
+        default="WPF",
+        help="WPF/Winforms Test APplication to load for this session",
     )
 
 

@@ -7,6 +7,7 @@ from flaui.core.application import Application
 from flaui.core.condition_factory import ConditionFactory
 from flaui.lib.enums import UIAutomationTypes
 
+
 class Automation:
     """UIAutomation constructed wrapper for FlaUI usage.
 
@@ -23,6 +24,7 @@ class Automation:
         tree_walker (RawViewWalker): The tree walker instance.
         application (Application): The application instance.
     """
+
     def __init__(self, ui_automation_type: UIAutomationTypes, timeout: int = 1000) -> None:
         """Initializes the UIAutomation wrapper.
 
@@ -32,7 +34,7 @@ class Automation:
         """
         self._ui_automation_types = ui_automation_type
         self.timeout = timeout
-        self.automation = UIA3Automation() if ui_automation_type == UIAutomationTypes.UIA3 else UIA2Automation()
-        self.cf = ConditionFactory(raw_cf=self.automation.ConditionFactory)
-        self.tree_walker = self.automation.TreeWalkerFactory.GetRawViewWalker()
+        self.cs_automation = UIA3Automation() if ui_automation_type == UIAutomationTypes.UIA3 else UIA2Automation()
+        self.cf = ConditionFactory(raw_cf=self.cs_automation.ConditionFactory)
+        self.tree_walker = self.cs_automation.TreeWalkerFactory.GetRawViewWalker()
         self.application: Application = Application()

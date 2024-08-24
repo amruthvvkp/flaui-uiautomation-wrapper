@@ -383,7 +383,7 @@ class AutomationElement(ElementBase):
         :param condition: The search condition.
         :return: The found elements or an empty list if no elements were found.
         """
-        return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAll(tree_scope, condition.condition)]
+        return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAll(tree_scope, condition.cs_condition)]
 
     def find_all_by_x_path(self, x_path: str) -> List[AutomationElement]:
         """Finds all items which match the given xpath.
@@ -402,15 +402,20 @@ class AutomationElement(ElementBase):
         if condition is None:
             return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllChildren()]
         else:
-            return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllChildren(condition.condition)]
+            return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllChildren(condition.cs_condition)]
 
-    def find_all_descendants(self, condition: PropertyCondition) -> List[AutomationElement]:
+    def find_all_descendants(self, condition: Optional[PropertyCondition] = None) -> List[AutomationElement]:
         """Finds all descendants with the condition.
 
         :param condition: The search condition.
         :return: The found elements or an empty list if no elements were found.
         """
-        return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllDescendants(condition.condition)]
+        if condition is None:
+            return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllDescendants()]
+        else:
+            return [
+                AutomationElement(raw_element=_) for _ in self.raw_element.FindAllDescendants(condition.cs_condition)
+            ]
 
     def find_all_nested(self, condition: PropertyCondition) -> List[AutomationElement]:
         """Finds all elements by iterating thru all conditions.
@@ -418,7 +423,7 @@ class AutomationElement(ElementBase):
         :param condition: The search condition.
         :return: The found elements or an empty list if no elements were found.
         """
-        return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllNested(condition.condition)]
+        return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllNested(condition.cs_condition)]
 
     def find_all_with_options(
         self, tree_scope: Any, condition: PropertyCondition, traversal_options: Any, root: Any
@@ -433,7 +438,7 @@ class AutomationElement(ElementBase):
         """
         return [
             AutomationElement(raw_element=_)
-            for _ in self.raw_element.FindAllWithOptions(tree_scope, condition.condition, traversal_options, root)
+            for _ in self.raw_element.FindAllWithOptions(tree_scope, condition.cs_condition, traversal_options, root)
         ]
 
     def find_at(self, tree_scope: Any, index: int, condition: PropertyCondition) -> AutomationElement:
@@ -444,7 +449,7 @@ class AutomationElement(ElementBase):
         :param condition: The condition to use.
         :return: The found element or null if no element was found.
         """
-        return AutomationElement(raw_element=self.raw_element.FindAt(tree_scope, index, condition.condition))
+        return AutomationElement(raw_element=self.raw_element.FindAt(tree_scope, index, condition.cs_condition))
 
     def find_child_at(self, index: int, condition: PropertyCondition) -> AutomationElement:
         """Finds the child at the given position with the condition.
@@ -453,7 +458,7 @@ class AutomationElement(ElementBase):
         :param condition: The condition.
         :return: The found element or null if no element was found.
         """
-        return AutomationElement(raw_element=self.raw_element.FindChildAt(index, condition.condition))
+        return AutomationElement(raw_element=self.raw_element.FindChildAt(index, condition.cs_condition))
 
     def find_first(self, tree_scope: Any, condition: PropertyCondition) -> AutomationElement:
         """Finds the first element in the given scope with the given condition.
@@ -462,7 +467,7 @@ class AutomationElement(ElementBase):
         :param condition: The condition to use.
         :return: The found element or null if no element was found.
         """
-        return AutomationElement(raw_element=self.raw_element.FindFirst(tree_scope, condition.condition))
+        return AutomationElement(raw_element=self.raw_element.FindFirst(tree_scope, condition.cs_condition))
 
     def find_first_by_x_path(self, x_path: str) -> AutomationElement:
         """Finds for the first item which matches the given xpath.
@@ -472,31 +477,35 @@ class AutomationElement(ElementBase):
         """
         return AutomationElement(raw_element=self.raw_element.FindFirstByXPath(x_path))
 
-    def find_first_child(self, condition: PropertyCondition) -> AutomationElement:
+    def find_first_child(self, condition: Optional[PropertyCondition] = None) -> AutomationElement:
         """Finds the first child.
 
         :param condition: The condition to use.
         :return: The found element or null if no element was found.
         """
-        return AutomationElement(raw_element=self.raw_element.FindFirstChild(condition.condition))
+        if condition is None:
+            return AutomationElement(raw_element=self.raw_element.FindFirstChild())
+        else:
+            return AutomationElement(raw_element=self.raw_element.FindFirstChild(condition.cs_condition))
 
-    def find_first_descendant(self, condition: PropertyCondition) -> AutomationElement:
+    def find_first_descendant(self, condition: Optional[PropertyCondition] = None) -> AutomationElement:
         """Finds the first descendant.
 
         :param condition: The condition to use.
         :return: The found element or null if no element was found.
         """
-        return AutomationElement(raw_element=self.raw_element.FindFirstDescendant(condition.condition))
+        if condition is None:
+            return AutomationElement(raw_element=self.raw_element.FindFirstDescendant())
+        else:
+            return AutomationElement(raw_element=self.raw_element.FindFirstDescendant(condition.cs_condition))
 
-    def find_first_nested(self, condition: Optional[PropertyCondition]) -> AutomationElement:
+    def find_first_nested(self, condition: PropertyCondition) -> AutomationElement:
         """Finds the first element by iterating thru all conditions.
 
         :param condition: The condition to use.
         :return: The found element or null if no element was found.
         """
-        return AutomationElement(
-            raw_element=self.raw_element.FindFirstNested(condition.condition)  # type: ignore # pyright: ignore
-        )
+        return AutomationElement(raw_element=self.raw_element.FindFirstNested(condition.cs_condition))
 
     def find_first_with_options(
         self, tree_scope: Any, condition: PropertyCondition, traversal_options: Any, root: Any
@@ -510,7 +519,9 @@ class AutomationElement(ElementBase):
         :return: The found element or null if no element was found.
         """
         return AutomationElement(
-            raw_element=self.raw_element.FindFirstWithOptions(tree_scope, condition.condition, traversal_options, root)
+            raw_element=self.raw_element.FindFirstWithOptions(
+                tree_scope, condition.cs_condition, traversal_options, root
+            )
         )
 
     def focus(self) -> None:

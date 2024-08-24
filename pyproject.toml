@@ -75,13 +75,16 @@ ruff = "^0.5.1"
 [tool.poetry.group.dev]
 optional = true
 
-[tool.poetry.group.unit_test.dependencies]
+[tool.poetry.group.test.dependencies]
 pytest = "^8.2.2"
 pytest-sugar = "^1.0.0"
 psutil = "^6.0.0"
 coverage = "^7.6.0"
 
-[tool.poetry.group.unit_test]
+pytest-check = "^2.3.1"
+
+tenacity = "^9.0.0"
+[tool.poetry.group.test]
 optional = true
 
 [tool.poetry.group.docs.dependencies]
@@ -99,7 +102,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 minversion = "8.0"
 addopts = "-ra -q -p no:warnings --junitxml=test-results.xml"
-testpaths = ["tests/unit_tests/"]
+testpaths = ["tests/"]
 
 [tool.interrogate]
 ignore-init-method = true

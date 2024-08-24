@@ -11,6 +11,7 @@ from flaui.core.automation_elements import Window
 
 # isort: off
 from FlaUI.Core import Application as CSApplication  # pyright: ignore
+from FlaUI.Core import AutomationBase  # pyright: ignore
 # isort: on
 
 
@@ -102,7 +103,15 @@ class Application:
         :param automation: The automation object to use.
         :return: The main window object as Window element or null if no main window was found within the timeout.
         """
-        return Window(raw_element=self._application.GetMainWindow(automation))
+        if isinstance(automation, AutomationBase):
+            _automation = automation
+        elif hasattr(automation, "cs_automation"):
+            _automation = automation.cs_automation
+        else:
+            raise AttributeError(
+                "Invalid automation object sent to fetch main window, either send C# Automation object or Python automation object"
+            )
+        return Window(raw_element=self._application.GetMainWindow(_automation))
 
     def launch(self, executable: str, arguments: Optional[str] = None) -> None:
         """Launches the given executable.
@@ -153,7 +162,9 @@ class Application:
         """
         return self._application.Close(kill_if_close_fails)
 
-    def wait_while_main_handle_is_missing(self, time_out: Optional[int] = None) -> bool:
+    def wait_while_main_handle_is_missing(
+        self, time_out: Optional[int] = None
+    ) -> bool:  # TODO: sending timeout is throwing an exception, need to fix later
         """Waits until the main handle is set.
 
         :param time_out: An optional timeout. If null is passed, the timeout is infinite., defaults to None
