@@ -2,6 +2,7 @@ import time
 from typing import Generator
 
 from flaui.core.application import Application
+from flaui.core.automation_type import AutomationType
 from flaui.lib.enums import UIAutomationTypes
 from flaui.modules.automation import Automation
 from loguru import logger
@@ -101,19 +102,35 @@ class UITestBase:
         logger.debug("Application closed")
 
 
-@pytest.fixture(scope="session")
-def ui_test_base(request, automation_type, application_type):
-    logger.info(f"Starting test: {request.node.name}")
-    base = UITestBase(automation_type, application_type)
-    automation = base.get_automation()
-    try:
-        application = base.start_application(automation, automation_type, application_type)
-    except Exception as e:
-        logger.exception(e)
-        raise
-    else:
-        yield application, automation
-    finally:
-        if application:
-            base.close_application(application, automation_type, application_type)
-        logger.info(f"Finished test: {request.node.name}")
+@pytest.fixture(scope="class")
+def setup_application_cache(request):
+    _app_cache = {}
+
+    def finalizer():
+        for (automation_type, application_type), [_, application] in _app_cache.items():
+            logger.info(f"Closing application for {automation_type}-{application_type}")
+            try:
+                UITestBase.close_application(application, automation_type, application_type)
+            except Exception as e:
+                logger.exception(f"Error closing application for {automation_type}-{application_type}: {e}")
+        _app_cache.clear()
+
+    request.addfinalizer(finalizer)
+
+    for automation_type, application_type in [
+        (AutomationType.UIA2, ApplicationType.WinForms),
+        (AutomationType.UIA2, ApplicationType.Wpf),
+        (AutomationType.UIA3, ApplicationType.WinForms),
+        (AutomationType.UIA3, ApplicationType.Wpf),
+    ]:
+        base = UITestBase(automation_type, application_type)
+        automation = base.get_automation()
+        try:
+            application = base.start_application(automation, automation_type, application_type)
+        except Exception as e:
+            logger.exception(f"Error starting application for {automation_type}-{application_type}: {e}")
+            raise
+        else:
+            _app_cache[(automation_type, application_type)] = [automation, application]
+
+    yield _app_cache

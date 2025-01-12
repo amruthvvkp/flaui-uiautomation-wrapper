@@ -1,14 +1,13 @@
-[tool.poetry]
+[project]
 name = "flaui-uiautomation-wrapper"
-version = "0.0.8a24"
 description = "Tool to perform UI Automation on Windows desktop applications using an underlying FlaUI wrapper."
+readme = "README.md"
 authors = [
-  "Amruth VVKP <amruthvvkp@gmail.com>",
-  "Varshith VVS <svvarsham@gmail.com>",
-  "Tejaswani Sathish Kumar <tejaswani12.92@gmail.com",
+  { name = "Amruth VVKP", email = "amruthvvkp@gmail.com" },
+  { name = "Varshith VVS", email = "svvarsham@gmail.com" },
+  { name = "Tejaswani Sathish Kumar", email = "tejaswani12.92@gmail.com" },
 ]
 license = "LGPL-3.0-or-later"
-readme = "README.md"
 keywords = [
   "testing",
   "ui",
@@ -21,10 +20,6 @@ keywords = [
   "flaui",
   "qa",
 ]
-packages = [{ include = "flaui" }]
-include = [{ path = "flaui/bin/*.dll" }]
-exclude = ["tests", "docs"]
-repository = "https://github.com/amruthvvkp/flaui-uiautomation-wrapper"
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
@@ -48,23 +43,27 @@ classifiers = [
   "Topic :: Software Development :: Testing",
   "Intended Audience :: Developers",
 ]
+requires-python = ">=3.8,<3.13"
+dynamic = ["version"]
+dependencies = [
+  "arrow>=1.3.0",
+  "pillow>=10.4.0",
+  "pydantic>=2.10.5",
+  "pydantic-settings>=2.7.1",
+  "pythonnet>=3.0.5",
+]
+
+[tool.poetry]
+version = "0.0.8a24"
+packages = [{ include = "flaui" }]
+include = [{ path = "flaui/bin/*.dll" }]
+exclude = ["tests", "docs"]
 
 [tool.poetry-git-version-plugin]
 make_alpha_version = true
 alpha_version_format = '{version}a{distance}+{commit_hash}'
 version_format = '{version}'
 
-[tool.poetry.dependencies]
-python = ">=3.8,<3.13"
-loguru = "^0.7.2"
-pillow = "^10.3.0"
-arrow = "^1.3.0"
-pythonnet = "^3.0.3"
-pydantic = "^2.8.2"
-pydantic-settings = "^2.3.4"
-pydantic-extra-types = "^2.8.2"
-
-pytest-html = "^4.1.1"
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.10.0"
 jupyter = "^1.0.0"
@@ -78,13 +77,13 @@ optional = true
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.2.2"
-# pytest-sugar = "^1.0.0"
+pytest-sugar = "^1.0.0"
 psutil = "^6.0.0"
 coverage = "^7.6.0"
-
 pytest-check = "^2.3.1"
 
 tenacity = "^9.0.0"
+loguru = "^0.7.3"
 [tool.poetry.group.test]
 optional = true
 

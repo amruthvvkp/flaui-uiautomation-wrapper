@@ -1,10 +1,13 @@
 """Tests for Combobox automation element."""
 
+from typing import Dict, Tuple
+
 from flaui.core.application import Application
 from flaui.core.automation_elements import ComboBox, Window
 from flaui.core.automation_type import AutomationType
 from flaui.core.definitions import ExpandCollapseState
 from flaui.modules.automation import Automation
+from loguru import logger
 import pytest
 from pytest_check import equal, is_not_none
 
@@ -24,10 +27,11 @@ from tests.test_utilities.elements.wpf_application.base import get_wpf_applicati
 class TestComboBoxElements:
     """Tests for the Combobox class."""
 
-    @pytest.fixture(autouse=True)
+    @pytest.fixture(autouse=True, scope="function")
     def setup_method(
         self,
-        ui_test_base: tuple[Application, Automation],
+        request: pytest.FixtureRequest,
+        setup_application_cache: Dict[Tuple[AutomationType, ApplicationType], Tuple[Automation, Application]],
         automation_type: AutomationType,
         application_type: ApplicationType,
     ):
@@ -37,7 +41,8 @@ class TestComboBoxElements:
         :param automation_type: Automation Type
         :param application_type: Application Type
         """
-        application, automation = ui_test_base
+        logger.info(f"Starting test: {request.node.name}")
+        automation, application = setup_application_cache[(automation_type, application_type)]
         self.application = application
         self.main_window: Window = application.get_main_window(automation)
         self.automation = automation
@@ -48,6 +53,8 @@ class TestComboBoxElements:
             if self._application_type == ApplicationType.Wpf
             else get_winforms_application_elements(main_window=self.main_window)
         )
+        yield
+        logger.info(f"Finished test: {request.node.name}")
 
     def test_selected_item(self):
         """Tests the selected item property."""

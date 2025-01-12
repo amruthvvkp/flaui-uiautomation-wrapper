@@ -1,15 +1,4 @@
 repos:
-  - repo: https://github.com/python-poetry/poetry
-    rev: "1.5.1"
-    hooks:
-      - id: poetry-check
-        name: Poetry Check
-        description: This hook runs poetry check.
-
-      - id: poetry-lock
-        name: Poetry Lock
-        description: This hook runs poetry lock.
-
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
