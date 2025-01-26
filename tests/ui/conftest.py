@@ -1,136 +1,44 @@
-import time
-from typing import Generator
+from typing import Any, Generator
 
-from flaui.core.application import Application
-from flaui.core.automation_type import AutomationType
 from flaui.lib.enums import UIAutomationTypes
 from flaui.modules.automation import Automation
-from loguru import logger
-from pydantic import FilePath
 import pytest
-from tenacity import retry, stop_after_attempt, wait_fixed
 
-from tests.test_utilities.base import force_close_test_application_process
-from tests.test_utilities.config import ApplicationType, test_settings
+from tests.test_utilities.base import FlaUITestBase
 
 
-@pytest.fixture(scope="package")
-def test_application(ui_automation_type: UIAutomationTypes) -> Generator[Automation, None, None]:
-    """Fixture to yield the test application.
+@pytest.fixture(
+    scope="function",
+    params=[
+        (UIAutomationTypes.UIA2, "WinForms"),
+        (UIAutomationTypes.UIA2, "WPF"),
+        (UIAutomationTypes.UIA3, "WinForms"),
+        (UIAutomationTypes.UIA3, "WPF"),
+    ],
+)
+def ui_automation_test_app(request: pytest.FixtureRequest) -> Generator[Automation, Any, None]:
+    """Fixture to launch the test application for the UIAutomation tests.
 
-    :param ui_automation_type: UI Automation type
-    :yield: Test application
+    :param request: Pytest request object.
+    :yield: Application object.
     """
-    automation = Automation(ui_automation_type)
-    automation.application.launch(
-        str(
-            test_settings.WPF_TEST_APP_EXE
-            if ui_automation_type == UIAutomationTypes.UIA3
-            else test_settings.WINFORMS_TEST_APP_EXE
-        )
-    )
-    yield automation
-
-    automation.application.kill()
-
-    force_close_test_application_process()
+    ui_automation_type, app_type = request.param
+    test_base = FlaUITestBase(ui_automation_type, app_type)
+    yield test_base.automation
+    test_base.close_test_app()
 
 
-class UITestBase:
-    def __init__(self, automation_type: UIAutomationTypes, application_type: ApplicationType):
-        self.automation_type = automation_type
-        self.application_type = application_type
+@pytest.fixture(scope="function")
+def restart_test_app(
+    request: pytest.FixtureRequest, ui_automation_test_app: Automation
+) -> Generator[Automation, Any, None]:
+    """Fixture to restart the test application for the UIAutomation tests.
 
-    def get_automation(self):
-        return Automation(self.automation_type)
-
-    @staticmethod
-    def get_test_application_path(application_type: ApplicationType) -> FilePath:
-        """Fetches the path of the Test Application
-
-        :param application_type: Test Application Type
-        """
-        if application_type == ApplicationType.Wpf:
-            return test_settings.WPF_TEST_APP_EXE
-        elif application_type == ApplicationType.WinForms:
-            return test_settings.WINFORMS_TEST_APP_EXE
-
-    @staticmethod
-    def get_test_application_process(application_type: ApplicationType) -> str:
-        if application_type == ApplicationType.Wpf:
-            return test_settings.WPF_TEST_APP_PROCESS
-        elif application_type == ApplicationType.WinForms:
-            return test_settings.WINFORMS_TEST_APP_PROCESS
-
-    @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
-    def start_application(
-        self, automation: Automation, automation_type: UIAutomationTypes, application_type: ApplicationType
-    ):
-        logger.debug(f"Launching {automation_type}-{application_type} application")
-        try:
-            automation.application.launch(str(self.get_test_application_path(self.application_type)))
-            time.sleep(0.5)
-            automation.application.wait_while_main_handle_is_missing(2000)
-        except Exception as e:
-            logger.exception(e)
-            raise
-        else:
-            return automation.application
-
-    @staticmethod
-    def close_application(
-        application: Application, automation_type: UIAutomationTypes, application_type: ApplicationType
-    ):
-        logger.debug(f"Closing {automation_type}-{application_type} application")
-        if application:
-            try:
-                application.close(True)
-            except Exception as e:
-                logger.exception(f"Error while killing application: {e}")
-
-            timeout = 10
-            start_time = time.time()
-            while not application.has_exited and time.time() - start_time < timeout:
-                time.sleep(0.5)
-
-            if not application.has_exited:
-                logger.warning("Application did not exit within the timeout period")
-
-            force_close_test_application_process()
-
-            application.dispose()
-        logger.debug("Application closed")
-
-
-@pytest.fixture(scope="class")
-def setup_application_cache(request):
-    _app_cache = {}
-
-    def finalizer():
-        for (automation_type, application_type), [_, application] in _app_cache.items():
-            logger.info(f"Closing application for {automation_type}-{application_type}")
-            try:
-                UITestBase.close_application(application, automation_type, application_type)
-            except Exception as e:
-                logger.exception(f"Error closing application for {automation_type}-{application_type}: {e}")
-        _app_cache.clear()
-
-    request.addfinalizer(finalizer)
-
-    for automation_type, application_type in [
-        (AutomationType.UIA2, ApplicationType.WinForms),
-        (AutomationType.UIA2, ApplicationType.Wpf),
-        (AutomationType.UIA3, ApplicationType.WinForms),
-        (AutomationType.UIA3, ApplicationType.Wpf),
-    ]:
-        base = UITestBase(automation_type, application_type)
-        automation = base.get_automation()
-        try:
-            application = base.start_application(automation, automation_type, application_type)
-        except Exception as e:
-            logger.exception(f"Error starting application for {automation_type}-{application_type}: {e}")
-            raise
-        else:
-            _app_cache[(automation_type, application_type)] = [automation, application]
-
-    yield _app_cache
+    :param ui_automation_test_app: Application object.
+    :yield: Application object.
+    """
+    ui_automation_type, app_type = request.param
+    test_base = FlaUITestBase(ui_automation_type, app_type)
+    test_base.restart_test_app()
+    yield test_base.automation
+    # tes

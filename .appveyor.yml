@@ -4,51 +4,53 @@ branches:
     - master
 image: Visual Studio 2022
 environment:
+  UV_PYTHON: 3.12
+  UV_FROZEN: "1"
   matrix:
-    - job_name: Python 3.8 x86
-      PYTHON: "C:\\Python38"
-      PYTHON_VERSION: 3.8
-      PYTHON_ARCH: 32
+    # - job_name: Python 3.8 x86
+    #   PYTHON: "C:\\Python38"
+    #   PYTHON_VERSION: 3.8
+    #   PYTHON_ARCH: 32
 
-    - job_name: Python 3.9 x86
-      PYTHON: "C:\\Python39"
-      PYTHON_VERSION: 3.9
-      PYTHON_ARCH: 32
+    # - job_name: Python 3.9 x86
+    #   PYTHON: "C:\\Python39"
+    #   PYTHON_VERSION: 3.9
+    #   PYTHON_ARCH: 32
 
-    - job_name: Python 3.10 x86
-      PYTHON: "C:\\Python310"
-      PYTHON_VERSION: 3.10
-      PYTHON_ARCH: 32
+    # - job_name: Python 3.10 x86
+    #   PYTHON: "C:\\Python310"
+    #   PYTHON_VERSION: 3.10
+    #   PYTHON_ARCH: 32
 
-    - job_name: Python 3.11 x86
-      PYTHON: "C:\\Python311"
-      PYTHON_VERSION: 3.11
-      PYTHON_ARCH: 32
+    # - job_name: Python 3.11 x86
+    #   PYTHON: "C:\\Python311"
+    #   PYTHON_VERSION: 3.11
+    #   PYTHON_ARCH: 32
 
-    - job_name: Python 3.12 x86
-      PYTHON: "C:\\Python312"
-      PYTHON_VERSION: 3.12
-      PYTHON_ARCH: 32
+    # - job_name: Python 3.12 x86
+    #   PYTHON: "C:\\Python312"
+    #   PYTHON_VERSION: 3.12
+    #   PYTHON_ARCH: 32
 
-    - job_name: Python 3.8 x64
-      PYTHON: "C:\\Python38-x64"
-      PYTHON_VERSION: 3.8
-      PYTHON_ARCH: 64
+    # - job_name: Python 3.8 x64
+    #   PYTHON: "C:\\Python38-x64"
+    #   PYTHON_VERSION: 3.8
+    #   PYTHON_ARCH: 64
 
-    - job_name: Python 3.9 x64
-      PYTHON: "C:\\Python39-x64"
-      PYTHON_VERSION: 3.9
-      PYTHON_ARCH: 64
+    # - job_name: Python 3.9 x64
+    #   PYTHON: "C:\\Python39-x64"
+    #   PYTHON_VERSION: 3.9
+    #   PYTHON_ARCH: 64
 
-    - job_name: Python 3.10 x64
-      PYTHON: "C:\\Python310-x64"
-      PYTHON_VERSION: 3.10
-      PYTHON_ARCH: 64
+    # - job_name: Python 3.10 x64
+    #   PYTHON: "C:\\Python310-x64"
+    #   PYTHON_VERSION: 3.10
+    #   PYTHON_ARCH: 64
 
-    - job_name: Python 3.11 x64
-      PYTHON: "C:\\Python311"
-      PYTHON_VERSION: 3.11
-      PYTHON_ARCH: 64
+    # - job_name: Python 3.11 x64
+    #   PYTHON: "C:\\Python311"
+    #   PYTHON_VERSION: 3.11
+    #   PYTHON_ARCH: 64
 
     - job_name: Python 3.12 x64
       PYTHON: "C:\\Python312"
@@ -61,12 +63,7 @@ init:
 
 install:
   - python --version
-  - python -m pip install --upgrade pip
-  - ps: |
-      (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
-      $env:PATH = "$env:APPDATA\Python\Scripts;$env:PATH"
-  - poetry --version
-  - poetry self add poetry-git-version-plugin
+  - powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 
 before_build:
   - cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI
@@ -97,11 +94,7 @@ build_script:
   - ps: |
       $ErrorActionPreference = 'SilentlyContinue'
       cd "C:\projects\flaui-uiautomation-wrapper"
-      poetry run python -m pip install --upgrade pip
-      poetry install --only unit_test
-      poetry build
-      $env:PACKAGE_VERSION = (poetry version --short)
-      Write-Host "PACKAGE_VERSION=$env:PACKAGE_VERSION"
+      uv build
 
 after_build:
   - ps: |
@@ -115,27 +108,26 @@ before_test:
       $ErrorActionPreference = 'SilentlyContinue'
       cd "C:\projects\flaui-uiautomation-wrapper"
       $wheelPath = Get-ChildItem -Path "dist" -Filter "*.whl" | Select-Object -First 1
-      poetry run pip install $wheelPath.FullName
+      uv pip install $wheelPath.FullName
 
 test_script:
   - ps: |
       $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
-      poetry run coverage run -m pytest --test-app-uia-version=UIA2 --junitxml=test-results-uia2.xml
-      poetry run coverage run -m pytest --test-app-uia-version=UIA3 --junitxml=test-results-uia3.xml
+      uv run --group unit_test --package flaui --find-links "C:\Users\Amruth.Vithala\projects\flaui-uiautomation-wrapper\dist" coverage run -m pytest
 
 after_test:
   - ps: |
       $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
-      poetry run coverage combine
-      poetry run coverage xml
-      poetry run coverage html
+      uv run coverage combine
+      uv run coverage xml
+      uv run coverage html
 
 artifacts:
-  - path: test-results-uia2.xml
-    name: test-results-uia2
+  # - path: test-results-uia2.xml
+  #   name: test-results-uia2
 
-  - path: test-results-uia3.xml
-    name: test-results-uia3
+  # - path: test-results-uia3.xml
+  #   name: test-results-uia3
 
   - path: coverage.xml
     name: coverage

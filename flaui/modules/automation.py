@@ -1,5 +1,7 @@
 """This module contains the wrapper for FlaUI's UIAutomation class. This class is a custom class designed to ease the usage of FlaUI's UIAutomation class in Python."""
 
+from typing import Any
+
 from FlaUI.UIA2 import UIA2Automation  # pyright: ignore
 from FlaUI.UIA3 import UIA3Automation  # pyright: ignore
 
@@ -32,9 +34,9 @@ class Automation:
         :param timeout: The timeout value in milliseconds.
         :param element_map: The element map instance, map of the entire application elements for reference.
         """
-        self._ui_automation_types = ui_automation_type
-        self.timeout = timeout
-        self.cs_automation = UIA3Automation() if ui_automation_type == UIAutomationTypes.UIA3 else UIA2Automation()
+        self._ui_automation_types: UIAutomationTypes = ui_automation_type
+        self.timeout: int = timeout
+        self.cs_automation: Any = UIA3Automation() if ui_automation_type == UIAutomationTypes.UIA3 else UIA2Automation()
         self.cf = ConditionFactory(raw_cf=self.cs_automation.ConditionFactory)
-        self.tree_walker = self.cs_automation.TreeWalkerFactory.GetRawViewWalker()
+        self.tree_walker: Any = self.cs_automation.TreeWalkerFactory.GetRawViewWalker()
         self.application: Application = Application()

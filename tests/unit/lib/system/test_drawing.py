@@ -9,12 +9,12 @@ from flaui.lib.system.drawing import Color, ColorData, KnownColor
 from System.Drawing import Color as CSColor, KnownColor as CSKnownColor  # pyright: ignore
 
 
-def test_known_color():
+def test_known_color() -> None:
     """Unit tests for the class KnownColor"""
     assert all([_ in KnownColor.__members__ for _ in list(vars(CSKnownColor).keys()) if "_" not in _])
 
 
-def test_color_model():
+def test_color_model() -> None:
     """Unit tests for the Pydantic model Color"""
     color = ColorData(cs_object=CSColor.AliceBlue)
     assert color.name == "AliceBlue"
@@ -46,7 +46,7 @@ def test_color_model():
     assert Color.from_name("AliceBlue") == ColorData(cs_object=CSColor.AliceBlue)
 
 
-def test_color_collection():
+def test_color_collection() -> None:
     """Unit tests for the mapped class ColorCollection"""
     expected_keys = [_ for _ in list(vars(CSColor).keys()) if "_" not in _]
     actual_keys = [_ for _ in list(vars(Color).keys()) if "_" not in _]
