@@ -123,7 +123,7 @@ test_script:
   - ps: |
       $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
       Write-Host "Running tests with pytest..."
-      uv run --group unit_test --package flaui --extra coverage --find-links "C:\projects\flaui-uiautomation-wrapper\dist" coverage run -m pytest --junit-xml=test-results.xml
+      uv run --group unit_test --package flaui-uiautomation-wrapper --extra coverage --find-links "C:\projects\flaui-uiautomation-wrapper\dist" coverage run -m pytest --junit-xml=test-results.xml
       Write-Host "Tests completed."
 
 after_test:
@@ -156,6 +156,12 @@ cache:
   - C:\projects\FlaUI\**\bin
   - C:\projects\FlaUI\**\obj
   - C:\projects\FlaUI\src\TestApplications
+
+on_success:
+  - ps: Write-Host "Build Succeeded!"
+
+on_failure:
+  - ps: Write-Host "Build Failed!"
 
 on_finish:
   - ps: >-
