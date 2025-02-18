@@ -1,9 +1,9 @@
 """Tests for the Menu control."""
 
-from typing import Any, Dict, List
+from typing import Any, Dict, Generator, List
 
 from dirty_equals import DirtyEquals, HasAttributes, IsFalseLike, IsTrueLike
-from flaui.core.automation_elements import ConditionFactory
+from flaui.core.automation_elements import ConditionFactory, Menu
 import pytest
 
 from tests.test_utilities.elements.winforms_application.base import WinFormsApplicationElements
@@ -96,8 +96,7 @@ class TestMenu:
 
     def test_menu_with_sub_menus(
         self,
-        test_application: WinFormsApplicationElements | WPFApplicationElements,
-        condition_factory: ConditionFactory,
+        menu: Menu,
         test_application_type: str,
     ) -> None:
         """Tests the menu with sub menus."""
@@ -110,18 +109,14 @@ class TestMenu:
         if test_application_type == "WPF":
             expected_structure[1]["sub_items"].append({"name": "Show Label"})
 
-        assert test_application.main_window.find_first_child(
-            condition=condition_factory.menu()
-        ).as_menu().items == IsMenuStructure(expected_structure), "Menu structure does not match expected structure"
+        assert menu.items == IsMenuStructure(expected_structure), "Menu structure does not match expected structure"
 
     def test_menu_with_sub_menus_by_name(
         self,
-        test_application: WinFormsApplicationElements | WPFApplicationElements,
-        condition_factory: ConditionFactory,
+        menu: Menu,
     ) -> None:
         """Tests the menu with sub menus by name."""
-        element = test_application.main_window.find_first_child(condition=condition_factory.menu()).as_menu()
-        edit = element.get_item_by_name("Edit")
+        edit = menu.get_item_by_name("Edit")
         assert edit is not None, "Edit menu item not found"
         print(edit.properties.name.value)
         assert edit.properties.name.value == "Edit", "Edit menu item name does not match"
@@ -132,14 +127,13 @@ class TestMenu:
         assert fancy is not None, "Fancy menu item not found"
         assert fancy.properties.name.value == "Fancy", "Fancy menu item name does not match"
 
-    @pytest.mark.xfail(
-        condition=lambda request: request.getfixturevalue("test_application_type") == "WinForms",  # type: ignore
-        reason="UI Automation currently does not support Toggle pattern on menu items in WinForms applications.",
-    )
-    def test_checked_menu_item(self, test_application: WinFormsApplicationElements | WPFApplicationElements) -> None:
+    def test_checked_menu_item(self, menu: Menu, test_application_type: str) -> None:
         """Tests the checked menu item."""
-        element = test_application.main_window.find_first_child(condition=test_application._cf.menu()).as_menu()
-        edit = element.get_item_by_name("Edit")
+        if test_application_type == "WinForms":
+            pytest.skip(
+                "UI Automation currently does not support Toggle pattern on menu items in WinForms applications."
+            )
+        edit = menu.get_item_by_name("Edit")
         assert edit is not None, "Edit menu item not found"
         show_label = edit.get_item_by_name("Show Label")
         assert show_label is not None, "Show Label menu item not found"
@@ -148,3 +142,12 @@ class TestMenu:
         assert show_label == HasAttributes(is_checked=IsFalseLike), "Show Label menu item is not checked"
         show_label.is_checked = True
         assert show_label == HasAttributes(is_checked=IsTrueLike), "Show Label menu item is checked"
+
+    @pytest.fixture(name="menu")
+    def get_application_menu(
+        self,
+        test_application: WinFormsApplicationElements | WPFApplicationElements,
+        condition_factory: ConditionFactory,
+    ) -> Generator[Menu, Any, None]:
+        yield test_application.main_window.find_first_child(condition=condition_factory.menu()).as_menu()
+        test_application.status_bar.click()

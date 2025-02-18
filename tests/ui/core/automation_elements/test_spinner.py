@@ -1,6 +1,9 @@
 """Tests for the Spinner control."""
 
+from typing import Any, Generator
+
 from dirty_equals import HasAttributes
+from flaui.core.automation_elements import Spinner
 from flaui.lib.enums import UIAutomationTypes
 import pytest
 
@@ -12,17 +15,24 @@ from tests.test_utilities.elements.wpf_application.base import WPFApplicationEle
 class TestSpinner:
     """Tests for Spinner control."""
 
-    def test_set_value(
+    @pytest.fixture(name="spinner")
+    def get_spinner(
         self,
         test_application: WinFormsApplicationElements | WPFApplicationElements,
         ui_automation_type: UIAutomationTypes,
         test_application_type: str,
-    ) -> None:
-        """Tests the value setting on Spinner control."""
+    ) -> Generator[Spinner, Any, None]:
+        """Returns the spinner element.
+
+        :param test_application: Test application elements.
+        :return: Test spinner element.
+        """
         if not (ui_automation_type == UIAutomationTypes.UIA3 and test_application_type == "WinForms"):
             pytest.skip("Only runs for UIA3 + WinForms")
+        yield test_application.simple_controls_tab.spinner  # type: ignore
 
-        spinner = test_application.simple_controls_tab.spinner
+    def test_set_value(self, spinner: Spinner) -> None:
+        """Tests the value setting on Spinner control."""
         for value_to_set in [6.0, 4.0]:
             spinner.value = value_to_set
             assert spinner == HasAttributes(value=value_to_set), "Set value is not correct."
@@ -32,34 +42,16 @@ class TestSpinner:
         if not (ui_automation_type == UIAutomationTypes.UIA3 and test_application_type == "WinForms"):
             pytest.skip("Only runs for UIA3 + WinForms")
 
-    def test_increment(
-        self,
-        test_application: WinFormsApplicationElements | WPFApplicationElements,
-        ui_automation_type: UIAutomationTypes,
-        test_application_type: str,
-    ) -> None:
+    def test_increment(self, spinner: Spinner) -> None:
         """Tests incremental increase of Spinner controls"""
-        if not (ui_automation_type == UIAutomationTypes.UIA3 and test_application_type == "WinForms"):
-            pytest.skip("Only runs for UIA3 + WinForms")
-
-        spinner = test_application.simple_controls_tab.spinner
         value_to_set = 5.0
         spinner.value = value_to_set
         assert spinner == HasAttributes(value=value_to_set), "Set value is not correct."
         spinner.increment()
         assert spinner == HasAttributes(value=value_to_set + 1), "Set value is not correct post increment."
 
-    def test_decrement(
-        self,
-        test_application: WinFormsApplicationElements | WPFApplicationElements,
-        ui_automation_type: UIAutomationTypes,
-        test_application_type: str,
-    ) -> None:
+    def test_decrement(self, spinner: Spinner) -> None:
         """Tests incremental decrease of Spinner controls"""
-        if not (ui_automation_type == UIAutomationTypes.UIA3 and test_application_type == "WinForms"):
-            pytest.skip("Only runs for UIA3 + WinForms")
-
-        spinner = test_application.simple_controls_tab.spinner
         value_to_set = 5.0
         spinner.value = value_to_set
         assert spinner == HasAttributes(value=value_to_set), "Set value is not correct."

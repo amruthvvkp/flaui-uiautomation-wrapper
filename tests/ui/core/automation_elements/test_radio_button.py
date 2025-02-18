@@ -1,6 +1,10 @@
 """Tests for the Radio Button control."""
 
+from typing import Any, Generator
+
 from dirty_equals import HasAttributes, IsFalseLike
+from flaui.core.automation_elements import RadioButton
+import pytest
 
 from tests.test_utilities.elements.winforms_application.base import WinFormsApplicationElements
 from tests.test_utilities.elements.wpf_application.base import WPFApplicationElements
@@ -9,22 +13,36 @@ from tests.test_utilities.elements.wpf_application.base import WPFApplicationEle
 class TestRadioButton:
     """Tests for RadioButton control."""
 
-    def test_select_single_radio_button(
+    @pytest.fixture(name="radio_button_1")
+    def get_radio_button_1(
         self, test_application: WinFormsApplicationElements | WPFApplicationElements
-    ) -> None:
+    ) -> Generator[RadioButton, Any, None]:
+        """Returns the radio button 1 element.
+
+        :param test_application: Test application elements.
+        :yield: Test radio button 1 element.
+        """
+        yield test_application.simple_controls_tab.radio_button_1
+
+    @pytest.fixture(name="radio_button_2")
+    def get_radio_button_2(
+        self, test_application: WinFormsApplicationElements | WPFApplicationElements
+    ) -> Generator[RadioButton, Any, None]:
+        """Returns the radio button 2 element.
+
+        :param test_application: Test application elements.
+        :yield: Test radio button 2 element.
+        """
+        yield test_application.simple_controls_tab.radio_button_2
+
+    def test_select_single_radio_button(self, radio_button_1: RadioButton) -> None:
         """Tests the select single radio button."""
-        element = test_application.simple_controls_tab.radio_button_1
-        assert element == HasAttributes(is_checked=IsFalseLike), "Radio button should not be checked."
-        element.is_checked = True
-        assert element == HasAttributes(is_checked=True), "Radio button should be checked."
+        assert radio_button_1 == HasAttributes(is_checked=IsFalseLike), "Radio button should not be checked."
+        radio_button_1.is_checked = True
+        assert radio_button_1 == HasAttributes(is_checked=True), "Radio button should be checked."
 
-    def test_select_radio_button_group(
-        self, test_application: WinFormsApplicationElements | WPFApplicationElements
-    ) -> None:
+    def test_select_radio_button_group(self, radio_button_1: RadioButton, radio_button_2: RadioButton) -> None:
         """Tests the select radio button group."""
-        radio_button_1 = test_application.simple_controls_tab.radio_button_1
-        radio_button_2 = test_application.simple_controls_tab.radio_button_2
-
         assert radio_button_2 == HasAttributes(is_checked=IsFalseLike), "Radio button 2 should not be checked."
 
         radio_button_1.is_checked = True

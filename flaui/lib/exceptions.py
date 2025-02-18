@@ -16,6 +16,7 @@ from FlaUI.Core.Exceptions import (  # type: ignore
     PropertyNotSupportedException as CSharpPropertyNotSupportedException,
     ProxyAssemblyNotLoadedException as CSharpProxyAssemblyNotLoadedException,
 )
+import System  # type: ignore
 
 
 def handle_csharp_exceptions(
@@ -42,38 +43,40 @@ def handle_csharp_exceptions(
     def wrapper(*args, **kwargs) -> Any:
         try:
             return func(*args, **kwargs)
-        except CSharpProxyAssemblyNotLoadedException:
+        except CSharpProxyAssemblyNotLoadedException as e:
             raise ProxyAssemblyNotLoadedException(
-                f"The property or method '{func.__name__}' caused a ProxyAssemblyNotLoadedException."
+                f"The property or method '{func.__name__}' caused a ProxyAssemblyNotLoadedException: {e}"
             )
-        except CSharpPropertyNotSupportedException:
-            raise PropertyNotSupportedException(f"The property or method '{func.__name__}' is not supported.")
-        except CSharpPropertyNotCachedException:
-            raise PropertyNotCachedException(f"The property or method '{func.__name__}' is not cached.")
-        except CSharpNotSupportedException:
-            raise NotSupportedException(f"The property or method '{func.__name__}' is not supported.")
-        except CSharpNotSupportedByFrameworkException:
+        except CSharpPropertyNotSupportedException as e:
+            raise PropertyNotSupportedException(f"The property or method '{func.__name__}' is not supported: {e}")
+        except CSharpPropertyNotCachedException as e:
+            raise PropertyNotCachedException(f"The property or method '{func.__name__}' is not cached: {e}")
+        except CSharpNotSupportedException as e:
+            raise NotSupportedException(f"The property or method '{func.__name__}' is not supported: {e}")
+        except CSharpNotSupportedByFrameworkException as e:
             raise NotSupportedByFrameworkException(
-                f"The property or method '{func.__name__}' is not supported by the framework."
+                f"The property or method '{func.__name__}' is not supported by the framework: {e}"
             )
         except CSharpNotCachedException:
             raise NotCachedException(f"The property or method '{func.__name__}' is not cached.")
-        except CSharpNoClickablePointException:
+        except CSharpNoClickablePointException as e:
             raise NoClickablePointException(
-                f"The property or method '{func.__name__}' caused a NoClickablePointException."
+                f"The property or method '{func.__name__}' caused a NoClickablePointException: {e}"
             )
-        except CSharpMethodNotSupportedException:
-            raise MethodNotSupportedException(f"The property or method '{func.__name__}' is not supported.")
-        except CSharpFlaUIException:
-            raise FlaUIException(f"The property or method '{func.__name__}' caused a FlaUIException.")
-        except CSharpElementNotEnabledException:
+        except CSharpMethodNotSupportedException as e:
+            raise MethodNotSupportedException(f"The property or method '{func.__name__}' is not supported.: {e}")
+        except CSharpFlaUIException as e:
+            raise FlaUIException(f"The property or method '{func.__name__}' caused a FlaUIException: {e}")
+        except CSharpElementNotEnabledException as e:
             raise ElementNotEnabledException(
-                f"The property or method '{func.__name__}' caused an ElementNotEnabledException."
+                f"The property or method '{func.__name__}' caused an ElementNotEnabledException: {e}"
             )
-        except CSharpElementNotAvailableException:
+        except CSharpElementNotAvailableException as e:
             raise ElementNotAvailableException(
-                f"The property or method '{func.__name__}' caused an ElementNotAvailableException."
+                f"The property or method '{func.__name__}' caused an ElementNotAvailableException: {e}"
             )
+        except System.Exception as e:
+            raise SystemException(f"The property or method '{func.__name__}' caused an exception: {e}")
 
     return wrapper
 
@@ -170,5 +173,13 @@ class ElementNotFound(Exception):
     """Exception raised when an automation element is not found."""
 
     def __init__(self, message="Element not found") -> None:
+        self.message = message
+        super().__init__(self.message)
+
+
+class SystemException(Exception):
+    """Exception raised when an C# system exception is raised."""
+
+    def __init__(self, message="System exception") -> None:
         self.message = message
         super().__init__(self.message)

@@ -8,19 +8,23 @@ import pytest
 from tests.test_utilities.elements.winforms_application.base import WinFormsApplicationElements
 from tests.test_utilities.elements.wpf_application.base import WPFApplicationElements
 
-
 # UIA3 WinForms test is Broken in newer .NET Versions
 # TODO: Somehow the context menu of Winforms isn't getting captured, fix it and run this test
-@pytest.mark.xfail(
-    condition=lambda request: request.getfixturevalue("ui_automation_type") == UIAutomationTypes.UIA3
-    and request.getfixturevalue("test_application_type") == "WinForms",  # type: ignore
-    reason="Fails on UIA2 WinForms/WPF and UIA3 WinForms",
-)
+
+
 class TestWindow:
     """Tests for Window control."""
 
-    def test_context_menu(self, test_application: WinFormsApplicationElements | WPFApplicationElements) -> None:
+    def test_context_menu(
+        self,
+        test_application: WinFormsApplicationElements | WPFApplicationElements,
+        ui_automation_type: UIAutomationTypes,
+        test_application_type: str,
+    ) -> None:
         """Tests Context Menu of Window controls"""
+        if ui_automation_type == UIAutomationTypes.UIA3 and test_application_type == "WinForms":
+            pytest.skip("Context menu of WinForms is not working with UIA3 on newer .NET versions")
+
         button = test_application.simple_controls_tab.context_menu_button
         Mouse.click(button.get_clickable_point(), mouse_button=MouseButton.Right)
         Wait.until_input_is_processed()

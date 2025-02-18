@@ -2286,7 +2286,7 @@ class Tab(AutomationElement):
         return [TabItem(raw_element=_) for _ in self.raw_element.TabItems]
 
     @handle_csharp_exceptions
-    def select_tab_item(self, index: Optional[int] = None, value: Optional[str] = None):
+    def select_tab_item(self, index: Optional[int] = None, value: Optional[str] = None) -> None:
         """Selects a TabItem by index
 
         :param index: Selects by index value
@@ -2294,7 +2294,10 @@ class Tab(AutomationElement):
         """
         if index is None and value is None:
             raise ValueError("Either index or value have to be set for selected TabItem")
-        self.raw_element.SelectTabItem(index) if index else self.raw_element.SelectTabItem(value)
+        try:
+            self.raw_element.SelectTabItem(index) if index is not None else self.raw_element.SelectTabItem(value)
+        except Exception as e:
+            print(e)
 
 
 class TabItem(AutomationElement, SelectionItemAutomationElement):

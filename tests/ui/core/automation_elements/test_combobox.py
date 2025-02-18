@@ -1,5 +1,7 @@
 """Tests for Combobox automation element."""
 
+from typing import Any, Generator
+
 from dirty_equals import HasAttributes, IsFalseLike
 from flaui.core.automation_elements import ComboBox
 from flaui.core.definitions import ExpandCollapseState
@@ -16,31 +18,55 @@ from tests.test_utilities.elements.wpf_application.base import WPFApplicationEle
 class TestComboBoxElements:
     """Tests for the Combobox class."""
 
-    def test_selected_item(self, test_application: WinFormsApplicationElements | WPFApplicationElements) -> None:
+    @pytest.fixture
+    def skip_winforms(self, test_application_type: str) -> None:
+        """Skip WinForms tests."""
+        if test_application_type == "WinForms":
+            pytest.skip("Combobox got heavily broken with UIA2/UIA3 Winforms due to bugs in Windows/.Net")
+
+    @pytest.fixture(name="editable_combo_box")
+    def get_editable_combobox_control(
+        self, test_application: WinFormsApplicationElements | WPFApplicationElements, skip_winforms: None
+    ) -> Generator[ComboBox, Any, None]:
+        """Returns the editable combobox element.
+
+        :param test_application: Test application elements.
+        :yield: Editable combobox element.
+        """
+        yield test_application.simple_controls_tab.editable_combo_box
+
+    @pytest.fixture(name="non_editable_combo_box")
+    def get_non_editable_combobox_control(
+        self, test_application: WinFormsApplicationElements | WPFApplicationElements, skip_winforms: None
+    ) -> Generator[ComboBox, Any, None]:
+        """Returns the non editable combobox element.
+
+        :param test_application: Test application elements.
+        :yield: Non editable combobox element.
+        """
+        yield test_application.simple_controls_tab.non_editable_combo_box
+
+    def test_selected_item(self, editable_combo_box: ComboBox, non_editable_combo_box: ComboBox) -> None:
         """Tests the selected item property."""
-        for element_type in ["editable_combo_box", "non_editable_combo_box"]:
-            combobox: ComboBox = getattr(test_application.simple_controls_tab, element_type)
+        for combobox in [editable_combo_box, non_editable_combo_box]:
             combobox.items[1].select()
             assert combobox.selected_item == HasAttributes(text="Item 2"), "Selected item text is not correct."
 
-    def test_select_by_index(self, test_application: WinFormsApplicationElements | WPFApplicationElements) -> None:
+    def test_select_by_index(self, editable_combo_box: ComboBox, non_editable_combo_box: ComboBox) -> None:
         """Tests the select by index method."""
-        for element_type in ["editable_combo_box", "non_editable_combo_box"]:
-            combobox: ComboBox = getattr(test_application.simple_controls_tab, element_type)
+        for combobox in [editable_combo_box, non_editable_combo_box]:
             combobox.select(1)
             assert combobox.selected_item == HasAttributes(text="Item 2"), "Selected item text is not correct."
 
-    def test_select_by_text(self, test_application: WinFormsApplicationElements | WPFApplicationElements) -> None:
+    def test_select_by_text(self, editable_combo_box: ComboBox, non_editable_combo_box: ComboBox) -> None:
         """Tests the select by text method."""
-        for element_type in ["editable_combo_box", "non_editable_combo_box"]:
-            combobox: ComboBox = getattr(test_application.simple_controls_tab, element_type)
+        for combobox in [editable_combo_box, non_editable_combo_box]:
             combobox.select("Item 2")
             assert combobox.selected_item == HasAttributes(text="Item 2"), "Selected item text is not correct."
 
-    def test_expand_collapse(self, test_application: WinFormsApplicationElements | WPFApplicationElements) -> None:
+    def test_expand_collapse(self, editable_combo_box: ComboBox, non_editable_combo_box: ComboBox) -> None:
         """Tests the expand and collapse methods."""
-        for element_type in ["editable_combo_box", "non_editable_combo_box"]:
-            combobox: ComboBox = getattr(test_application.simple_controls_tab, element_type)
+        for combobox in [editable_combo_box, non_editable_combo_box]:
             combobox.expand()
             assert combobox == HasAttributes(expand_collapse_state=ExpandCollapseState.Expanded), (
                 "Combobox not expanded."
@@ -50,21 +76,17 @@ class TestComboBoxElements:
                 "Combobox not collapsed."
             )
 
-    def test_editable_text(self, test_application: WinFormsApplicationElements | WPFApplicationElements) -> None:
+    def test_editable_text(self, editable_combo_box: ComboBox) -> None:
         """Tests the editable text property.
 
         :param wpf_elements: The WPF application element map.
         """
-        combobox: ComboBox = test_application.simple_controls_tab.editable_combo_box
-        assert combobox == HasAttributes(editable_text="Item 3")
-        assert combobox.selected_item == HasAttributes(text="Item 3")
+        assert editable_combo_box == HasAttributes(editable_text="Item 3")
+        assert editable_combo_box.selected_item == HasAttributes(text="Item 3")
 
-    def test_combo_box_item_is_not_offscreen(
-        self, test_application: WinFormsApplicationElements | WPFApplicationElements
-    ) -> None:
+    def test_combo_box_item_is_not_offscreen(self, non_editable_combo_box: ComboBox) -> None:
         """Tests the combo box item is not offscreen property.
 
         :param wpf_elements: The WPF application element map.
         """
-        combobox: ComboBox = test_application.simple_controls_tab.non_editable_combo_box
-        assert combobox == HasAttributes(is_offscreen=IsFalseLike), "Combobox item is offscreen."
+        assert non_editable_combo_box == HasAttributes(is_offscreen=IsFalseLike), "Combobox item is offscreen."

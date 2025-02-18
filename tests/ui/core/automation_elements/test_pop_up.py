@@ -1,6 +1,9 @@
 """Tests for the PopUp control."""
 
+from typing import Any, Generator
+
 from dirty_equals import HasAttributes, HasLen, IsList
+from flaui.core.automation_elements import Button
 from flaui.core.input import Wait
 import pytest
 
@@ -8,17 +11,34 @@ from tests.test_utilities.elements.winforms_application.base import WinFormsAppl
 from tests.test_utilities.elements.wpf_application.base import WPFApplicationElements
 
 
-@pytest.mark.xfail(
-    condition=lambda request: request.getfixturevalue("test_application_type") == "WinForms",  # type: ignore
-    reason="UI Automation currently does not support Toggle pattern on menu items in WinForms applications.",
-)
 class TestPopUp:
     """Tests for the PopUp control."""
 
-    def test_check_box_in_popup(self, test_application: WinFormsApplicationElements | WPFApplicationElements) -> None:
+    @pytest.fixture
+    def skip_winforms(self, test_application_type: str) -> None:
+        """Skip WinForms tests."""
+        if test_application_type == "WinForms":
+            pytest.skip("Combobox got heavily broken with UIA2/UIA3 Winforms due to bugs in Windows/.Net")
+
+    @pytest.fixture(name="popup_toggle_button1")
+    def get_popup_toggle_button1(
+        self, test_application: WinFormsApplicationElements | WPFApplicationElements, skip_winforms: None
+    ) -> Generator[Button, Any, None]:
+        """Returns the first pop up toggle button element."""
+        yield test_application.simple_controls_tab.popup_toggle_button1
+
+    @pytest.fixture(name="popup_toggle_button2")
+    def get_popup_toggle_button2(
+        self, test_application: WinFormsApplicationElements | WPFApplicationElements, skip_winforms: None
+    ) -> Generator[Button, Any, None]:
+        """Returns the second pop up toggle button element."""
+        yield test_application.simple_controls_tab.popup_toggle_button2
+
+    def test_check_box_in_popup(
+        self, test_application: WinFormsApplicationElements | WPFApplicationElements, popup_toggle_button1: Button
+    ) -> None:
         """Tests the check box in the pop up."""
-        element = test_application.simple_controls_tab.popup_toggle_button1
-        element.click()
+        popup_toggle_button1.click()
         Wait.until_input_is_processed()
         popup = test_application.main_window.popup
         assert popup is not None, "Popup should be visible"
@@ -28,10 +48,11 @@ class TestPopUp:
             "Popup should have a check box"
         )
 
-    def test_menu_in_popup(self, test_application: WinFormsApplicationElements | WPFApplicationElements) -> None:
+    def test_menu_in_popup(
+        self, test_application: WinFormsApplicationElements | WPFApplicationElements, popup_toggle_button2: Button
+    ) -> None:
         """Tests the menu in the pop up."""
-        element = test_application.simple_controls_tab.popup_toggle_button2
-        element.click()
+        popup_toggle_button2.click()
         Wait.until_input_is_processed()
         popup = test_application.main_window.popup
         assert popup is not None, "Popup should be visible"

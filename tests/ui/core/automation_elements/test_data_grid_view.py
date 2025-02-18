@@ -1,6 +1,9 @@
 """Tests the data grid view element."""
 
+from typing import Any, Generator
+
 from dirty_equals import HasAttributes, HasLen, IsList
+from flaui.core.automation_elements import DataGridView
 from flaui.lib.enums import UIAutomationTypes
 import pytest
 
@@ -8,17 +11,29 @@ from tests.test_utilities.elements.winforms_application.base import WinFormsAppl
 from tests.test_utilities.elements.wpf_application.base import WPFApplicationElements
 
 
-@pytest.mark.xfail(
-    condition=lambda request: request.getfixturevalue("ui_automation_type") == UIAutomationTypes.UIA2
-    and request.getfixturevalue("test_application_type") == "WPF",  # type: ignore
-    reason="Fails on UIA2 WPF applications.",
-)
 class TestDataGridView:
     """Tests for the Data Grid View element."""
 
-    def test_header_and_columns(self, test_application: WinFormsApplicationElements | WPFApplicationElements) -> None:
+    @pytest.fixture(name="data_grid_view")
+    def get_data_grid_view(
+        self,
+        test_application: WinFormsApplicationElements | WPFApplicationElements,
+        ui_automation_type: UIAutomationTypes,
+        test_application_type: str,
+    ) -> Generator[DataGridView, Any, None]:
+        """Returns the data grid view element.
+
+        :param test_application: Test application elements.
+        :param ui_automation_type: UI automation type.
+        :param test_application_type: Test application type.
+        :yield: Data grid view element.
+        """
+        if test_application_type == "WPF" and ui_automation_type == UIAutomationTypes.UIA2:
+            pytest.skip("Fails on UIA2 WPF applications.")
+        yield test_application.complex_controls_tab.data_grid_view
+
+    def test_header_and_columns(self, data_grid_view: DataGridView) -> None:
         """Tests the header and columns property."""
-        data_grid_view = test_application.complex_controls_tab.data_grid_view
         header = data_grid_view.header
         columns = header.columns
         assert header is not None, "Header should not be None."
@@ -31,10 +46,9 @@ class TestDataGridView:
             length=3,
         )
 
-    def test_rows_and_cells(self, test_application: WinFormsApplicationElements | WPFApplicationElements) -> None:
+    def test_rows_and_cells(self, data_grid_view: DataGridView) -> None:
         """Tests the rows and cells property."""
-        grid = test_application.complex_controls_tab.data_grid_view
-        rows = grid.rows
+        rows = data_grid_view.rows
         assert rows == HasLen(3), "Rows should have a length of 3."
 
         # There is an empty row on the application which we need to remove for the test to work through

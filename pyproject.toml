@@ -74,6 +74,7 @@ unit-test = [
 [project.optional-dependencies]
 pytest-sugar = ["pytest-sugar>=1.0.0"]
 coverage = ["coverage>=7.6.1"]
+pytest-html = ["pytest-html>=4.1.1"]
 
 [tool.uv.sources]
 flaui = { path = "./flaui" }

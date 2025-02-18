@@ -1,8 +1,11 @@
 """Tests for the Slider control."""
 
+from typing import Any, Generator
+
 from dirty_equals import IsApprox, IsInt
 from flaui.core.automation_elements import Slider
 from flaui.lib.system.drawing import Point
+import pytest
 
 from tests.test_utilities.elements.winforms_application.base import WinFormsApplicationElements
 from tests.test_utilities.elements.wpf_application.base import WPFApplicationElements
@@ -11,9 +14,19 @@ from tests.test_utilities.elements.wpf_application.base import WPFApplicationEle
 class TestSlider:
     """Tests for Slider control."""
 
-    def test_slider_thumb(self, test_application: WinFormsApplicationElements | WPFApplicationElements) -> None:
+    @pytest.fixture()
+    def get_slider(
+        self, test_application: WinFormsApplicationElements | WPFApplicationElements
+    ) -> Generator[Slider, Any, None]:
+        """Returns the slider element.
+
+        :param test_application: Test application elements.
+        :return: Test slider element.
+        """
+        yield test_application.simple_controls_tab.slider
+
+    def test_slider_thumb(self, slider: Slider) -> None:
         """Tests slider thumb control."""
-        slider = test_application.simple_controls_tab.slider
         thumb = slider.thumb
         old_position: Point = thumb.properties.bounding_rectangle.value.center()  # type: ignore
         thumb.slide_horizontally(50)
@@ -27,10 +40,9 @@ class TestSlider:
         assert new_x == IsApprox((old_x + 50), delta=1), "Thumb did not move horizontally by 50 pixels."
         assert new_y == IsInt(exactly=old_y), "Thumb moved vertically."
 
-    def test_set_value(self, test_application: WinFormsApplicationElements | WPFApplicationElements) -> None:
+    def test_set_value(self, slider: Slider) -> None:
         """Tests setting value to the slider control"""
-        slider = test_application.simple_controls_tab.slider
-        self.reset_to_center(slider)
+
         assert slider.value == IsApprox(self.adjust_number_if_only_value(slider, 5), delta=0.1), (
             "Slider value is not 5."
         )
@@ -38,37 +50,33 @@ class TestSlider:
         slider.value = adjusted_value
         assert slider.value == IsApprox(adjusted_value, delta=0.1), "Slider value is not 4."
 
-    def test_small_increment(self, test_application: WinFormsApplicationElements | WPFApplicationElements) -> None:
+    def test_small_increment(self, slider: Slider) -> None:
         """Tests small increments to the slider control value"""
-        slider = test_application.simple_controls_tab.slider
-        self.reset_to_center(slider)
+
         slider.small_increment()
         assert slider.value == IsApprox(self.adjust_number_if_only_value(slider, 6), delta=0.1), (
             "Slider value is not 6."
         )
 
-    def test_small_decrement(self, test_application: WinFormsApplicationElements | WPFApplicationElements) -> None:
+    def test_small_decrement(self, slider: Slider) -> None:
         """Tests small decrements to the slider control value"""
-        slider = test_application.simple_controls_tab.slider
-        self.reset_to_center(slider)
+
         slider.small_decrement()
         assert slider.value == IsApprox(self.adjust_number_if_only_value(slider, 4), delta=0.1), (
             "Slider value is not 4."
         )
 
-    def test_large_increment(self, test_application: WinFormsApplicationElements | WPFApplicationElements) -> None:
+    def test_large_increment(self, slider: Slider) -> None:
         """Tests large increments to the slider control value"""
-        slider = test_application.simple_controls_tab.slider
-        self.reset_to_center(slider)
+
         slider.large_increment()
         assert slider.value == IsApprox(self.adjust_number_if_only_value(slider, 9), delta=0.1), (
             "Slider value is not 9."
         )
 
-    def test_large_decrement(self, test_application: WinFormsApplicationElements | WPFApplicationElements) -> None:
+    def test_large_decrement(self, slider: Slider) -> None:
         """Tests large decrements to the slider control value"""
-        slider = test_application.simple_controls_tab.slider
-        self.reset_to_center(slider)
+
         slider.large_decrement()
         assert slider.value == IsApprox(self.adjust_number_if_only_value(slider, 1), delta=0.1), (
             "Slider value is not 1."
@@ -85,9 +93,12 @@ class TestSlider:
         """
         return float(number * 10) if slider.is_only_value else float(number)
 
-    def reset_to_center(self, slider: Slider) -> None:
+    @pytest.fixture(scope="function", name="slider")
+    def reset_to_center(self, get_slider: Slider) -> Generator[Slider, Any, None]:
         """Resets slider to center
 
         :param slider: Slider control
+        :return: Slider control
         """
-        slider.value = self.adjust_number_if_only_value(slider, 5)
+        get_slider.value = self.adjust_number_if_only_value(get_slider, 5)
+        yield get_slider

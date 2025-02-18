@@ -36,7 +36,7 @@ class SimpleControlsElements(AbtstractControlCollection):
         :return: The Simple Controls element.
         """
         if self.tab.selected_tab_item_index != ApplicationTabIndex.SIMPLE_CONTROLS.value:
-            self.tab.select_tab_item(ApplicationTabIndex.SIMPLE_CONTROLS.value)
+            self.tab.select_tab_item(index=ApplicationTabIndex.SIMPLE_CONTROLS.value)
             Wait.until_input_is_processed()
         return self.tab.tab_items[ApplicationTabIndex.SIMPLE_CONTROLS.value]
 

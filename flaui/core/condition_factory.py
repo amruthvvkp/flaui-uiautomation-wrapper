@@ -40,7 +40,11 @@ class PropertyCondition(BaseModel):
         :param new_condition: New condition
         :return: PropertyCondition
         """
-        return PropertyCondition(cs_condition=self.cs_condition.And(new_condition.cs_condition))
+        return PropertyCondition(
+            cs_condition=self.cs_condition.And(
+                new_condition.cs_condition if isinstance(new_condition, PropertyCondition) else new_condition
+            )
+        )
 
     def Equals(self, value: PropertyCondition) -> bool:
         """Compares the value to another value
@@ -56,7 +60,11 @@ class PropertyCondition(BaseModel):
         :param new_condition: New condition
         :return: PropertyCondition
         """
-        return PropertyCondition(cs_condition=self.cs_condition.Not(new_condition.cs_condition))
+        return PropertyCondition(
+            cs_condition=self.cs_condition.Not(
+                new_condition.cs_condition if isinstance(new_condition, PropertyCondition) else new_condition
+            )
+        )
 
     def Or(self, new_condition: PropertyCondition) -> PropertyCondition:
         """Packs this condition into a not condition.
@@ -64,7 +72,11 @@ class PropertyCondition(BaseModel):
         :param new_condition: New condition
         :return: PropertyCondition
         """
-        return PropertyCondition(cs_condition=self.cs_condition.Or(new_condition.cs_condition))
+        return PropertyCondition(
+            cs_condition=self.cs_condition.Or(
+                new_condition.cs_condition if isinstance(new_condition, PropertyCondition) else new_condition
+            )
+        )
 
     @property
     def Property(self) -> Any:

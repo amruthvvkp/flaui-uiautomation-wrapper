@@ -1,6 +1,9 @@
 """Tests for the Tree control."""
 
+from typing import Any, Generator
+
 from dirty_equals import HasAttributes, HasLen
+from flaui.core.automation_elements import Tree
 from flaui.lib.exceptions import ElementNotFound
 import pytest
 
@@ -11,14 +14,24 @@ from tests.test_utilities.elements.wpf_application.base import WPFApplicationEle
 class TestTree:
     """Tests for Tree control."""
 
-    def test_selection(self, test_application: WinFormsApplicationElements | WPFApplicationElements) -> None:
+    @pytest.fixture(name="tree_elements")
+    def get_tree_elements(
+        self, test_application: WinFormsApplicationElements | WPFApplicationElements
+    ) -> Generator[Tree, Any, None]:
+        """Returns the tree elements.
+
+        :param test_application: Test application elements.
+        :return: Test tree elements.
+        """
+        yield test_application.complex_controls_tab.tree_elements
+
+    def test_selection(self, tree_elements: Tree) -> None:
         """Tests Selection of Tree controls"""
-        tree = test_application.complex_controls_tab.tree_elements
         with pytest.raises(ElementNotFound):
-            _ = tree.selected_tree_item
-        assert tree == HasAttributes(items=HasLen(2)), "Tree should have 2 items."
-        tree.items[0].expand()
-        tree.items[0].items[1].expand()
-        tree.items[0].items[1].items[0].select()
-        assert tree.selected_tree_item is not None, "Tree should have a selected item."
-        assert tree.selected_tree_item == HasAttributes(text="Lvl3 a"), "Selected item should be 'Lvl3 a'."
+            _ = tree_elements.selected_tree_item
+        assert tree_elements == HasAttributes(items=HasLen(2)), "Tree should have 2 items."
+        tree_elements.items[0].expand()
+        tree_elements.items[0].items[1].expand()
+        tree_elements.items[0].items[1].items[0].select()
+        assert tree_elements.selected_tree_item is not None, "Tree should have a selected item."
+        assert tree_elements.selected_tree_item == HasAttributes(text="Lvl3 a"), "Selected item should be 'Lvl3 a'."

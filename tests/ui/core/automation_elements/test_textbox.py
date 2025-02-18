@@ -18,7 +18,7 @@ class TestTextbox:
     DEFAULT_TEXT_BOX_TEXT = "Test TextBox"
 
     @pytest.fixture(name="textbox")
-    def setup(
+    def get_textbox_element(
         self, test_application: WinFormsApplicationElements | WPFApplicationElements
     ) -> Generator[TextBox, Any, None]:
         textbox = test_application.simple_controls_tab.test_text_box
