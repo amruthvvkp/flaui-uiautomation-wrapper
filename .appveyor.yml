@@ -113,8 +113,8 @@ before_test:
   - ps: |
       cd "C:\projects\flaui-uiautomation-wrapper"
       $wheelPath = Get-ChildItem -Path "dist" -Filter "*.whl" | Select-Object -First 1
-      Write-Host "Installing Python package: $wheelPath..."
-      uv pip install $wheelPath.FullName
+      Write-Output "FlaUI Python Wheels Path: $wheelPath"
+      uv venv
 
 test_script:
   - ps: |
