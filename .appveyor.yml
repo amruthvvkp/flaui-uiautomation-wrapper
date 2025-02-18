@@ -64,8 +64,9 @@ init:
 install:
   - python --version
   - powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-  - echo %USERPROFILE%\.local\bin >> %PATH%
-  - powershell -c "Get-Command uv -ErrorAction SilentlyContinue"
+  - set PATH=C:\Users\appveyor\.local\bin;%PATH%
+  - powershell -c "Write-Output $env:PATH"
+  - uv --version || echo "uv is not installed!"
 
 before_build:
   - cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI
