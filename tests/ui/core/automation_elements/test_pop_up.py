@@ -1,4 +1,4 @@
-"""Tests for the PopUp control."""
+"""Tests for the PopUp control, equivalent of C# tests from FlaUI GitHub repository - src\\FlaUI.Core.UITests\\Elements\\PopupTests.cs."""
 
 from typing import Any, Generator
 

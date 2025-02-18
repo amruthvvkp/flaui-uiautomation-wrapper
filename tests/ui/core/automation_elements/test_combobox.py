@@ -1,4 +1,4 @@
-"""Tests for Combobox automation element."""
+"""Tests for Combobox automation element, equivalent of C# tests from FlaUI GitHub repository - src\\FlaUI.Core.UITests\\Elements\\ComboBoxTests.cs."""
 
 from typing import Any, Generator
 

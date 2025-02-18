@@ -1,4 +1,4 @@
-"""Tests the data grid view element."""
+"""Tests the data grid view element, equivalent of C# tests from FlaUI GitHub repository - src\\FlaUI.Core.UITests\\Elements\\DataGridViewTests.cs."""
 
 from typing import Any, Generator
 

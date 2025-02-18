@@ -1,4 +1,4 @@
-"""Tests for ProgressBar control."""
+"""Tests for ProgressBar control, equivalent of C# tests from FlaUI GitHub repository - src\\FlaUI.Core.UITests\\Elements\\ProgressBarTests.cs."""
 
 from typing import Any, Generator
 

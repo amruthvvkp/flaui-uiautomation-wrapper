@@ -1,4 +1,4 @@
-"""Tests for the Slider control."""
+"""Tests for the Slider control, equivalent of C# tests from FlaUI GitHub repository - src\\FlaUI.Core.UITests\\Elements\\SliderTests.cs."""
 
 from typing import Any, Generator
 

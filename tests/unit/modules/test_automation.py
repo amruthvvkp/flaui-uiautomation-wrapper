@@ -1,5 +1,7 @@
 """This module contains unit tests for the Automation module."""
 
+from typing import Any, Generator
+
 from FlaUI.Core import ITreeWalker  # pyright: ignore
 from flaui.core.condition_factory import ConditionFactory
 from flaui.lib.enums import UIAutomationTypes
@@ -9,7 +11,7 @@ import pytest
 
 
 @pytest.fixture
-def wordpad():
+def wordpad() -> Generator[Automation, Any, None]:
     """Generates FlaUI Automation class with the Wordpad application.
 
     :param ui_automation_type: UIAutomation type to use for the tests.
@@ -27,7 +29,7 @@ class TestAutomation:
     This class contains unit tests for the Automation module of FlaUI.
     """
 
-    def test_class_properties(self, wordpad: Automation):
+    def test_class_properties(self, wordpad: Automation) -> None:
         """
         This method tests the properties of the Automation class.
 

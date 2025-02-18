@@ -1,4 +1,4 @@
-"""Tests for the Grid control read as Table."""
+"""Tests for the Grid control read as Table, equivalent of C# tests from FlaUI GitHub repository - src\\FlaUI.Core.UITests\\Elements\\TableTests.cs."""
 
 from typing import Any, Generator
 

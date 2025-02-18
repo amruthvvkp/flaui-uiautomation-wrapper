@@ -1,4 +1,4 @@
-"""Tests for the Window control."""
+"""Tests for the Window control, equivalent of C# tests from FlaUI GitHub repository - src\\FlaUI.Core.UITests\\Elements\\WindowTests.cs."""
 
 from dirty_equals import HasAttributes, HasLen
 from flaui.core.input import Mouse, MouseButton, Wait

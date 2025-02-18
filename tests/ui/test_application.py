@@ -1,14 +1,14 @@
 """Covers tests listed under FlaUI GitHub repository - src\\FlaUI.Core.UITests\\ApplicationTests.cs"""
 
+from flaui.lib.enums import UIAutomationTypes
+from flaui.modules.automation import Automation
+import pytest
 
-# from flaui.modules.automation import Automation
-# TODO: Uncomment this test once System.Timespan is ready in FlaUI
-# def test_dispose_when_closed(ui_automation_type: UIAutomationTypes):
-#     """Tests that the application is disposed when closed.
-#     params: ui_automation_type (UIAutomationTypes): The UIAutomationType to use.
-#     """
-#     automation = Automation(ui_automation_type)
-#     application = automation.application
-#     application.launch("notepad.exe")
-#     # application.wait_while_main_handle_is_missing(10) # TODO: uncomment this after including System.TimeSpan in FlaUI
-#     application.close()
+
+@pytest.xfail(reason="Notepad is not a valid application for testing, it fails on Windows 11 at times.")
+def test_application() -> None:
+    """Tests the application module."""
+    app = Automation(UIAutomationTypes.UIA3)
+    app.application.launch("notepad.exe")
+    app.application.wait_while_main_handle_is_missing()
+    app.application.close()

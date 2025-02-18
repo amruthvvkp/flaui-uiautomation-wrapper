@@ -1,4 +1,4 @@
-"""Tests for the Textbox control."""
+"""Tests for the Textbox control, equivalent of C# tests from FlaUI GitHub repository - src\\FlaUI.Core.UITests\\Elements\\TextBoxTests.cs."""
 
 from typing import Any, Generator
 

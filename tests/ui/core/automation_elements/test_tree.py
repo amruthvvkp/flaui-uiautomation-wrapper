@@ -1,4 +1,4 @@
-"""Tests for the Tree control."""
+"""Tests for the Tree control, equivalent of C# tests from FlaUI GitHub repository - src\\FlaUI.Core.UITests\\Elements\\TreeTests.cs."""
 
 from typing import Any, Generator
 

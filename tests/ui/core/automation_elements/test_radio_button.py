@@ -1,4 +1,4 @@
-"""Tests for the Radio Button control."""
+"""Tests for the Radio Button control, equivalent of C# tests from FlaUI GitHub repository - src\\FlaUI.Core.UITests\\Elements\\RadioButtonTests.cs."""
 
 from typing import Any, Generator
 

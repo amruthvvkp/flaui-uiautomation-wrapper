@@ -1,3 +1,5 @@
+"""UIAutomation test fixtures."""
+
 import gc
 import time
 from typing import Any, Generator

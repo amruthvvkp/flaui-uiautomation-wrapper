@@ -1,4 +1,4 @@
-"""Tests for the ListBox control."""
+"""Tests for the ListBox control, equivalent of C# tests from FlaUI GitHub repository - src\\FlaUI.Core.UITests\\Elements\\ListBoxTests.cs."""
 
 from typing import Any, Generator
 

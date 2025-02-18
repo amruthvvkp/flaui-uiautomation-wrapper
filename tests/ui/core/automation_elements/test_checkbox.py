@@ -1,4 +1,4 @@
-"""Tests for the Checkbox class."""
+"""Tests for the Checkbox class, equivalent of C# tests from FlaUI GitHub repository - src\\FlaUI.Core.UITests\\Elements\\CheckBoxTests.cs."""
 
 from typing import Any, Generator
 

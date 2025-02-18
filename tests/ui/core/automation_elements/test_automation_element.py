@@ -1,4 +1,4 @@
-"""UI tests for the module automation_elements.py"""
+"""UI tests for the module automation_elements.py, equivalent of C# tests from FlaUI GitHub repository - src\\FlaUI.Core.UITests\\AutomationElementTests.cs."""
 
 from pathlib import Path
 from typing import Any, Generator

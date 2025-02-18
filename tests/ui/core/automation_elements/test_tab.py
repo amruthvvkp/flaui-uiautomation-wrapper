@@ -1,4 +1,4 @@
-"""Tests for the Tab control."""
+"""Tests for the Tab control, equivalent of C# tests from FlaUI GitHub repository - src\\FlaUI.Core.UITests\\Elements\\TabTests.cs."""
 
 from typing import Any, Generator
 

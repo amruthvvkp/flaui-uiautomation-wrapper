@@ -1,4 +1,4 @@
-"""Tests for the Spinner control."""
+"""Tests for the Spinner control, equivalent of C# tests from FlaUI GitHub repository - src\\FlaUI.Core.UITests\\Elements\\SpinnerTests.cs."""
 
 from typing import Any, Generator
 

@@ -1,4 +1,4 @@
-"""Tests for the date time picker control."""
+"""Tests for the date time picker control, equivalent of C# tests from FlaUI GitHub repository - src\\FlaUI.Core.UITests\\Elements\\DateTimePickerTests.cs."""
 
 from typing import Any, Generator
 

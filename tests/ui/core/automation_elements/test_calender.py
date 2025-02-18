@@ -1,4 +1,4 @@
-"""This tests the Calender element."""
+"""This tests the Calender element, equivalent of C# tests from FlaUI GitHub repository - src\\FlaUI.Core.UITests\\CalendarTests.cs"""
 
 from datetime import datetime
 from typing import Any, Generator

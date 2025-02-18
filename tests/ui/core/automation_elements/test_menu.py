@@ -1,4 +1,4 @@
-"""Tests for the Menu control."""
+"""Tests for the Menu control, equivalent of C# tests from FlaUI GitHub repository - src\\FlaUI.Core.UITests\\Elements\\MenuTests.cs."""
 
 from typing import Any, Dict, Generator, List
 
