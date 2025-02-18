@@ -1,6 +1,6 @@
 """This map is used to store the element locators for the WinForms application."""
 
-from flaui.core.automation_elements import Tab, Window
+from flaui.core.automation_elements import AutomationElement, Tab, Window
 from flaui.core.condition_factory import ConditionFactory
 from flaui.core.definitions import ControlType
 from pydantic_settings import BaseSettings
@@ -21,7 +21,7 @@ class WinFormsApplicationElements(BaseSettings):
     main_window: Window
 
     @property
-    def title_bar(self):
+    def title_bar(self) -> TitleBarElements:
         """Returns the title bar element.
 
         :return: The title bar element.
@@ -29,7 +29,7 @@ class WinFormsApplicationElements(BaseSettings):
         return TitleBarElements(main_window=self.main_window)
 
     @property
-    def menu(self):
+    def menu(self) -> MenuElements:
         """Returns the menu element.
 
         :return: The menu element.
@@ -45,7 +45,7 @@ class WinFormsApplicationElements(BaseSettings):
         return self.main_window.condition_factory
 
     @property
-    def status_bar(self):
+    def status_bar(self) -> AutomationElement:
         """Returns the status bar element.
 
         :return: The status bar element.
@@ -85,6 +85,6 @@ class WinFormsApplicationElements(BaseSettings):
         raise ValueError("Winforms application does not have More controls tab")
 
 
-def get_winforms_application_elements(main_window: Window):
+def get_winforms_application_elements(main_window: Window) -> WinFormsApplicationElements:
     """Returns the WinForms application element map."""
     return WinFormsApplicationElements(main_window=main_window)

@@ -94,9 +94,7 @@ class SimpleControlsElements(AbtstractControlCollection):
 
         :return: The Test CheckBox element.
         """
-        return self.parent_element.find_first_child(
-            condition=self._cf.by_automation_id("SimpleCheckBox")
-        ).as_check_box()
+        return self.parent_element.find_first_child(condition=self._cf.by_name("Test Checkbox")).as_check_box()
 
     @property
     def three_way_check_box(self) -> CheckBox:

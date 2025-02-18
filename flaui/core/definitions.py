@@ -1,16 +1,6 @@
 """
 This module contains wrapper classes for the C# namespace FlaUI.Core.Definitions.
-It defines several enums for different types of controls in Microsoft UI Automation.
-
-Enums:
-    - PropertyConditionFlags: Optional flags that are used when checking the property.
-    - ControlType: Types of controls in Microsoft UI Automation.
-    - ToggleState: Contains values that specify the toggle state of a Microsoft UI Automation element that implements the TogglePattern.
-    - ExpandCollapseState: Contains values that specify the expand/collapse state of a Microsoft UI Automation element that implements the ExpandCollapsePattern.
-    - RowOrColumnMajor: Contains values that specify the row/column major order of items in a container.
-This module contains wrapper classes for the C# namespace FlaUI.Core.Definitions.
-It defines several enums for different types of controls in Microsoft UI Automation.
-"""
+It defines several enums for different types of controls in Microsoft UI Automation."""
 
 from enum import Enum
 
@@ -21,13 +11,19 @@ from FlaUI.Core.Definitions import (  # pyright: ignore
     PropertyConditionFlags as CSPropertyConditionFlags,
     RowOrColumnMajor as CSRowOrColumnMajor,
     ToggleState as CSToggleState,
+    TreeScope as CSTreeScope,
+    TreeTraversalOptions as CSTreeTraversalOptions,
 )
+
 
 class PropertyConditionFlags(Enum):
     """Optional flags that are used when checking the property."""
-    none = getattr(CSPropertyConditionFlags, "None") # We need to use getattr here because Python.Net doesn't like the None value
-    ignore_case = CSPropertyConditionFlags.IgnoreCase
-    match_substring = CSPropertyConditionFlags.MatchSubstring
+
+    None_ = getattr(
+        CSPropertyConditionFlags, "None"
+    )  # We need to use getattr here because Python.Net doesn't like the None value
+    IgnoreCase = CSPropertyConditionFlags.IgnoreCase
+    MatchSubstring = CSPropertyConditionFlags.MatchSubstring
 
 
 class ControlType(Enum):
@@ -107,6 +103,7 @@ class ToggleState(Enum):
 
 class ExpandCollapseState(Enum):
     """Contains values that specify the expand/collapse state of a Microsoft UI Automation element that implements the ExpandCollapsePattern."""
+
     Collapsed = CSExpandCollapseState.Collapsed
     Expanded = CSExpandCollapseState.Expanded
     PartiallyExpanded = CSExpandCollapseState.PartiallyExpanded
@@ -115,6 +112,27 @@ class ExpandCollapseState(Enum):
 
 class RowOrColumnMajor(Enum):
     """Contains values that specify the row/column major order of items in a container."""
+
     RowMajor = CSRowOrColumnMajor.RowMajor
     ColumnMajor = CSRowOrColumnMajor.ColumnMajor
     Indeterminate = CSRowOrColumnMajor.Indeterminate
+
+
+class TreeScope(Enum):
+    """Contains values that specify the scope of various operations in the Microsoft UI Automation tree."""
+
+    None_ = getattr(CSTreeScope, "None")
+    Element = CSTreeScope.Element
+    Children = CSTreeScope.Children
+    Descendants = CSTreeScope.Descendants
+    Subtree = CSTreeScope.Subtree
+    Parent = CSTreeScope.Parent
+    Ancestors = CSTreeScope.Ancestors
+
+
+class TreeTraversalOptions(Enum):
+    """Contains values that specify the traversal options for the tree walker."""
+
+    Default = CSTreeTraversalOptions.Default
+    PostOrder = CSTreeTraversalOptions.PostOrder
+    LastToFirstOrder = CSTreeTraversalOptions.LastToFirstOrder

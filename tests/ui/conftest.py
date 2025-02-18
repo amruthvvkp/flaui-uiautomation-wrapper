@@ -1,44 +1,106 @@
+import time
 from typing import Any, Generator
 
 from flaui.lib.enums import UIAutomationTypes
-from flaui.modules.automation import Automation
+from loguru import logger
 import pytest
 
 from tests.test_utilities.base import FlaUITestBase
+from tests.test_utilities.elements.winforms_application.base import (
+    WinFormsApplicationElements,
+    get_winforms_application_elements,
+)
+from tests.test_utilities.elements.wpf_application.base import WPFApplicationElements, get_wpf_application_elements
 
 
 @pytest.fixture(
     scope="function",
     params=[
-        (UIAutomationTypes.UIA2, "WinForms"),
-        (UIAutomationTypes.UIA2, "WPF"),
-        (UIAutomationTypes.UIA3, "WinForms"),
-        (UIAutomationTypes.UIA3, "WPF"),
+        pytest.param((UIAutomationTypes.UIA2, "WinForms"), id="UIA2_WinForms"),
+        pytest.param((UIAutomationTypes.UIA2, "WPF"), id="UIA2_WPF"),
+        pytest.param((UIAutomationTypes.UIA3, "WinForms"), id="UIA3_WinForms"),
+        pytest.param((UIAutomationTypes.UIA3, "WPF"), id="UIA3_WPF"),
     ],
 )
-def ui_automation_test_app(request: pytest.FixtureRequest) -> Generator[Automation, Any, None]:
-    """Fixture to launch the test application for the UIAutomation tests.
+def setup_ui_testing_environment(request: pytest.FixtureRequest) -> Generator[FlaUITestBase, Any, None]:
+    """Fixture to launch the test application for the UIAutomation tests."""
+    ui_automation_type, test_application_type = request.param
 
-    :param request: Pytest request object.
+    test_base = FlaUITestBase(ui_automation_type, test_application_type)
+
+    try:
+        logger.info(f"Launching test application: {test_application_type} with {ui_automation_type}")
+        test_base.launch_test_app()
+
+        time.sleep(2)  # Give time for UI to initialize
+        assert test_base.automation.application, "Application did not start correctly!"
+
+        yield test_base
+    except Exception as e:
+        logger.error(f"Error launching test app: {e}")
+        pytest.exit("Test application failed to launch!")
+    finally:
+        test_base.close_test_app()
+
+
+@pytest.fixture(scope="function", name="test_application")
+def get_ui_test_application(
+    setup_ui_testing_environment: FlaUITestBase,
+) -> Generator[WinFormsApplicationElements | WPFApplicationElements, Any, None]:
+    """Fixture to get the test application for the UIAutomation tests.
+
+    :param setup_ui_testing_environment: Application object.
     :yield: Application object.
     """
-    ui_automation_type, app_type = request.param
-    test_base = FlaUITestBase(ui_automation_type, app_type)
-    yield test_base.automation
-    test_base.close_test_app()
+    application = setup_ui_testing_environment.automation.application
+    automation = setup_ui_testing_environment.automation.cs_automation
+    test_application_type = setup_ui_testing_environment.app_type
+    yield (
+        get_winforms_application_elements(application.get_main_window(automation))
+        if test_application_type == "WinForms"
+        else get_wpf_application_elements(application.get_main_window(automation))
+    )
 
 
-@pytest.fixture(scope="function")
-def restart_test_app(
-    request: pytest.FixtureRequest, ui_automation_test_app: Automation
-) -> Generator[Automation, Any, None]:
-    """Fixture to restart the test application for the UIAutomation tests.
+@pytest.fixture()
+def ui_automation_type(setup_ui_testing_environment: FlaUITestBase) -> Generator[UIAutomationTypes, None, None]:
+    """Fixture to get the UIAutomation type for the UIAutomation tests.
 
-    :param ui_automation_test_app: Application object.
-    :yield: Application object.
+    :param setup_ui_testing_environment: Application object.
+    :yield: UIAutomation type.
     """
-    ui_automation_type, app_type = request.param
-    test_base = FlaUITestBase(ui_automation_type, app_type)
-    test_base.restart_test_app()
-    yield test_base.automation
-    # tes
+    yield setup_ui_testing_environment.ui_automation_type
+
+
+@pytest.fixture()
+def test_application_type(setup_ui_testing_environment: FlaUITestBase) -> Generator[str, None, None]:
+    """Fixture to get the test application type for the UIAutomation tests.
+
+    :param setup_ui_testing_environment: Application object.
+    :yield: Test application type.
+    """
+    yield setup_ui_testing_environment.app_type
+
+
+@pytest.fixture()
+def condition_factory(test_application: WinFormsApplicationElements | WPFApplicationElements) -> Generator:
+    """Fixture to get the condition factory for the UIAutomation tests.
+
+    :param test_application: Application object.
+    :yield: Condition factory.
+    """
+    yield test_application._cf
+
+
+# @pytest.fixture(scope="function")
+# def restart_test_app(request: pytest.FixtureRequest, test_app: Automation) -> Generator[Automation, Any, None]:
+#     """Fixture to restart the test application for the UIAutomation tests.
+
+#     :param test_app: Application object.
+#     :yield: Application object.
+#     """
+#     ui_automation_type, test_application_type = request.param
+#     test_base = FlaUITestBase(ui_automation_type, test_application_type)
+#     test_base.restart_test_app()
+#     yield test_base.automation
+#     # tes

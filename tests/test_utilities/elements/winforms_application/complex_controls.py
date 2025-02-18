@@ -18,12 +18,10 @@ class ComplexControlsElements(AbtstractControlCollection):
 
         :return: The Simple Controls element.
         """
-        element = self.tab.find_first_child(condition=self._cf.by_name("Complex Controls")).as_tab_item()
-
-        if not element.is_selected:
+        if self.tab.selected_tab_item_index != ApplicationTabIndex.COMPLEX_CONTROLS.value:
             self.tab.select_tab_item(ApplicationTabIndex.COMPLEX_CONTROLS.value)
             Wait.until_input_is_processed()
-        return element
+        return self.tab.tab_items[ApplicationTabIndex.COMPLEX_CONTROLS.value]
 
     @property
     def data_grid_view(self) -> DataGridView:

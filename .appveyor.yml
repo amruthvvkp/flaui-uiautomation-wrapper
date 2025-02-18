@@ -71,7 +71,7 @@ before_build:
   # PowerShell script to find and select the desired .NET SDK version
   - ps: |
       $dotnetVersions = dotnet --list-sdks
-      $desiredVersions = $dotnetVersions | Where-Object { $_ -match "6\." -or $_ -match "7\." }
+      $desiredVersions = $dotnetVersions | Where-Object { $_ -match "8\." }
       $desiredVersion = ($desiredVersions | Sort-Object -Descending | Select-Object -First 1).Trim()
       Write-Output "Selected .NET SDK version: $desiredVersion"
       # Extract only the version number
@@ -113,7 +113,7 @@ before_test:
 test_script:
   - ps: |
       $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
-      uv run --group unit_test --package flaui --find-links "C:\Users\Amruth.Vithala\projects\flaui-uiautomation-wrapper\dist" coverage run -m pytest
+      uv run --group unit_test --package flaui --extra coverage --find-links "C:\Users\Amruth.Vithala\projects\flaui-uiautomation-wrapper\dist" coverage run -m pytest
 
 after_test:
   - ps: |

@@ -16,7 +16,9 @@ from flaui.core.automation_elements import (
     TabItem,
     TextBox,
 )
+from flaui.core.definitions import ControlType
 from flaui.core.input import Wait
+from flaui.lib.exceptions import ElementNotFound
 
 from tests.test_utilities.elements.wpf_application.common import AbtstractControlCollection
 from tests.test_utilities.elements.wpf_application.constants import ApplicationTabIndex
@@ -33,12 +35,10 @@ class SimpleControlsElements(AbtstractControlCollection):
 
         :return: The Simple Controls element.
         """
-        element = self.tab.find_first_child(condition=self._cf.by_name("Simple Controls")).as_tab_item()
-
-        if not element.is_selected:
+        if self.tab.selected_tab_item_index != ApplicationTabIndex.SIMPLE_CONTROLS.value:
             self.tab.select_tab_item(ApplicationTabIndex.SIMPLE_CONTROLS.value)
             Wait.until_input_is_processed()
-        return element
+        return self.tab.tab_items[ApplicationTabIndex.SIMPLE_CONTROLS.value]
 
     @property
     def test_label(self) -> Label:
@@ -88,7 +88,7 @@ class SimpleControlsElements(AbtstractControlCollection):
 
         :return: The List Box element.
         """
-        return self.parent_element.find_first_child(condition=self._cf.by_automation_id("ListBox")).as_list_box()
+        return self.main_window.find_first_descendant(condition=self._cf.by_automation_id("ListBox")).as_list_box()
 
     @property
     def test_check_box(self) -> CheckBox:
@@ -96,9 +96,7 @@ class SimpleControlsElements(AbtstractControlCollection):
 
         :return: The Test CheckBox element.
         """
-        return self.parent_element.find_first_child(
-            condition=self._cf.by_automation_id("SimpleCheckBox")
-        ).as_check_box()
+        return self.main_window.find_first_descendant(condition=self._cf.by_name("Test Checkbox")).as_check_box()
 
     @property
     def three_way_check_box(self) -> CheckBox:
@@ -206,9 +204,22 @@ class SimpleControlsElements(AbtstractControlCollection):
 
         :return: Spinner element
         """
-        return self.parent_element.find_first_descendant(
-            condition=self._cf.by_automation_id("numericUpDown1")
-        ).as_spinner()
+        try:
+            return self.main_window.find_first_descendant(
+                condition=self._cf.by_automation_id("numericUpDown1")
+            ).as_spinner()
+            return self.parent_element.find_first_child(self._cf.by_control_type(ControlType.Spinner))
+        except ElementNotFound:
+            # A hacky workaround since AutomationID of the spinner sometimes returns as uuid and breaks the unit tests
+            # This is particularly noticeable when running bulk tests
+            elements = [
+                _
+                for _ in self.main_window.find_all_descendants(condition=self._cf.by_name("Spinner"))
+                if _.automation_id not in ["label2", "dateTimePicker1", "ProgressBar", "Slider"]
+            ]
+            if not elements:
+                raise ElementNotFound("Spinner control not found")
+            return elements[0].as_spinner()
 
     @property
     def date_picker(self) -> DateTimePicker:

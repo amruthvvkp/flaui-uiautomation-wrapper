@@ -34,13 +34,13 @@ class PropertyCondition(BaseModel):
 
     cs_condition: Union[CSPropertyCondition, CSOrCondition, CSAndCondition, CSNotCondition]
 
-    def And(self, new_condition: ConditionFactory) -> PropertyCondition:
+    def And(self, new_condition: PropertyCondition) -> PropertyCondition:
         """Adds the given condition with an "and".
 
         :param new_condition: New condition
         :return: PropertyCondition
         """
-        return PropertyCondition(cs_condition=self.cs_condition.And(new_condition))
+        return PropertyCondition(cs_condition=self.cs_condition.And(new_condition.cs_condition))
 
     def Equals(self, value: PropertyCondition) -> bool:
         """Compares the value to another value
@@ -48,23 +48,23 @@ class PropertyCondition(BaseModel):
         :param value: Value to compare
         :return: True/False
         """
-        return self.cs_condition.Equals(value.cs_condition)
+        return self.cs_condition.Equals(value.cs_condition.cs_condition)
 
-    def Not(self, new_condition: ConditionFactory) -> PropertyCondition:
+    def Not(self, new_condition: PropertyCondition) -> PropertyCondition:
         """Adds the given condition with an "not".
 
         :param new_condition: New condition
         :return: PropertyCondition
         """
-        return PropertyCondition(cs_condition=self.cs_condition.Not(new_condition))
+        return PropertyCondition(cs_condition=self.cs_condition.Not(new_condition.cs_condition))
 
-    def Or(self, new_condition: ConditionFactory) -> PropertyCondition:
+    def Or(self, new_condition: PropertyCondition) -> PropertyCondition:
         """Packs this condition into a not condition.
 
         :param new_condition: New condition
         :return: PropertyCondition
         """
-        return PropertyCondition(cs_condition=self.cs_condition.Or(new_condition))
+        return PropertyCondition(cs_condition=self.cs_condition.Or(new_condition.cs_condition))
 
     @property
     def Property(self) -> Any:
@@ -108,8 +108,8 @@ class ConditionFactory(BaseModel):
     def by_automation_id(
         self,
         automation_id: str,
-        condition_flags_property_condition_flags: PropertyConditionFlags = PropertyConditionFlags.none,
-    ):
+        condition_flags_property_condition_flags: PropertyConditionFlags = PropertyConditionFlags.None_,
+    ) -> PropertyCondition:
         """Creates a condition to search by an automation id.
 
         :param automation_id: Automation ID
@@ -120,7 +120,7 @@ class ConditionFactory(BaseModel):
             cs_condition=self.raw_cf.ByAutomationId(automation_id, condition_flags_property_condition_flags.value)
         )
 
-    def by_control_type(self, control_type: ControlType):
+    def by_control_type(self, control_type: ControlType) -> PropertyCondition:
         """Creates a condition to search by a ControlType.
 
         :param control_type: Types of controls in Microsoft UI Automation.
@@ -131,8 +131,8 @@ class ConditionFactory(BaseModel):
     def by_class_name(
         self,
         class_name: Union[str, KnownClassNames],
-        condition_flags_property_condition_flags: PropertyConditionFlags = PropertyConditionFlags.none,
-    ):
+        condition_flags_property_condition_flags: PropertyConditionFlags = PropertyConditionFlags.None_,
+    ) -> PropertyCondition:
         """Creates a condition to search by a class name.
 
         :param class_name: Class Name
@@ -147,8 +147,8 @@ class ConditionFactory(BaseModel):
         )
 
     def by_name(
-        self, name: str, condition_flags_property_condition_flags: PropertyConditionFlags = PropertyConditionFlags.none
-    ):
+        self, name: str, condition_flags_property_condition_flags: PropertyConditionFlags = PropertyConditionFlags.None_
+    ) -> PropertyCondition:
         """Creates a condition to search by a name.
 
         :param name: Name
@@ -158,8 +158,8 @@ class ConditionFactory(BaseModel):
         return PropertyCondition(cs_condition=self.raw_cf.ByName(name, condition_flags_property_condition_flags.value))
 
     def by_text(
-        self, text: str, condition_flags_property_condition_flags: PropertyConditionFlags = PropertyConditionFlags.none
-    ):
+        self, text: str, condition_flags_property_condition_flags: PropertyConditionFlags = PropertyConditionFlags.None_
+    ) -> PropertyCondition:
         """Creates a condition to search by a text.
 
         :param text: Text value
@@ -171,8 +171,8 @@ class ConditionFactory(BaseModel):
     def by_framework_id(
         self,
         framework_id: str,
-        condition_flags_property_condition_flags: PropertyConditionFlags = PropertyConditionFlags.none,
-    ):
+        condition_flags_property_condition_flags: PropertyConditionFlags = PropertyConditionFlags.None_,
+    ) -> PropertyCondition:
         """Creates a condition to search by a Framework Id.
 
         :param framework_id: Framework ID
@@ -183,7 +183,7 @@ class ConditionFactory(BaseModel):
             cs_condition=self.raw_cf.ByFrameworkId(framework_id, condition_flags_property_condition_flags.value)
         )
 
-    def by_framework_type(self, framework_type: FrameworkType):
+    def by_framework_type(self, framework_type: FrameworkType) -> PropertyCondition:
         """Creates a condition to search by a Framework Type.
 
         :param framework_type: Framework Type
@@ -191,7 +191,7 @@ class ConditionFactory(BaseModel):
         """
         return PropertyCondition(cs_condition=self.raw_cf.ByFrameworkType(framework_type.value))
 
-    def by_process_id(self, process_id: int):
+    def by_process_id(self, process_id: int) -> PropertyCondition:
         """Creates a condition to search by a process id.
 
         :param process_id: Process ID
@@ -202,8 +202,8 @@ class ConditionFactory(BaseModel):
     def by_localized_control_type(
         self,
         localized_control_type: str,
-        condition_flags_property_condition_flags: PropertyConditionFlags = PropertyConditionFlags.none,
-    ):
+        condition_flags_property_condition_flags: PropertyConditionFlags = PropertyConditionFlags.None_,
+    ) -> PropertyCondition:
         """Creates a condition to search by a localized control type.
 
         :param localized_control_type: Localized Control Type
@@ -219,8 +219,8 @@ class ConditionFactory(BaseModel):
     def by_help_text(
         self,
         help_text: str,
-        condition_flags_property_condition_flags: PropertyConditionFlags = PropertyConditionFlags.none,
-    ):
+        condition_flags_property_condition_flags: PropertyConditionFlags = PropertyConditionFlags.None_,
+    ) -> PropertyCondition:
         """Creates a condition to search by a help text.
 
         :param help_text: Help text
@@ -232,8 +232,10 @@ class ConditionFactory(BaseModel):
         )
 
     def by_value(
-        self, value: str, condition_flags_property_condition_flags: PropertyConditionFlags = PropertyConditionFlags.none
-    ):
+        self,
+        value: str,
+        condition_flags_property_condition_flags: PropertyConditionFlags = PropertyConditionFlags.None_,
+    ) -> PropertyCondition:
         """Creates a condition to search by a value.
 
         :param value: Value
@@ -244,7 +246,7 @@ class ConditionFactory(BaseModel):
             cs_condition=self.raw_cf.ByValue(value, condition_flags_property_condition_flags.value)
         )
 
-    def menu(self):
+    def menu(self) -> PropertyCondition:
         """Searches for a Menu/MenuBar.
 
         :return: Property Condition
@@ -253,21 +255,21 @@ class ConditionFactory(BaseModel):
             self.raw_cf.ByControlType(ControlType.MenuBar.value)
         )
 
-    def grid(self):
+    def grid(self) -> PropertyCondition:
         """Searches for a DataGrid/List.
 
         :return: Property Condition
         """
         return PropertyCondition(cs_condition=self.raw_cf.Grid())
 
-    def horizontal_scroll_bar(self):
+    def horizontal_scroll_bar(self) -> PropertyCondition:
         """Searches for a horizontal scrollbar.
 
         :return: Property Condition
         """
         return PropertyCondition(cs_condition=self.raw_cf.HorizontalScrollBar())
 
-    def vertical_scroll_bar(self):
+    def vertical_scroll_bar(self) -> PropertyCondition:
         """Searches for a vertical scrollbar.
 
         :return: Property Condition

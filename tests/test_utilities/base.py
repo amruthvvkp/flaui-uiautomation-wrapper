@@ -1,6 +1,7 @@
 # Utilities for unit or example tests
 
 
+from pathlib import Path
 import time
 from typing import Optional
 
@@ -35,17 +36,22 @@ def force_close_test_application_process():
 
 class FlaUITestBase:
     def __init__(
-        self, ui_automation_type: UIAutomationTypes, app_type: str, automation: Optional[Automation] = None
+        self,
+        ui_automation_type: UIAutomationTypes,
+        app_type: str,
+        automation: Optional[Automation] = None,
+        executable: Optional[Path] = None,
     ) -> None:
         self.ui_automation_type = ui_automation_type
         self.app_type = app_type
         self.automation = Automation(ui_automation_type) or automation
-        self.executable_path = str(
-            test_settings.WPF_TEST_APP_EXE if app_type == "WPF" else test_settings.WINFORMS_TEST_APP_EXE
+        self.executable_path = (
+            str(test_settings.WPF_TEST_APP_EXE if app_type == "WPF" else test_settings.WINFORMS_TEST_APP_EXE)
+            or executable
         )
 
     def launch_test_app(self) -> None:
-        self.automation.application.launch(self.executable_path)
+        self.automation.application.launch(str(self.executable_path))
         time.sleep(0.5)  # Wait for the application to start
         self.automation.application.wait_while_main_handle_is_missing(2000)
 
