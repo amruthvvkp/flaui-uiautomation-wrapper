@@ -1,56 +1,14 @@
 version: 1.0.{build}
+
 branches:
   except:
     - master
+
 image: Visual Studio 2022
+
 environment:
   UV_FROZEN: "1"
   matrix:
-    # - job_name: Python 3.8 x86
-    #   PYTHON: "C:\\Python38"
-    #   PYTHON_VERSION: 3.8
-    #   PYTHON_ARCH: 32
-
-    # - job_name: Python 3.9 x86
-    #   PYTHON: "C:\\Python39"
-    #   PYTHON_VERSION: 3.9
-    #   PYTHON_ARCH: 32
-
-    # - job_name: Python 3.10 x86
-    #   PYTHON: "C:\\Python310"
-    #   PYTHON_VERSION: 3.10
-    #   PYTHON_ARCH: 32
-
-    # - job_name: Python 3.11 x86
-    #   PYTHON: "C:\\Python311"
-    #   PYTHON_VERSION: 3.11
-    #   PYTHON_ARCH: 32
-
-    # - job_name: Python 3.12 x86
-    #   PYTHON: "C:\\Python312"
-    #   PYTHON_VERSION: 3.12
-    #   PYTHON_ARCH: 32
-
-    # - job_name: Python 3.8 x64
-    #   PYTHON: "C:\\Python38-x64"
-    #   PYTHON_VERSION: 3.8
-    #   PYTHON_ARCH: 64
-
-    # - job_name: Python 3.9 x64
-    #   PYTHON: "C:\\Python39-x64"
-    #   PYTHON_VERSION: 3.9
-    #   PYTHON_ARCH: 64
-
-    # - job_name: Python 3.10 x64
-    #   PYTHON: "C:\\Python310-x64"
-    #   PYTHON_VERSION: 3.10
-    #   PYTHON_ARCH: 64
-
-    # - job_name: Python 3.11 x64
-    #   PYTHON: "C:\\Python311"
-    #   PYTHON_VERSION: 3.11
-    #   PYTHON_ARCH: 64
-
     - job_name: Python 3.12 x64
       PYTHON: "C:\\Python312"
       PYTHON_VERSION: 3.12
@@ -59,17 +17,19 @@ environment:
 init:
   - SET PATH=%PYTHON%;%PYTHON%\Scripts;%USERPROFILE%\AppData\Roaming\Python\Python%PYTHON_VERSION:.=%\Scripts;%PATH%
   - SET UV_PYTHON=%PYTHON_VERSION%
-  - ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%
+  - ECHO "Python Path: %PYTHON%"
+  - ECHO "Python Version: %PYTHON_VERSION%"
+  - ECHO "Python Arch: %PYTHON_ARCH%"
 
 install:
   - python --version
   - powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
   - set PATH=C:\Users\appveyor\.local\bin;%PATH%
-  - powershell -c "Write-Output $env:PATH"
   - uv --version || echo "uv is not installed!"
 
 before_build:
   - cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI
+  - ECHO "Cloned FlaUI repository."
 
   # PowerShell script to find and select the desired .NET SDK version
   - ps: |
@@ -77,10 +37,8 @@ before_build:
       $desiredVersions = $dotnetVersions | Where-Object { $_ -match "8\." }
       $desiredVersion = ($desiredVersions | Sort-Object -Descending | Select-Object -First 1).Trim()
       Write-Output "Selected .NET SDK version: $desiredVersion"
-      # Extract only the version number
       $desiredVersionNumber = ($desiredVersion -split '[\[\]]')[0].Trim()
       Write-Output "Extracted version number: $desiredVersionNumber"
-      # Create or update global.json with the selected SDK version
       $globalJsonContent = @{
           sdk = @{
               version = $desiredVersionNumber
@@ -94,43 +52,48 @@ build_script:
       cd "C:\projects\FlaUI"
       dotnet --version
       & "C:\\projects\\FlaUI\\build.ps1" --target "Build"
+      Write-Host "Build completed."
+
   - ps: |
-      $ErrorActionPreference = 'SilentlyContinue'
       cd "C:\projects\flaui-uiautomation-wrapper"
+      Write-Host "Building FlaUI Python wheels..."
       uv build
 
 after_build:
   - ps: |
+      Write-Host "Copying test applications..."
       New-Item -ItemType Directory -Path "C:\projects\flaui-uiautomation-wrapper\test_applications\WPFApplication" -Force | Out-Null
       Copy-Item -Path "C:\projects\FlaUI\src\TestApplications\WpfApplication\bin\*" -Destination "C:\projects\flaui-uiautomation-wrapper\test_applications\WPFApplication" -Recurse -Force
       New-Item -ItemType Directory -Path "C:\projects\flaui-uiautomation-wrapper\test_applications\WinFormsApplication" -Force | Out-Null
       Copy-Item -Path "C:\projects\FlaUI\src\TestApplications\WinFormsApplication\bin\*" -Destination "C:\projects\flaui-uiautomation-wrapper\test_applications\WinFormsApplication" -Recurse -Force
+      Write-Host "Test applications copied successfully."
 
 before_test:
   - ps: |
-      $ErrorActionPreference = 'SilentlyContinue'
       cd "C:\projects\flaui-uiautomation-wrapper"
       $wheelPath = Get-ChildItem -Path "dist" -Filter "*.whl" | Select-Object -First 1
+      Write-Host "Installing Python package: $wheelPath"
       uv pip install $wheelPath.FullName
 
 test_script:
   - ps: |
       $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
-      uv run --group unit_test --package flaui --extra coverage --find-links "C:\Users\Amruth.Vithala\projects\flaui-uiautomation-wrapper\dist" coverage run -m pytest
+      Write-Host "Running tests with pytest..."
+      uv run --group unit_test --package flaui --extra coverage --find-links "C:\projects\flaui-uiautomation-wrapper\dist" coverage run -m pytest --junit-xml=test-results.xml
+      Write-Host "Tests completed."
 
 after_test:
   - ps: |
       $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
+      Write-Host "Generating test coverage report..."
       uv run coverage combine
       uv run coverage xml
       uv run coverage html
+      Write-Host "Coverage report generated."
 
 artifacts:
-  # - path: test-results-uia2.xml
-  #   name: test-results-uia2
-
-  # - path: test-results-uia3.xml
-  #   name: test-results-uia3
+  - path: test-results.xml
+    name: test-results
 
   - path: coverage.xml
     name: coverage
@@ -152,16 +115,17 @@ cache:
 
 on_finish:
   - ps: >-
+      Write-Host "Uploading test results to Appveyor..."
       $wc = New-Object 'System.Net.WebClient'
 
-      if (Test-Path .\test-results-uia2.xml) {
-        $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\test-results-uia2.xml))
-      }
-
-      if (Test-Path .\test-results-uia3.xml) {
+      if (Test-Path .\test-results.xml) {
+        Write-Host "Uploading test-results.xml..."
         $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\test-results-uia3.xml))
       }
 
       if (Test-Path .\coverage.xml) {
+        Write-Host "Uploading coverage.xml..."
         $wc.UploadFile("https://ci.appveyor.com/api/testresults/coverage/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\coverage.xml))
       }
+
+      Write-Host "Test results uploaded successfully."
