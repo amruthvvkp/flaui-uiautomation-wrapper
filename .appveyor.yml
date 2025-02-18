@@ -4,7 +4,6 @@ branches:
     - master
 image: Visual Studio 2022
 environment:
-  UV_PYTHON: 3.12
   UV_FROZEN: "1"
   matrix:
     # - job_name: Python 3.8 x86
@@ -59,11 +58,14 @@ environment:
 
 init:
   - SET PATH=%PYTHON%;%PYTHON%\Scripts;%USERPROFILE%\AppData\Roaming\Python\Python%PYTHON_VERSION:.=%\Scripts;%PATH%
+  - SET UV_PYTHON=%PYTHON_VERSION%
   - ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%
 
 install:
   - python --version
-  - powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+  - powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+  - echo %USERPROFILE%\.local\bin >> %PATH%
+  - powershell -c "Get-Command uv -ErrorAction SilentlyContinue"
 
 before_build:
   - cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI
