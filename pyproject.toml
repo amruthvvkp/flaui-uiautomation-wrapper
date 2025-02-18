@@ -54,8 +54,8 @@ classifiers = [
     "Intended Audience :: Developers",
 ]
 
-[dependency-groups]
-dev = [
+[tool.uv]
+dev-dependencies = [
     "interrogate>=1.7.0",
     "isort>=5.13.2",
     "jupyter>=1.1.1",
@@ -63,6 +63,8 @@ dev = [
     "pre-commit>=3.5.0",
     "ruff>=0.9.3",
 ]
+
+[dependency-groups]
 unit-test = [
     "dirty-equals>=0.9.0",
     "psutil>=6.1.1",
