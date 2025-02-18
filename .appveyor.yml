@@ -115,6 +115,8 @@ before_test:
       $wheelPath = Get-ChildItem -Path "dist" -Filter "*.whl" | Select-Object -First 1
       Write-Output "FlaUI Python Wheels Path: $wheelPath"
       uv venv
+      .\.venv\Scripts\activate
+      Write-Host "Virtual environment activated."
 
 test_script:
   - ps: |
