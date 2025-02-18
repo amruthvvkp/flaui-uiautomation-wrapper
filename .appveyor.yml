@@ -68,33 +68,34 @@ install:
   - uv --version || echo "uv is not installed!"
 
 before_build:
-  - cmd: git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI
-  - ps: Write-Host "Cloned FlaUI C# repository..."
-
-  # PowerShell script to find and select the desired .NET SDK version
   - ps: |
-      $dotnetVersions = dotnet --list-sdks
-      $desiredVersions = $dotnetVersions | Where-Object { $_ -match "8\." }
-      $desiredVersion = ($desiredVersions | Sort-Object -Descending | Select-Object -First 1).Trim()
-      Write-Output "Selected .NET SDK version: $desiredVersion"
-      # Extract only the version number
-      $desiredVersionNumber = ($desiredVersion -split '[\[\]]')[0].Trim()
-      Write-Output "Extracted version number: $desiredVersionNumber"
-      # Create or update global.json with the selected SDK version
-      $globalJsonContent = @{
-          sdk = @{
-              version = $desiredVersionNumber
-              rollForward = "latestFeature"
-          }
-      } | ConvertTo-Json -Compress
-      Set-Content -Path "C:\projects\FlaUI\global.json" -Value $globalJsonContent
+      if (Test-Path "C:\projects\FlaUI\src\TestApplications") {
+        Write-Host "✅ Cache Restored - Skipping FlaUI build!"
+      } else {
+        Write-Host "⚠️ Cache Not Found - Cloning and Building FlaUI..."
+        git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI
+        cd "C:\projects\FlaUI"
+        $dotnetVersions = dotnet --list-sdks
+        $desiredVersions = $dotnetVersions | Where-Object { $_ -match "8\." }
+        $desiredVersion = ($desiredVersions | Sort-Object -Descending | Select-Object -First 1).Trim()
+        Write-Output "Selected .NET SDK version: $desiredVersion"
+        # Extract only the version number
+        $desiredVersionNumber = ($desiredVersion -split '[\[\]]')[0].Trim()
+        Write-Output "Extracted version number: $desiredVersionNumber"
+        # Create or update global.json with the selected SDK version
+        $globalJsonContent = @{
+            sdk = @{
+                version = $desiredVersionNumber
+                rollForward = "latestFeature"
+            }
+        } | ConvertTo-Json -Compress
+        Set-Content -Path "C:\projects\FlaUI\global.json" -Value $globalJsonContent
+        dotnet --version
+        & "C:\\projects\\FlaUI\\build.ps1" --target "Build"
+        Write-Host "✅ FlaUI Build Completed."
+      }
 
 build_script:
-  - ps: |
-      cd "C:\projects\FlaUI"
-      dotnet --version
-      & "C:\\projects\\FlaUI\\build.ps1" --target "Build"
-      Write-Host "C# Dlls build completed."
   - ps: |
       cd "C:\projects\flaui-uiautomation-wrapper"
       Write-Host "Building FlaUI Python wheels..."
