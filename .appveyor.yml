@@ -122,7 +122,7 @@ test_script:
   - ps: |
       $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
       Write-Host "Running tests with pytest..."
-      uv run --group unit_test --package flaui --extra coverage --find-links "C:\Users\Amruth.Vithala\projects\flaui-uiautomation-wrapper\dist" coverage run -m pytest --junit-xml=test-results.xml
+      uv run --group unit_test --package flaui --extra coverage --find-links "C:\projects\flaui-uiautomation-wrapper\dist" coverage run -m pytest --junit-xml=test-results.xml
       Write-Host "Tests completed."
 
 after_test:
