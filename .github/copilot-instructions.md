@@ -27,10 +27,13 @@ This project is a Python port of the FlaUI C# library for Windows UI automation.
 - Ensure input/output types are translated correctly between Python and C#.
 - Maintain clear docstrings and type hints for IDE intellisense.
 - Follow Python naming conventions (snake_case for methods/properties, PascalCase for classes).
+- Always call `setup_pythonnet_bridge()` before importing any modules that reference C# types or assemblies. This ensures the PythonNet bridge is initialized and C# assemblies are loaded before any dependent imports. Use this pattern in all test and utility files that interact with C# code.
 
 ## Testing Guidelines
 
-- Port all C# UI and unit tests to Python using PyTest.
+- Port all C# UI and unit tests to Python using PyTest, covering both WinForms and WPF test applications.
+- For each test, ensure matrix coverage for UIA2/UIA3 and WinForms/WPF, using PyTest parametrization to mirror C# [TestCase] or [Theory] attributes.
+- Reference the original C# test logic for parity, including edge cases and error handling.
 - Add additional tests for new features and edge cases.
 - Future goal: add examples for other test frameworks using the same object mapping.
 

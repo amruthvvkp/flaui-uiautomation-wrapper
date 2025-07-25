@@ -12,3 +12,4 @@ applyTo: "tests/**/*.py"
 - Reference original C# test logic for parity.
 - Place new tests in the appropriate subfolder (e.g., `test_utilities/`).
 - All new features and bug fixes must be covered by tests.
+- **Prefix all test commands with `uv run` (e.g., `uv run pytest ...`) to ensure the correct environment is used.**
