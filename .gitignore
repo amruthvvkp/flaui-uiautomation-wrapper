@@ -170,7 +170,9 @@ flaui_arch
 
 
 # Test Applications
-test_applications
 pytest.xml
 assets/style.css
 report.html
+# Un-ignore everything in test_applications
+!test_applications/
+!test_applications/**
