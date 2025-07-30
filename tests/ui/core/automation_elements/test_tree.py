@@ -29,6 +29,17 @@ class TestTree:
         """Tests Selection of Tree controls"""
         with pytest.raises(ElementNotFound):
             _ = tree_elements.selected_tree_item
+        # Debug: print the number of items and their text
+        items = getattr(tree_elements, "items", None)
+        if items is not None:
+            print(f"Tree items count: {len(items)}")
+            for idx, item in enumerate(items):
+                try:
+                    print(f"  Item {idx}: text={getattr(item, 'text', None)}")
+                except Exception as e:
+                    print(f"  Item {idx}: error getting text: {e}")
+        else:
+            print("Tree has no 'items' attribute or it is None")
         assert tree_elements == HasAttributes(items=HasLen(2)), "Tree should have 2 items."
         tree_elements.items[0].expand()
         tree_elements.items[0].items[1].expand()
