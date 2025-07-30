@@ -7,8 +7,8 @@ from flaui.core.automation_elements import Spinner
 from flaui.lib.enums import UIAutomationTypes
 import pytest
 
-from tests.test_utilities.elements.winforms_application.base import WinFormsApplicationElements
-from tests.test_utilities.elements.wpf_application.base import WPFApplicationElements
+from tests.test_utilities.elements.winforms_application import WinFormsApplicationElements
+from tests.test_utilities.elements.wpf_application import WPFApplicationElements
 
 
 @pytest.mark.xfail(reason="Spinner control on WinForms is sometimes unavailable while running bulk tests")

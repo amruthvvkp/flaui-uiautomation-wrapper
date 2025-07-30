@@ -7,8 +7,8 @@ from dirty_equals import IsDate
 from flaui.core.automation_elements import DateTimePicker
 import pytest
 
-from tests.test_utilities.elements.winforms_application.base import WinFormsApplicationElements
-from tests.test_utilities.elements.wpf_application.base import WPFApplicationElements
+from tests.test_utilities.elements.winforms_application import WinFormsApplicationElements
+from tests.test_utilities.elements.wpf_application import WPFApplicationElements
 
 
 class TestDateTimePicker:

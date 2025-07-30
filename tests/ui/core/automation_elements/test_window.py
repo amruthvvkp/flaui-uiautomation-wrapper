@@ -5,8 +5,8 @@ from flaui.core.input import Mouse, MouseButton, Wait
 from flaui.lib.enums import UIAutomationTypes
 import pytest
 
-from tests.test_utilities.elements.winforms_application.base import WinFormsApplicationElements
-from tests.test_utilities.elements.wpf_application.base import WPFApplicationElements
+from tests.test_utilities.elements.winforms_application import WinFormsApplicationElements
+from tests.test_utilities.elements.wpf_application import WPFApplicationElements
 
 # UIA3 WinForms test is Broken in newer .NET Versions
 # TODO: Somehow the context menu of Winforms isn't getting captured, fix it and run this test

@@ -9,8 +9,8 @@ from flaui.core.automation_elements import Calendar
 import pytest
 from System import DateTime as CSDateTime  # pyright: ignore
 
-from tests.test_utilities.elements.winforms_application.base import WinFormsApplicationElements
-from tests.test_utilities.elements.wpf_application.base import WPFApplicationElements
+from tests.test_utilities.elements.winforms_application import WinFormsApplicationElements
+from tests.test_utilities.elements.wpf_application import WPFApplicationElements
 
 
 class TestCalendarElements:

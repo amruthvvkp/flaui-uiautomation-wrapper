@@ -3,8 +3,8 @@
 from dirty_equals import HasAttributes
 from flaui.core.automation_elements import ControlType
 
-from tests.test_utilities.elements.winforms_application.base import WinFormsApplicationElements
-from tests.test_utilities.elements.wpf_application.base import WPFApplicationElements
+from tests.test_utilities.elements.winforms_application import WinFormsApplicationElements
+from tests.test_utilities.elements.wpf_application import WPFApplicationElements
 
 
 class TestValueConverter:

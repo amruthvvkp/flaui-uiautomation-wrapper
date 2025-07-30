@@ -8,8 +8,8 @@ from flaui.core.input import Wait
 from flaui.lib.system.drawing import Color
 import pytest
 
-from tests.test_utilities.elements.winforms_application.base import WinFormsApplicationElements
-from tests.test_utilities.elements.wpf_application.base import WPFApplicationElements
+from tests.test_utilities.elements.winforms_application import WinFormsApplicationElements
+from tests.test_utilities.elements.wpf_application import WPFApplicationElements
 
 
 class TestTextbox:

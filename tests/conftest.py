@@ -20,11 +20,11 @@ from flaui.lib.enums import UIAutomationTypes
 from flaui.lib.exceptions import ElementNotFound
 
 from tests.test_utilities.base import FlaUITestBase
-from tests.test_utilities.elements.winforms_application.base import (
+from tests.test_utilities.elements.winforms_application import (
     WinFormsApplicationElements,
     get_winforms_application_elements,
 )
-from tests.test_utilities.elements.wpf_application.base import WPFApplicationElements, get_wpf_application_elements
+from tests.test_utilities.elements.wpf_application import WPFApplicationElements, get_wpf_application_elements
 
 
 @pytest.fixture
