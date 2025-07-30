@@ -1,4 +1,5 @@
 version: 1.0.{build}
+build: off
 branches:
   except:
     - master
@@ -67,14 +68,14 @@ install:
   - set PATH=C:\Users\appveyor\.local\bin;%PATH%
   - uv --version || echo "uv is not installed!"
 
-build_script:
-  - uv build
+# build_script:
+#   - uv build
 
 test_script:
   - ps: |
       $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
       Write-Host "Running tests with pytest..."
-      uv run --group unit_test --package flaui-uiautomation-wrapper --extra coverage --find-links "C:\projects\flaui-uiautomation-wrapper\dist" coverage run -m pytest --junit-xml=test-results.xml
+      uv run --group unit_test --package flaui-uiautomation-wrapper --extra coverage coverage run -m pytest --junit-xml=test-results.xml
       if ($LASTEXITCODE -ne 0) { Write-Host "Tests failed."; exit 1 }
       Write-Host "Tests completed."
 
