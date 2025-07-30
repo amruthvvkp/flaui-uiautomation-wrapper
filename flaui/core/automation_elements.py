@@ -11,6 +11,7 @@ from datetime import date
 from typing import Any, Callable, List, Optional, Tuple, TypeVar, Union, overload
 
 import arrow
+from loguru import logger
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 from System import NullReferenceException  # pyright: ignore
 
@@ -2329,7 +2330,7 @@ class Tab(AutomationElement):
         try:
             self.raw_element.SelectTabItem(index) if index is not None else self.raw_element.SelectTabItem(value)
         except Exception as e:
-            print(e)
+            logger.error(e)
 
 
 class TabItem(AutomationElement, SelectionItemAutomationElement):

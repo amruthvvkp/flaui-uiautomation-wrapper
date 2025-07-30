@@ -3,6 +3,7 @@
 from typing import Any, Dict, Generator, List
 
 from dirty_equals import DirtyEquals, HasAttributes, IsFalseLike, IsTrueLike
+from loguru import logger
 from flaui.core.automation_elements import ConditionFactory, Menu
 import pytest
 
@@ -118,7 +119,7 @@ class TestMenu:
         """Tests the menu with sub menus by name."""
         edit = menu.get_item_by_name("Edit")
         assert edit is not None, "Edit menu item not found"
-        print(edit.properties.name.value)
+        logger.debug(edit.properties.name.value)
         assert edit.properties.name.value == "Edit", "Edit menu item name does not match"
         copy = edit.get_item_by_name("Copy")
         assert copy is not None, "Copy menu item not found"

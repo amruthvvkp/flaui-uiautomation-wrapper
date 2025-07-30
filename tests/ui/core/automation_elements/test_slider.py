@@ -3,6 +3,7 @@
 from typing import Any, Generator
 
 from dirty_equals import IsApprox
+from loguru import logger
 from flaui.core.automation_elements import Slider
 import pytest
 
@@ -32,7 +33,7 @@ class TestSlider:
         new_value = slider.value
 
         # Print debug info for troubleshooting platform-specific slider behavior
-        print(
+        logger.debug(
             f"Slider thumb test: old_value={old_value}, new_value={new_value}, slider.min={getattr(slider, 'minimum', None)}, slider.max={getattr(slider, 'maximum', None)}"
         )
 
@@ -42,7 +43,7 @@ class TestSlider:
         )
         # Warn if the value decreased (WinForms slider may wrap or behave differently)
         if new_value < old_value:
-            print(f"[WARN] Slider value decreased after sliding thumb. Old: {old_value}, New: {new_value}")
+            logger.warning(f"[WARN] Slider value decreased after sliding thumb. Old: {old_value}, New: {new_value}")
 
     def test_set_value(self, slider: Slider) -> None:
         """Tests setting value to the slider control"""

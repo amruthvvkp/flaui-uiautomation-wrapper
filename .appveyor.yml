@@ -100,10 +100,10 @@ artifacts:
     type: directory
 
 on_success:
-  - ps: Write-Host "Build Succeeded!"
+  - ps: Write-Host "Unit Tests Succeeded!"
 
 on_failure:
-  - ps: Write-Host "Build Failed!"
+  - ps: Write-Host "Unit Tests Failed!"
 
 on_finish:
   - ps: >-

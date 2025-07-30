@@ -111,7 +111,7 @@ def get_ui_test_application(
             condition=elements._cf.by_name("Simple Controls")
         ).as_tab_item().click()
     except ElementNotFound as e:
-        print(f"Error: {e}")
+        logger.error(f"Error: {e}")
     yield elements
 
 

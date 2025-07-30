@@ -1,5 +1,6 @@
 """Covers tests listed under FlaUI GitHub repository - src\\FlaUI.Core.UITests\\ApplicationTests.cs"""
 
+from loguru import logger
 from flaui.lib.enums import UIAutomationTypes
 from flaui.modules.automation import Automation
 import pytest
@@ -17,7 +18,7 @@ def test_application() -> None:
     try:
         app.application.wait_while_main_handle_is_missing(5)
     except Exception as e:
-        print(f"An error occurred while waiting for the main handle: {e}")
+        logger.error(f"An error occurred while waiting for the main handle: {e}")
         raise
     finally:
         app.application.close()

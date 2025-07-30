@@ -2,8 +2,13 @@
 
 import clr
 from loguru import logger
+from System.Reflection import Assembly  # pyright: ignore[reportMissingImports]
 
 import flaui.lib.config as config
+
+# Global variable to hold the FlaUI C# version
+FLAUI_CSHARP_VERSION = None
+
 
 def setup_pythonnet_bridge() -> None:
     """
@@ -15,11 +20,16 @@ def setup_pythonnet_bridge() -> None:
     """
     BIN_HOME = config.settings.BIN_HOME
     # logger.info(f"Looking for valid binaries at - {BIN_HOME}")
+    global FLAUI_CSHARP_VERSION
     try:
         for _ in BIN_HOME.glob("*.dll"):
             clr.AddReference(_.as_posix())  # pyright: ignore
             clr.AddReference(_.stem)  # pyright: ignore
-            logger.info(f"Added {_.name} DLL to Python.NET bridge")
+            assembly = Assembly.LoadFile(_.as_posix())
+            version = assembly.GetName().Version
+            logger.info(f"Added {_.name} v{version} DLL to Python.NET bridge")
+            if _.name == "FlaUI.Core.dll":
+                FLAUI_CSHARP_VERSION = str(version)
     except Exception as err:
         logger.exception(f"{err}")
         raise err

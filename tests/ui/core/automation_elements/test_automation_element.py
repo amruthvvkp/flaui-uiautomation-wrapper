@@ -53,6 +53,7 @@ from flaui.lib.enums import UIAutomationTypes
 from flaui.lib.exceptions import ElementNotFound
 from flaui.lib.system.drawing import Point, Rectangle
 from hamcrest import assert_that, calling, instance_of, raises
+from loguru import logger
 import pytest
 
 from tests.test_utilities.elements.winforms_application.base import WinFormsApplicationElements
@@ -106,8 +107,8 @@ class TestAutomationElementAdditional:
     ) -> None:
         """Test the class properties of the AutomationElement class."""
         # Debugging output
-        print("Debug: Window properties")
-        print(f"Name: {test_application.main_window.name}")
+        logger.debug("Debug: Window properties")
+        logger.debug(f"Name: {test_application.main_window.name}")
 
         assert test_application.main_window == HasAttributes(
             actual_height=IsPositiveFloat,
