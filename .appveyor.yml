@@ -75,7 +75,7 @@ test_script:
   - ps: |
       $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
       Write-Host "Running tests with pytest..."
-      uv run --group unit_test --package flaui-uiautomation-wrapper --extra coverage coverage run -m pytest --junit-xml=test-results.xml
+      uv run --group unit-test --package flaui-uiautomation-wrapper --extra coverage coverage run -m pytest --junit-xml=test-results.xml
       if ($LASTEXITCODE -ne 0) { Write-Host "Tests failed."; exit 1 }
       Write-Host "Tests completed."
 
