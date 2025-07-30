@@ -9,6 +9,8 @@ from flaui.modules.automation import Automation
 from FlaUI.UIA3 import UIA3Automation  # pyright: ignore
 import pytest
 
+from tests.test_utilities.os_platform import is_windows_11
+
 
 @pytest.fixture
 def wordpad() -> Generator[Automation, Any, None]:
@@ -18,9 +20,13 @@ def wordpad() -> Generator[Automation, Any, None]:
     :yield: FlaUI Automation class with the wordpad application.
     """
     wordpad = Automation(UIAutomationTypes.UIA3)
-    wordpad.application.launch("wordpad.exe")
-    yield wordpad
+    try:
+        wordpad.application.launch("wordpad.exe")
+    except Exception as e:
+        import pytest
 
+        pytest.skip(f"Could not launch wordpad.exe: {e}")
+    yield wordpad
     wordpad.application.kill()
 
 
@@ -29,6 +35,7 @@ class TestAutomation:
     This class contains unit tests for the Automation module of FlaUI.
     """
 
+    @pytest.mark.xfail(is_windows_11, reason="wordpad.exe may not be present on Windows 11.")
     def test_class_properties(self, wordpad: Automation) -> None:
         """
         This method tests the properties of the Automation class.

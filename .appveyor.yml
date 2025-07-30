@@ -67,72 +67,21 @@ install:
   - set PATH=C:\Users\appveyor\.local\bin;%PATH%
   - uv --version || echo "uv is not installed!"
 
-before_build:
-  - ps: |
-      if (Test-Path "C:\projects\FlaUI\src\TestApplications") {
-        Write-Host "✅ Cache Restored - Skipping FlaUI build!"
-      } else {
-        Write-Host "⚠️ Cache Not Found - Cloning and Building FlaUI..."
-        git clone https://github.com/FlaUI/FlaUI.git C:\projects\FlaUI
-        cd "C:\projects\FlaUI"
-        $dotnetVersions = dotnet --list-sdks
-        $desiredVersions = $dotnetVersions | Where-Object { $_ -match "8\." }
-        $desiredVersion = ($desiredVersions | Sort-Object -Descending | Select-Object -First 1).Trim()
-        Write-Output "Selected .NET SDK version: $desiredVersion"
-        # Extract only the version number
-        $desiredVersionNumber = ($desiredVersion -split '[\[\]]')[0].Trim()
-        Write-Output "Extracted version number: $desiredVersionNumber"
-        # Create or update global.json with the selected SDK version
-        $globalJsonContent = @{
-            sdk = @{
-                version = $desiredVersionNumber
-                rollForward = "latestFeature"
-            }
-        } | ConvertTo-Json -Compress
-        Set-Content -Path "C:\projects\FlaUI\global.json" -Value $globalJsonContent
-        dotnet --version
-        & "C:\\projects\\FlaUI\\build.ps1" --target "Build"
-        Write-Host "✅ FlaUI Build Completed."
-      }
-
-build_script:
-  - ps: |
-      cd "C:\projects\flaui-uiautomation-wrapper"
-      Write-Host "Building FlaUI Python wheels..."
-      uv build --package=flaui-uiautomation-wrapper
-      Write-Host "FlaUI Python wheels build completed."
-
-after_build:
-  - ps: |
-      New-Item -ItemType Directory -Path "C:\projects\flaui-uiautomation-wrapper\test_applications\WPFApplication" -Force | Out-Null
-      Copy-Item -Path "C:\projects\FlaUI\src\TestApplications\WpfApplication\bin\*" -Destination "C:\projects\flaui-uiautomation-wrapper\test_applications\WPFApplication" -Recurse -Force
-      New-Item -ItemType Directory -Path "C:\projects\flaui-uiautomation-wrapper\test_applications\WinFormsApplication" -Force | Out-Null
-      Copy-Item -Path "C:\projects\FlaUI\src\TestApplications\WinFormsApplication\bin\*" -Destination "C:\projects\flaui-uiautomation-wrapper\test_applications\WinFormsApplication" -Recurse -Force
-      Write-Host "Test applications copied successfully."
-
-before_test:
-  - ps: |
-      cd "C:\projects\flaui-uiautomation-wrapper"
-      $wheelPath = Get-ChildItem -Path "dist" -Filter "*.whl" | Select-Object -First 1
-      Write-Output "FlaUI Python Wheels Path: $wheelPath"
-      uv venv
-      .\.venv\Scripts\activate
-      Write-Host "Virtual environment activated."
-
 test_script:
   - ps: |
       $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
       Write-Host "Running tests with pytest..."
       uv run --group unit_test --package flaui-uiautomation-wrapper --extra coverage --find-links "C:\projects\flaui-uiautomation-wrapper\dist" coverage run -m pytest --junit-xml=test-results.xml
+      if ($LASTEXITCODE -ne 0) { Write-Host "Tests failed."; exit 1 }
       Write-Host "Tests completed."
 
 after_test:
   - ps: |
       $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
       Write-Host "Generating test coverage report..."
-      uv run coverage combine
-      uv run coverage xml
-      uv run coverage html
+      uv run -no-project --with coverage coverage combine
+      uv run -no-project --with coverage coverage xml
+      uv run -no-project --with coverage coverage html
       Write-Host "Coverage report generated."
 
 artifacts:
@@ -144,18 +93,7 @@ artifacts:
 
   - path: htmlcov
     name: coverage-html
-
-  - path: test_applications/
-    name: test-applications
-
-  - path: dist/
-    name: wheels
-
-cache:
-  - C:\Users\appveyor\.nuget\packages # Cache the NuGet packages
-  - C:\projects\FlaUI\**\bin
-  - C:\projects\FlaUI\**\obj
-  - C:\projects\FlaUI\src\TestApplications
+    type: directory
 
 on_success:
   - ps: Write-Host "Build Succeeded!"
