@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import abc
 from datetime import date
-from typing import Any, Callable, List, Optional, Tuple, TypeVar, Union
+from typing import Any, Callable, List, Optional, Tuple, TypeVar, Union, overload
 
 import arrow
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
@@ -1430,8 +1430,6 @@ class DateTimePicker(AutomationElement):
 
 
 class Grid(AutomationElement):
-    """Element for grids and tables"""
-
     @property
     @handle_csharp_exceptions
     def row_count(self) -> int:
@@ -1537,6 +1535,15 @@ class Grid(AutomationElement):
                 continue
         raise ValueError(message)
 
+    # --- Overloads for select ---
+    @overload
+    def select(self, row_index: int, column_index: None = None, text_to_find: None = None) -> "GridRow": ...
+
+    @overload
+    def select(self, row_index: None = None, column_index: int = ..., text_to_find: str = ...) -> "GridRow": ...
+
+    """Element for grids and tables"""
+
     @handle_csharp_exceptions
     def select(
         self, row_index: Optional[int] = None, column_index: Optional[int] = None, text_to_find: Optional[str] = None
@@ -1564,6 +1571,15 @@ class Grid(AutomationElement):
 
         else:
             raise ValueError("Invalid input sent to the function, cannot select the row")
+
+    # --- Overloads for add_to_selection ---
+    @overload
+    def add_to_selection(self, row_index: int, column_index: None = None, text_to_find: None = None) -> "GridRow": ...
+
+    @overload
+    def add_to_selection(
+        self, row_index: None = None, column_index: int = ..., text_to_find: str = ...
+    ) -> "GridRow": ...
 
     @handle_csharp_exceptions
     def add_to_selection(
@@ -1594,6 +1610,16 @@ class Grid(AutomationElement):
         else:
             raise ValueError("Invalid input sent to the function, cannot add to the selection")
 
+    # --- Overloads for remove_from_selection ---
+    @overload
+    def remove_from_selection(
+        self, row_index: int, column_index: None = None, text_to_find: None = None
+    ) -> "GridRow": ...
+
+    @overload
+    def remove_from_selection(
+        self, row_index: None = None, column_index: int = ..., text_to_find: str = ...
+    ) -> "GridRow": ...
     @handle_csharp_exceptions
     def remove_from_selection(
         self, row_index: Optional[int] = None, column_index: Optional[int] = None, text_to_find: Optional[str] = None
@@ -2285,6 +2311,12 @@ class Tab(AutomationElement):
         """
         return [TabItem(raw_element=_) for _ in self.raw_element.TabItems]
 
+    @overload
+    def select_tab_item(self, index: int, value: None = None) -> None: ...
+
+    @overload
+    def select_tab_item(self, index: None = None, value: str = ...) -> None: ...
+
     @handle_csharp_exceptions
     def select_tab_item(self, index: Optional[int] = None, value: Optional[str] = None) -> None:
         """Selects a TabItem by index
@@ -2638,27 +2670,30 @@ class IAutomationProperty(BaseModel, abc.ABC):
     @property
     @abc.abstractmethod
     @handle_csharp_exceptions
-    def value(self):
+    def value(self) -> Any:
         """Gets the value of the automation property."""
         pass
 
     @property
     @abc.abstractmethod
     @handle_csharp_exceptions
-    def value_or_default(self):
+    def value_or_default(self) -> Any:
         """Gets the value of the automation property or a default value if not available."""
         pass
 
     @abc.abstractmethod
     @handle_csharp_exceptions
-    def try_get_value(self):
-        """Tries to get the value of the automation property."""
+    def try_get_value(self) -> Tuple[bool, str]:
+        """Tries to get the value of the automation property.
+
+        :return: A tuple with the first element being True if the value was retrieved successfully, False otherwise.
+        """
         pass
 
     @property
     @abc.abstractmethod
     @handle_csharp_exceptions
-    def is_supported(self):
+    def is_supported(self) -> bool:
         """Checks if the automation property is supported."""
         pass
 
@@ -2723,7 +2758,7 @@ class AutomationProperty(IAutomationProperty):
 
     @property
     @handle_csharp_exceptions
-    def value(self):
+    def value(self) -> Any:
         """Returns the value of the property.
 
         :return: The value of the property.
@@ -2732,7 +2767,7 @@ class AutomationProperty(IAutomationProperty):
 
     @property
     @handle_csharp_exceptions
-    def value_or_default(self):
+    def value_or_default(self) -> Any:
         """Returns the value of the property or a default value if the value is None.
 
         :return: The value of the property or a default value if the value is None.

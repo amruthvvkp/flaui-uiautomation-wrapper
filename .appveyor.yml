@@ -1,4 +1,3 @@
-build: off
 version: 1.0.{build}
 branches:
   except:
@@ -67,6 +66,9 @@ install:
   - powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
   - set PATH=C:\Users\appveyor\.local\bin;%PATH%
   - uv --version || echo "uv is not installed!"
+
+build_script:
+  - uv build
 
 test_script:
   - ps: |
