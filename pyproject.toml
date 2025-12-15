@@ -72,12 +72,13 @@ unit-test = [
     "pyhamcrest>=2.1.0",
     "pytest>=8.3.4",
     "pytest-pretty>=1.2.0",
+    "pytest-reportlog>=0.4.0",
 ]
 
 [project.optional-dependencies]
 pytest-sugar = ["pytest-sugar>=1.0.0"]
 coverage = ["coverage>=7.6.1"]
-pytest-html = ["pytest-html>=4.1.1"]
+allure-pytest = ["allure-pytest>=2.15.2"]
 
 [tool.uv.sources]
 flaui = { path = "./flaui" }
@@ -91,8 +92,15 @@ only-include = ["/README.md", "/flaui", "flaui/bin/*.dll"]
 
 [tool.pytest.ini_options]
 minversion = "8.0"
-addopts = "-ra -q -p no:warnings"
+addopts = "-ra -q -p no:warnings --report-log=test-report.jsonl"
 testpaths = ["tests/"]
+markers = [
+    "wpf_only: Tests that only run on WPF applications",
+    "winforms_only: Tests that only run on WinForms applications",
+    "uia3_only: Tests that require UIA3 automation type",
+    "platform_limitation: Known C# FlaUI platform limitation",
+    "windows11: Tests affected by Windows 11 specific behavior",
+]
 
 [tool.interrogate]
 ignore-init-method = true

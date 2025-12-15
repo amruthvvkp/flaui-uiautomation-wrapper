@@ -566,13 +566,24 @@ class AutomationElement(ElementBase):
             return AutomationElement(raw_element=self.raw_element.FindFirstDescendant(condition.cs_condition))
 
     @handle_csharp_exceptions
-    def find_first_nested(self, condition: PropertyCondition) -> AutomationElement:
+    def find_first_nested(self, conditions: Union[PropertyCondition, List[PropertyCondition]]) -> AutomationElement:
         """Finds the first element by iterating thru all conditions.
 
-        :param condition: The condition to use.
+        C# signature: FindFirstNested(params ConditionBase[] nestedConditions)
+        Iterates through children using each condition in sequence.
+
+        :param conditions: Single condition or list of conditions to iterate through.
         :return: The found element or null if no element was found.
         """
-        return AutomationElement(raw_element=self.raw_element.FindFirstNested(condition.cs_condition))
+        if isinstance(conditions, list):
+            # Convert list to C# params array
+            from FlaUI.Core.Conditions import ConditionBase
+            from System import Array
+
+            cs_conditions = Array[ConditionBase]([c.cs_condition for c in conditions])
+            return AutomationElement(raw_element=self.raw_element.FindFirstNested(cs_conditions))
+        else:
+            return AutomationElement(raw_element=self.raw_element.FindFirstNested(conditions.cs_condition))
 
     @handle_csharp_exceptions
     def find_first_with_options(

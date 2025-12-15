@@ -35,7 +35,12 @@ class TestAutomation:
     This class contains unit tests for the Automation module of FlaUI.
     """
 
-    @pytest.mark.xfail(is_windows_11, reason="wordpad.exe may not be present on Windows 11.")
+    @pytest.mark.windows11
+    @pytest.mark.xfail(
+        is_windows_11,
+        reason="WordPad has been removed or deprecated on Windows 11 (as of 2024). "
+        "Use test applications (WinForms/WPF) for reliable automation testing.",
+    )
     def test_class_properties(self, wordpad: Automation) -> None:
         """
         This method tests the properties of the Automation class.

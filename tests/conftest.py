@@ -143,3 +143,88 @@ def condition_factory(test_application: WinFormsApplicationElements | WPFApplica
     :yield: Condition factory.
     """
     yield test_application._cf
+
+
+# ============================================================================
+# Platform-Specific Skip Fixtures
+# ============================================================================
+# These fixtures implement C# FlaUI skip patterns for platform limitations
+
+
+@pytest.fixture
+def skip_on_winforms(test_application_type: str) -> None:
+    """Skip test if running on WinForms application.
+
+    Equivalent to C# TestFixture exclusions for WinForms.
+    Used for tests that only work on WPF (e.g., most pattern tests).
+
+    :param test_application_type: Application type ("WinForms" or "WPF").
+    """
+    if test_application_type == "WinForms":
+        pytest.skip("Not supported on WinForms")
+
+
+@pytest.fixture
+def skip_on_wpf(test_application_type: str) -> None:
+    """Skip test if running on WPF application.
+
+    Used for tests that only work on WinForms.
+
+    :param test_application_type: Application type ("WinForms" or "WPF").
+    """
+    if test_application_type == "WPF":
+        pytest.skip("Not supported on WPF")
+
+
+@pytest.fixture
+def skip_on_uia2(ui_automation_type: UIAutomationTypes) -> None:
+    """Skip test if running on UIA2.
+
+    Equivalent to C# UtilityMethods.IgnoreOnUIA2().
+    Used for tests requiring UIA3-specific features.
+
+    :param ui_automation_type: UI Automation type (UIA2 or UIA3).
+    """
+    if ui_automation_type == UIAutomationTypes.UIA2:
+        pytest.skip("Only run test in UIA3 context")
+
+
+@pytest.fixture
+def skip_on_uia3(ui_automation_type: UIAutomationTypes) -> None:
+    """Skip test if running on UIA3.
+
+    Used for tests requiring UIA2-specific features.
+
+    :param ui_automation_type: UI Automation type (UIA2 or UIA3).
+    """
+    if ui_automation_type == UIAutomationTypes.UIA3:
+        pytest.skip("Only run test in UIA2 context")
+
+
+@pytest.fixture
+def require_uia3_winforms(ui_automation_type: UIAutomationTypes, test_application_type: str) -> None:
+    """Skip test unless running on UIA3 + WinForms combination.
+
+    Matches C# SpinnerTests which only has:
+    [TestFixture(AutomationType.UIA3, TestApplicationType.WinForms)]
+
+    :param ui_automation_type: UI Automation type (UIA2 or UIA3).
+    :param test_application_type: Application type ("WinForms" or "WPF").
+    """
+    if not (ui_automation_type == UIAutomationTypes.UIA3 and test_application_type == "WinForms"):
+        pytest.skip("Only runs on UIA3 + WinForms (spinner control limitation)")
+
+
+@pytest.fixture
+def skip_on_uia3_winforms(ui_automation_type: UIAutomationTypes, test_application_type: str) -> None:
+    """Skip test if running on UIA3 + WinForms combination.
+
+    Matches C# WindowTests which excludes:
+    [TestFixture(AutomationType.UIA3, TestApplicationType.WinForms)]
+    Used for context menu tests that fail on this combination.
+
+    :param ui_automation_type: UI Automation type (UIA2 or UIA3).
+    :param test_application_type: Application type ("WinForms" or "WPF").
+    """
+    if ui_automation_type == UIAutomationTypes.UIA3 and test_application_type == "WinForms":
+        pytest.skip("Context menu of WinForms is not working with UIA3 on newer .NET versions")

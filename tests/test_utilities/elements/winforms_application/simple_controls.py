@@ -16,7 +16,6 @@ from flaui.core.automation_elements import (
     TabItem,
     TextBox,
 )
-from flaui.core.definitions import ControlType
 from flaui.core.input import Wait
 from flaui.lib.exceptions import ElementNotFound
 
@@ -202,24 +201,33 @@ class SimpleControlsElements(AbtstractControlCollection):
     def spinner(self) -> Spinner:
         """Returns Spinner control
 
+        Note: Spinner control only works with UIA3 + WinForms due to platform limitations.
+        This matches C# FlaUI SpinnerTests which only runs on that combination.
+
         :return: Spinner element
+        :raises ElementNotFound: If spinner control is not found (expected on non-UIA3+WinForms)
         """
         try:
             return self.main_window.find_first_descendant(
                 condition=self._cf.by_automation_id("numericUpDown1")
             ).as_spinner()
-            return self.parent_element.find_first_child(self._cf.by_control_type(ControlType.Spinner))
         except ElementNotFound:
-            # A hacky workaround since AutomationID of the spinner sometimes returns as uuid and breaks the unit tests
+            # Fallback: A hacky workaround since AutomationID sometimes returns as uuid
             # This is particularly noticeable when running bulk tests
-            elements = [
-                _
-                for _ in self.main_window.find_all_descendants(condition=self._cf.by_name("Spinner"))
-                if _.automation_id not in ["label2", "dateTimePicker1", "ProgressBar", "Slider"]
-            ]
-            if not elements:
-                raise ElementNotFound("Spinner control not found")
-            return elements[0].as_spinner()
+            try:
+                elements = [
+                    _
+                    for _ in self.main_window.find_all_descendants(condition=self._cf.by_name("Spinner"))
+                    if _.automation_id not in ["label2", "dateTimePicker1", "ProgressBar", "Slider"]
+                ]
+                if elements:
+                    return elements[0].as_spinner()
+            except ElementNotFound:
+                pass
+            # If we still can't find it, this is expected behavior for non-UIA3+WinForms
+            raise ElementNotFound(
+                "Spinner control not found. Note: Spinner only works with UIA3 + WinForms (C# platform limitation)"
+            )
 
     @property
     def date_picker(self) -> DateTimePicker:

@@ -4,31 +4,40 @@ from typing import Any, Generator
 
 from dirty_equals import HasAttributes
 from flaui.core.automation_elements import Spinner
-from flaui.lib.enums import UIAutomationTypes
 import pytest
 
 from tests.test_utilities.elements.winforms_application import WinFormsApplicationElements
 from tests.test_utilities.elements.wpf_application import WPFApplicationElements
 
 
-@pytest.mark.xfail(reason="Spinner control on WinForms is sometimes unavailable while running bulk tests")
+@pytest.mark.platform_limitation
+@pytest.mark.uia3_only
+@pytest.mark.winforms_only
+@pytest.mark.xfail(
+    reason="Spinner control element finding is flaky - AutomationID sometimes returns as uuid. "
+    "This is a known issue mentioned in element locator comments, particularly noticeable in bulk test runs."
+)
 class TestSpinner:
-    """Tests for Spinner control."""
+    """Tests for Spinner control.
+
+    C# SpinnerTests only runs on UIA3 + WinForms due to platform limitation:
+    "The spinner control does not work with UIA2/WinForms anymore due to bugs in Windows / .NET"
+
+    KNOWN ISSUE: Element finding is flaky due to AutomationID instability.
+    """
 
     @pytest.fixture(name="spinner")
     def get_spinner(
         self,
         test_application: WinFormsApplicationElements | WPFApplicationElements,
-        ui_automation_type: UIAutomationTypes,
-        test_application_type: str,
+        require_uia3_winforms: None,
     ) -> Generator[Spinner, Any, None]:
         """Returns the spinner element.
 
         :param test_application: Test application elements.
+        :param require_uia3_winforms: Fixture that skips if not UIA3+WinForms.
         :return: Test spinner element.
         """
-        if not (ui_automation_type == UIAutomationTypes.UIA3 and test_application_type == "WinForms"):
-            pytest.skip("Only runs for UIA3 + WinForms")
         yield test_application.simple_controls_tab.spinner  # type: ignore
 
     def test_set_value(self, spinner: Spinner) -> None:
@@ -36,11 +45,6 @@ class TestSpinner:
         for value_to_set in [6.0, 4.0]:
             spinner.value = value_to_set
             assert spinner == HasAttributes(value=value_to_set), "Set value is not correct."
-
-    @pytest.fixture()
-    def skip_if_non_compliant(self, ui_automation_type: UIAutomationTypes, test_application_type: str) -> None:
-        if not (ui_automation_type == UIAutomationTypes.UIA3 and test_application_type == "WinForms"):
-            pytest.skip("Only runs for UIA3 + WinForms")
 
     def test_increment(self, spinner: Spinner) -> None:
         """Tests incremental increase of Spinner controls"""
