@@ -1,5 +1,6 @@
 """Fixtures for the test suite."""
 
+import sys
 from typing import Any, Generator
 
 # isort: on
@@ -43,6 +44,101 @@ def caplog(caplog: LogCaptureFixture) -> Generator[LogCaptureFixture, Any, None]
     )
     yield caplog
     logger.remove(handler_id)
+
+
+# =============================================================================
+# Custom marker: skip_if_matrix
+# =============================================================================
+def pytest_configure(config: pytest.Config) -> None:
+    """Register custom markers used in this test suite."""
+    config.addinivalue_line(
+        "markers",
+        "skip_if_matrix(matrix, reason=None): Skip test for specific combinations of UIA type and app type.\n"
+        '  Example: @pytest.mark.skip_if_matrix({"ui_automation_type": [UIAutomationTypes.UIA2], "test_app_type": ["WinForms"]})',
+    )
+    config.addinivalue_line(
+        "markers",
+        "skip_notepad_on_win11(reason=None): Skip tests that launch Notepad on Windows 11 where Notepad is a Store app.",
+    )
+
+
+def _extract_matrix_context(item: pytest.Item) -> tuple[str | None, str | None]:
+    """Best-effort extraction of (uia_label, app_label) from parametrized test id.
+
+    Expected ids look like: UIA2_WinForms, UIA3_WPF, etc. We parse from either
+    item.callspec.id (if present) or fallback to the nodeid string.
+    """
+    ident = getattr(getattr(item, "callspec", None), "id", "") or item.nodeid
+    uia_label: str | None = None
+    app_label: str | None = None
+
+    # Common id format: "... [UIA2_WinForms]" or just "UIA2_WinForms"
+    for token in ("UIA2_WinForms", "UIA2_WPF", "UIA3_WinForms", "UIA3_WPF"):
+        if token in ident:
+            uia_label, app_label = token.split("_", 1)
+            break
+
+    # Fallback heuristics if id format differs
+    if uia_label is None:
+        if "UIA2" in ident:
+            uia_label = "UIA2"
+        elif "UIA3" in ident:
+            uia_label = "UIA3"
+    if app_label is None:
+        if "WinForms" in ident:
+            app_label = "WinForms"
+        elif "WPF" in ident:
+            app_label = "WPF"
+    return uia_label, app_label
+
+
+def pytest_runtest_setup(item: pytest.Item) -> None:
+    """Evaluate custom skip markers before test setup proceeds."""
+    # First: skip Notepad-based tests on Windows 11
+    notepad_marker = item.get_closest_marker("skip_notepad_on_win11")
+    if notepad_marker:
+        try:
+            is_win11 = sys.getwindowsversion().build >= 22000  # type: ignore[attr-defined]
+        except Exception:
+            is_win11 = False
+        if is_win11:
+            pytest.skip(notepad_marker.kwargs.get("reason") or "Windows 11 Store Notepad - see issue #89")
+
+    # Second: matrix-based skipping
+    marker = item.get_closest_marker("skip_if_matrix")
+    if not marker:
+        return
+
+    matrix = marker.args[0] if marker.args else {}
+    reason = marker.kwargs.get("reason", "Skipped by matrix")
+
+    uia_wanted = matrix.get("ui_automation_type")
+    app_wanted = matrix.get("test_app_type")
+
+    uia_label, app_label = _extract_matrix_context(item)
+
+    def _match_uia() -> bool:
+        """Check if the UI Automation type matches the desired matrix criteria."""
+        if not uia_wanted:
+            return True
+        # Accept enums (UIAutomationTypes.UIA2/UIA3) or strings ("UIA2"/"UIA3")
+        wanted_labels: list[str] = []
+        for u in uia_wanted:
+            try:
+                wanted_labels.append(getattr(u, "name", str(u)))
+            except Exception:
+                wanted_labels.append(str(u))
+        return uia_label is not None and any(w in uia_label for w in wanted_labels)
+
+    def _match_app() -> bool:
+        """Check if the application type matches the desired matrix criteria."""
+        if not app_wanted:
+            return True
+        wanted_apps = [str(a) for a in app_wanted]
+        return app_label is not None and any(a == app_label for a in wanted_apps)
+
+    if _match_uia() and _match_app():
+        pytest.skip(reason)
 
 
 @pytest.fixture(scope="session")

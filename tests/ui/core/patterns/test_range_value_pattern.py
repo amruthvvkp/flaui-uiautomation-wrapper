@@ -1,6 +1,6 @@
-# """
-# Test for RangeValue pattern, ported from C# RangeValuePatternTests.cs.
-# """
+"""
+Test for RangeValue pattern, ported from C# RangeValuePatternTests.cs.
+"""
 
 # from flaui.core.automation_elements import AutomationElement
 # from flaui.core.condition_factory import ConditionFactory

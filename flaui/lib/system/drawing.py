@@ -607,7 +607,7 @@ class Point(BaseModel):
 
     Note that this doesn't handle PointF object and the methods are currently listed only for Point object."""
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, revalidate_instances="always")
 
     raw_value: Union[int, Tuple[int, int], Tuple[float, float], CSPoint, Size]
 
@@ -620,7 +620,8 @@ class Point(BaseModel):
         :return: Parsed C# object
         """
         if isinstance(v, CSPoint):
-            return v
+            # Always create a new Point object to avoid shared mutable state
+            return CSPoint(v.X, v.Y)  # pyright: ignore[reportAttributeAccessIssue]
         if isinstance(v, Size):
             return CSPoint(v.raw_value)
 
@@ -726,22 +727,21 @@ class Point(BaseModel):
         else:
             raise TypeError(f"Unsupported operand type(s) for +: 'Point' and '{type(other)}'")
 
-    def __eq__(self, other: Union[Point, None]) -> bool:
+    def __eq__(self, other: object) -> bool:
         """Compares two Point objects for equality
 
-        :param other: The other Point object to compare with
-        :return: True if both X and Y coordinates are equal, False otherwise.
+        Accepts any object (matches BaseModel signature) and returns False when the
+        other object is not a Point.
         """
         if not isinstance(other, Point):
-            return False  # Not a Point object
+            return False
 
         return self.x == other.x and self.y == other.y
 
-    def __ne__(self, other: Union[Point, None]) -> bool:
+    def __ne__(self, other: object) -> bool:
         """Compares two Point objects for inequality
 
-        :param other: The other Point object to compare with.
-        :return: True if X and Y coordinates are different, False otherwise
+        Accepts any object (matches BaseModel signature).
         """
         return not self == other
 
@@ -897,22 +897,21 @@ class Size(BaseModel):
 
         return Size(raw_value=self.raw_value.Add(self.raw_value, other))  # type: ignore
 
-    def __eq__(self, other: Union[Size, None]) -> bool:
+    def __eq__(self, other: object) -> bool:
         """Compares two Size objects for equality
 
-        :param other: The other Size object to compare with
-        :return: True if both X and Y coordinates are equal, False otherwise.
+        Accepts any object (matches BaseModel signature) and returns False when the
+        other object is not a Size.
         """
         if not isinstance(other, Size):
-            return False  # Not a Size object
+            return False
 
         return self.width == other.width and self.height == other.height
 
-    def __ne__(self, other: Union[Size, None]) -> bool:
+    def __ne__(self, other: object) -> bool:
         """Compares two Size objects for inequality
 
-        :param other: The other Size object to compare with.
-        :return: True if X and Y coordinates are different, False otherwise
+        Accepts any object (matches BaseModel signature).
         """
         return not self == other
 
@@ -1184,22 +1183,21 @@ class Rectangle(BaseModel):
         """
         return Rectangle(raw_value=self.raw_value.Union(*[_.raw_value for _ in others]))  # type: ignore
 
-    def __eq__(self, other: Union[Rectangle, None]) -> bool:
+    def __eq__(self, other: object) -> bool:
         """Tests whether two Rectangle structures have equal location and size.
 
-        :param other: The other Rectangle object to compare with
-        :return: True if both X and Y coordinates are equal, False otherwise.
+        Accepts any object (matches BaseModel signature) and returns False when the
+        other object is not a Rectangle.
         """
         if not isinstance(other, Rectangle):
-            return False  # Not a Point object
+            return False
 
         return self.left == other.left and self.right == other.right
 
-    def __ne__(self, other: Union[Rectangle, None]) -> bool:
-        """Compares two Point objects for inequality
+    def __ne__(self, other: object) -> bool:
+        """Compares two Rectangle objects for inequality
 
-        :param other: The other Point object to compare with.
-        :return: True if X and Y coordinates are different, False otherwise
+        Accepts any object (matches BaseModel signature).
         """
         return not self == other
 

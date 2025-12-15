@@ -4,7 +4,6 @@ from typing import Any, Generator
 
 from dirty_equals import HasAttributes
 from flaui.core.automation_elements import TextBox
-from flaui.core.input import Wait
 from flaui.lib.system.drawing import Color
 import pytest
 
@@ -21,6 +20,7 @@ class TestTextbox:
     def get_textbox_element(
         self, test_application: WinFormsApplicationElements | WPFApplicationElements
     ) -> Generator[TextBox, Any, None]:
+        """Gets the Textbox element."""
         textbox = test_application.simple_controls_tab.test_text_box
         assert textbox == HasAttributes(text=self.DEFAULT_TEXT_BOX_TEXT), "Text box should have default text"
         yield textbox
@@ -35,8 +35,7 @@ class TestTextbox:
     def test_enter(self, textbox: TextBox) -> None:
         """Tests enter method of Textbox controls"""
         text_to_set = "Hello World"
-        textbox.enter(text_to_set)
-        Wait.until_input_is_processed()
+        textbox.enter(text_to_set, post_wait=True)
         assert textbox == HasAttributes(text=text_to_set), "Text box should have new text"
 
     def test_textbox_color(

@@ -22,10 +22,12 @@ class Retry:
 
     @staticmethod
     def _now_ms() -> float:
+        """Get the current time in milliseconds."""
         return time.monotonic() * 1000.0
 
     @staticmethod
     def _sleep_ms(ms: int) -> None:
+        """Sleep for the specified number of milliseconds."""
         time.sleep(ms / 1000.0)
 
     @staticmethod
@@ -138,7 +140,7 @@ class Retry:
         timeout_message: Optional[str] = None,
         last_value_on_timeout: bool = False,
         default_on_timeout: Optional[T] = None,
-    ) -> T:
+    ) -> bool:
         """Retries while the predicate returns True; succeeds when it becomes False.
 
         :param retry_method: The method to retry.
@@ -150,7 +152,7 @@ class Retry:
         :param last_value_on_timeout: Flag to indicate that last value should be returned on timeout, defaults to False
         :param default_on_timeout: Defines a default value in case of a timeout, defaults to None
         :raises TimeoutError: If the timeout has been reached
-        :return: Result of the retry method
+        :return: True if the predicate became False before timeout, False otherwise
         """
         start = Retry._now_ms()
         while True:
@@ -176,7 +178,7 @@ class Retry:
         timeout_message: Optional[str] = None,
         last_value_on_timeout: bool = False,
         default_on_timeout: Optional[T] = None,
-    ) -> T:
+    ) -> bool:
         """Retries while the predicate returns False; succeeds when it becomes True.
 
         :param retry_method: The method to retry.
@@ -188,7 +190,7 @@ class Retry:
         :param last_value_on_timeout: Flag to indicate that last value should be returned on timeout, defaults to False
         :param default_on_timeout: Defines a default value in case of a timeout, defaults to None
         :raises TimeoutError: If the timeout has been reached
-        :return: Result of the retry method
+        :return: True if the predicate became True before timeout, False otherwise
         """
         start = Retry._now_ms()
         while True:
@@ -229,17 +231,14 @@ class Retry:
         :return: Result of the retry method
         """
         start = Retry._now_ms()
-        last_value: Optional[T] = None
         while True:
             try:
                 val = retry_method()
-                last_value = val
                 if val is not None:
                     return val
-            except (ValueError, AssertionError) as e:
+            except (ValueError, AssertionError):
                 if not ignore_exception:
                     raise
-                last_value = e  # type: ignore
             if Retry._now_ms() - start >= timeout:
                 if throw_on_timeout:
                     raise TimeoutError(timeout_message or f"Timeout of {timeout} ms exceeded.")

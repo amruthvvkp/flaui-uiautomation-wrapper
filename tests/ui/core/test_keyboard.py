@@ -3,14 +3,16 @@
 import time
 
 from flaui.core.application import Application
-from flaui.lib.keyboard import Keyboard, VirtualKeyShort
+from flaui.core.input import Keyboard
+from flaui.core.windows_api import VirtualKeyShort
 from flaui.modules.automation import Automation
-from flaui.core.definitions import ControlType
+import pytest
 
 
 class TestKeyboard:
     """Tests for keyboard input operations."""
 
+    @pytest.mark.skip_notepad_on_win11(reason="Windows 11 Notepad is a Store app; see issue #89")
     def test_keyboard_typing(self, automation: Automation) -> None:
         """Test various keyboard typing operations including special characters and keys.
 
@@ -40,29 +42,14 @@ class TestKeyboard:
 
             time.sleep(0.5)
 
-            # Close window without saving
+            # Close window - force kill since we have unsaved content
+            # Using kill() avoids the "Save changes?" dialog that blocks graceful close
             window.close()
-            time.sleep(0.5)
-
-            # Handle "Don't Save" dialog if it appears
-            try:
-                dialog = window.find_first_child(
-                    window.condition_factory.by_control_type_and_name(
-                        ControlType.Window,
-                        "Notepad",
-                    )
-                )
-                if dialog is not None:
-                    dont_save_button = dialog.find_first_child(
-                        dialog.condition_factory.by_name("Don't Save")
-                    )
-                    if dont_save_button is not None:
-                        dont_save_button.click()
-            except Exception:
-                pass
+            time.sleep(0.3)
 
         finally:
+            # Force kill to avoid blocking on save dialog
             try:
-                app.dispose()
+                app.kill()
             except Exception:
                 pass

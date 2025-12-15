@@ -9,13 +9,13 @@ Successfully ported **~60+ tests** from FlaUI C# to Python, covering core functi
 - **[test_cache.py](tests/ui/core/test_cache.py)** - Cache request and caching behavior (1 test)
   - Ported from `CacheTests.cs::RowsAndCellsTest`
   - Tests cache request with TreeScope.Descendants and property caching
-  
+
 - **[test_getter.py](tests/ui/core/test_getter.py)** - Pattern and property getters with caching (12 tests)
   - Ported from `GetterTests.cs` (complete file)
   - Pattern tests: CorrectPattern, CorrectPatternCached, UnsupportedPattern, etc.
   - Property tests: CorrectProperty, CorrectPropertyCached, UnsupportedProperty, etc.
   - Tests proper exception handling (PatternNotSupportedException, PropertyNotCachedException)
-  
+
 - **[test_search.py](tests/ui/core/test_search.py)** - Search and retry functionality (2 tests)
   - Ported from `SearchTests.cs`
   - test_search_with_retry: Tests Retry.find() with delayed element appearance
@@ -38,7 +38,7 @@ Successfully ported **~60+ tests** from FlaUI C# to Python, covering core functi
   - Ported from `KeyboardTests.cs::KeyboardTest`
   - Tests Keyboard.type() with special characters (é, ö, Bengali script)
   - Tests virtual key typing (VirtualKeyShort.KEY_Z, LEFT, DELETE, etc.)
-  
+
 - **[test_mouse.py](tests/ui/core/test_mouse.py)** - Mouse input (5 tests)
   - Ported from `MouseTests.cs`
   - test_mouse_move: Mouse position and relative movement
@@ -56,7 +56,7 @@ Successfully ported **~60+ tests** from FlaUI C# to Python, covering core functi
   - test_rectangle_exterior_points: Points 1 pixel outside edges
   - test_rectangle_interior_points: Points 1 pixel inside edges
   - **Note**: Requires adjustment for Python Rectangle API (uses raw_value, not x/y/width/height)
-  
+
 - **[test_retry.py](tests/unit/lib/test_retry.py)** - Retry utility functionality (16 tests)
   - Ported from `RetryTests.cs` (selected tests)
   - while_true tests: Success, timeout, exception handling
@@ -196,16 +196,16 @@ uv run --with coverage coverage html
 test_script:
   - ps: |
       $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
-      
+
       Write-Host "Running unit tests..."
       uv run --group unit-test --no-dev --package flaui-uiautomation-wrapper pytest tests/unit/ -v --junit-xml=unit-results.xml
-      
+
       Write-Host "Running UI core tests (cache, getter, search, xpath)..."
       uv run --group unit-test --no-dev --package flaui-uiautomation-wrapper pytest tests/ui/core/test_cache.py tests/ui/core/test_getter.py tests/ui/core/test_search.py tests/ui/core/test_xpath.py -v --junit-xml=core-results.xml
-      
+
       Write-Host "Running input tests (keyboard, mouse)..."
       uv run --group unit-test --no-dev --package flaui-uiautomation-wrapper pytest tests/ui/core/test_keyboard.py tests/ui/core/test_mouse.py -v --junit-xml=input-results.xml
-      
+
       if ($LASTEXITCODE -ne 0) { Write-Host "Tests failed."; exit 1 }
 ```
 

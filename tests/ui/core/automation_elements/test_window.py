@@ -1,7 +1,7 @@
 """Tests for the Window control, equivalent of C# tests from FlaUI GitHub repository - src\\FlaUI.Core.UITests\\Elements\\WindowTests.cs."""
 
 from dirty_equals import HasAttributes, HasLen
-from flaui.core.input import Mouse, MouseButton, Wait
+from flaui.core.input import Mouse, MouseButton
 from flaui.lib.enums import UIAutomationTypes
 import pytest
 
@@ -26,8 +26,7 @@ class TestWindow:
             pytest.skip("Context menu of WinForms is not working with UIA3 on newer .NET versions")
 
         button = test_application.simple_controls_tab.context_menu_button
-        Mouse.click(button.get_clickable_point(), mouse_button=MouseButton.Right)
-        Wait.until_input_is_processed()
+        Mouse.click(button.get_clickable_point(), mouse_button=MouseButton.Right, post_wait=True)
         try:
             context_menu = test_application.main_window.context_menu
         except Exception:

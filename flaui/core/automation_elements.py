@@ -46,6 +46,8 @@ from flaui.lib.system.drawing import (
 
 
 class ElementModel(BaseModel, abc.ABC):  # pragma: no cover
+    """Automation Element base pydantic abstract class"""
+
     raw_element: Any = Field(
         ..., title="Automation Element", description="Contains the C# automation element in raw form"
     )  # Consider making this a private property
@@ -162,7 +164,15 @@ class ElementBase(ElementModel, abc.ABC):  # pragma: no cover
 
         :return: Framework automation element
         """
-        return self.raw_element.FrameworkAutomationElement
+        raw = self.raw_element
+        # Handle potential double-wrapping: if raw is a Python wrapper, unwrap it
+        if hasattr(raw, "FrameworkAutomationElement"):
+            return raw.FrameworkAutomationElement
+        inner = getattr(raw, "raw_element", None)
+        if inner is not None and hasattr(inner, "FrameworkAutomationElement"):
+            return inner.FrameworkAutomationElement
+        # Fallback: return raw itself if no FrameworkAutomationElement is present
+        return raw
 
     @property
     @handle_csharp_exceptions
@@ -387,12 +397,18 @@ class AutomationElement(ElementBase):
         self.raw_element.CaptureToFile(file_path)
 
     @handle_csharp_exceptions
-    def click(self, move_mouse: bool = False) -> None:
+    def click(
+        self, move_mouse: bool = False, post_wait: Optional[Union[bool, float, Callable[[], None]]] = None
+    ) -> None:
         """Performs a left click on the element.
 
         :param move_mouse: Flag to indicate, if the mouse should move slowly(True) or instantly(False), defaults to False
+        :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
+        from flaui.core.input import Mouse
+
         self.raw_element.Click(move_mouse)
+        Mouse._apply_post_wait(post_wait)
 
     @handle_csharp_exceptions
     def double_click(self, move_mouse: bool = False) -> None:
@@ -577,8 +593,8 @@ class AutomationElement(ElementBase):
         """
         if isinstance(conditions, list):
             # Convert list to C# params array
-            from FlaUI.Core.Conditions import ConditionBase
-            from System import Array
+            from FlaUI.Core.Conditions import ConditionBase  # pyright: ignore[reportMissingImports]
+            from System import Array  # pyright: ignore[reportMissingImports]
 
             cs_conditions = Array[ConditionBase]([c.cs_condition for c in conditions])
             return AutomationElement(raw_element=self.raw_element.FindFirstNested(cs_conditions))
@@ -1442,6 +1458,8 @@ class DateTimePicker(AutomationElement):
 
 
 class Grid(AutomationElement):
+    """Element for grids and tables"""
+
     @property
     @handle_csharp_exceptions
     def row_count(self) -> int:
@@ -1551,10 +1569,26 @@ class Grid(AutomationElement):
     @overload
     def select(self, row_index: int, column_index: None = None, text_to_find: None = None) -> "GridRow": ...
 
+    """Select the first row by text in the given Row index or a combination of Column index along with text_to_find.
+
+    :param row_index: Row index
+    :param column_index: Column index
+    :param text_to_find: Text to find in the column
+    :raises ValueError: On invalid input combination
+    :return: GridRow element
+    """
+
     @overload
     def select(self, row_index: None = None, column_index: int = ..., text_to_find: str = ...) -> "GridRow": ...
 
-    """Element for grids and tables"""
+    """Select the first row by text in the given Row index or a combination of Column index along with text_to_find.
+
+    :param row_index: Row index
+    :param column_index: Column index
+    :param text_to_find: Text to find in the column
+    :raises ValueError: On invalid input combination
+    :return: GridRow element
+    """
 
     @handle_csharp_exceptions
     def select(
@@ -1588,10 +1622,28 @@ class Grid(AutomationElement):
     @overload
     def add_to_selection(self, row_index: int, column_index: None = None, text_to_find: None = None) -> "GridRow": ...
 
+    """Add a row to the selection by index or by text in the given column.
+
+    :param row_index: Row index
+    :param column_index: Column index
+    :param text_to_find: Text to find in the column
+    :raises ValueError: On invalid input combination
+    :return: GridRow element
+    """
+
     @overload
     def add_to_selection(
         self, row_index: None = None, column_index: int = ..., text_to_find: str = ...
     ) -> "GridRow": ...
+
+    """Add a row to the selection by index or by text in the given column.
+
+    :param row_index: Row index
+    :param column_index: Column index
+    :param text_to_find: Text to find in the column
+    :raises ValueError: On invalid input combination
+    :return: GridRow element
+    """
 
     @handle_csharp_exceptions
     def add_to_selection(
@@ -1752,6 +1804,25 @@ class GridRow(SelectionItemAutomationElement):
         :return: GridRow element
         """
         return GridRow(raw_element=self.raw_element.ScrollIntoView())
+
+    @property
+    @handle_csharp_exceptions
+    def cached_children(self) -> List[GridCell]:
+        """Gets cached child cells when a CacheRequest is active.
+
+        :return: List of cached GridCell elements
+        """
+        cached = getattr(self.raw_element, "CachedChildren", None)
+        if cached is None:
+            # Fall back to non-cached children if cache is not active
+            return self.cells
+        result: List[GridCell] = []
+        for cell in cached:
+            raw = getattr(cell, "raw_element", None)
+            if raw is None:
+                raw = cell
+            result.append(GridCell(raw_element=raw))
+        return result
 
 
 class GridCell(AutomationElement):
@@ -2324,22 +2395,49 @@ class Tab(AutomationElement):
         return [TabItem(raw_element=_) for _ in self.raw_element.TabItems]
 
     @overload
-    def select_tab_item(self, index: int, value: None = None) -> None: ...
+    def select_tab_item(
+        self, index: int, value: None = None, post_wait: Optional[Union[bool, float, Callable[[], None]]] = None
+    ) -> None: ...
+
+    """Selects a TabItem by index
+
+    :param index: Selects by index value
+    :param value: Selects by tab value
+    :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
+    """
 
     @overload
-    def select_tab_item(self, index: None = None, value: str = ...) -> None: ...
+    def select_tab_item(
+        self, index: None = None, value: str = ..., post_wait: Optional[Union[bool, float, Callable[[], None]]] = None
+    ) -> None: ...
+
+    """Selects a TabItem by index
+
+    :param index: Selects by index value
+    :param value: Selects by tab value
+    :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
+    """
 
     @handle_csharp_exceptions
-    def select_tab_item(self, index: Optional[int] = None, value: Optional[str] = None) -> None:
+    def select_tab_item(
+        self,
+        index: Optional[int] = None,
+        value: Optional[str] = None,
+        post_wait: Optional[Union[bool, float, Callable[[], None]]] = None,
+    ) -> None:
         """Selects a TabItem by index
 
         :param index: Selects by index value
         :param value: Selects by tab value
+        :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
+        from flaui.core.input import Mouse
+
         if index is None and value is None:
             raise ValueError("Either index or value have to be set for selected TabItem")
         try:
             self.raw_element.SelectTabItem(index) if index is not None else self.raw_element.SelectTabItem(value)
+            Mouse._apply_post_wait(post_wait)
         except Exception as e:
             logging.error("Failed to select tab item: %s", e)
 
@@ -2381,12 +2479,16 @@ class TextBox(AutomationElement):
         return self.raw_element.IsReadOnly
 
     @handle_csharp_exceptions
-    def enter(self, value: str):
+    def enter(self, value: str, post_wait: Optional[Union[bool, float, Callable[[], None]]] = None):
         """Simulate typing in text. This is slower than setting Text but raises more events.
 
         :param value: Value to enter in the element
+        :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
+        from flaui.core.input import Mouse
+
         self.raw_element.Enter(value)
+        Mouse._apply_post_wait(post_wait)
 
 
 class Thumb(AutomationElement):
@@ -2711,6 +2813,8 @@ class IAutomationProperty(BaseModel, abc.ABC):
 
 
 class AutomationProperty(IAutomationProperty):
+    """Class to interact with an automation property."""
+
     raw_property: Any
 
     @property
@@ -2808,10 +2912,13 @@ class AutomationProperty(IAutomationProperty):
 
     @handle_csharp_exceptions
     def __str__(self):
+        """Returns the string representation of the value or default value."""
         return str(self.value_or_default)
 
 
 class Properties(BaseModel):
+    """Class to interact with automation properties."""
+
     raw_properties: Any
 
     @property

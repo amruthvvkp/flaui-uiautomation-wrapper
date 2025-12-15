@@ -28,6 +28,10 @@ class TestCache:
         """
         yield test_application.complex_controls_tab.list_view_grid
 
+    @pytest.mark.skip_if_matrix(
+        {"ui_automation_type": [UIAutomationTypes.UIA2], "test_app_type": ["WinForms"]},
+        reason="Tab element not exposed in UIA2_WinForms",
+    )
     def test_rows_and_cells_cached(self, ui_automation_type: UIAutomationTypes, list_view_grid: Grid) -> None:
         """Tests that rows and cells are cached and have correct values using CacheRequest wrapper.
 

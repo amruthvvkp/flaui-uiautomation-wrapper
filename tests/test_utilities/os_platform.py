@@ -1,3 +1,5 @@
+"""Utilities to determine the OS platform."""
+
 import platform
 import sys
 

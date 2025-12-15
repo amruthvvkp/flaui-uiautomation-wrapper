@@ -2,9 +2,10 @@
 
 from enum import Enum
 import time
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, Callable, List, Optional, Tuple, Union
 
 from FlaUI.Core.Input import (  # pyright: ignore
+    Interpolation as CSInterpolation,
     Keyboard as CSKeyboard,
     Mouse as CSMouse,
     MouseButton as CSMouseButton,
@@ -68,6 +69,14 @@ class Keyboard:
         :param text: Text/Charecters/VirtualKeyShort key to enter
         """
         CSKeyboard.Type(text if isinstance(text, str) else [_.value for _ in text])
+
+    @staticmethod
+    def type_key(virtual_key: VirtualKeyShort) -> None:
+        """Types a single virtual key (press and release).
+
+        :param virtual_key: VirtualKeyShort key to type
+        """
+        CSKeyboard.Type(virtual_key.value)
 
     @staticmethod
     def type_simultaneously(text: List[VirtualKeyShort]) -> None:
@@ -163,28 +172,76 @@ class MouseButton(Enum):
     XButton2 = CSMouseButton.XButton2  # The fifth mouse button
 
 
+class _MousePositionDescriptor:
+    """Descriptor to make Mouse.position work as a class-level property."""
+
+    def __get__(self, obj, objtype=None) -> Point:
+        """Get the current mouse position as a Point object."""
+        pos = CSMouse.Position
+        return Point(raw_value=(pos.X, pos.Y))
+
+    def __set__(self, obj, value: Point) -> None:
+        """Set the current mouse position from a Point object."""
+        CSMouse.Position = value.raw_value
+
+
 class Mouse:
     """Mouse class to simulate mouse input, wrapper over Mouse class in FlaUI.Core.Input namespace"""
 
-    position: Point = Point(raw_value=CSMouse.Position)  # The current position of the mouse cursor
-    are_buttons_swapped: bool = CSMouse.AreButtonsSwapped  # Flag to indicate if the buttons are swapped (left-handed).
+    # The number of pixels the mouse is moved per millisecond (used to calculate duration)
+    move_pixels_per_millisecond: float = 0.5
+    # The number of pixels the mouse is moved per step (used to calculate interval)
+    move_pixels_per_step: float = 10.0
+
+    position = _MousePositionDescriptor()  # The current position of the mouse cursor
 
     @staticmethod
-    def move_by(delta_x: int, delta_y: int) -> None:
+    def are_buttons_swapped() -> bool:
+        """Flag to indicate if the buttons are swapped (left-handed)."""
+        return CSMouse.AreButtonsSwapped
+
+    @staticmethod
+    def _apply_post_wait(post_wait: Optional[Union[bool, float, Callable[[], None]]]) -> None:
+        """Applies post-wait logic after mouse operations."""
+        if not post_wait:
+            return
+        if callable(post_wait):
+            post_wait()
+            return
+        if isinstance(post_wait, (int, float)):
+            Wait.until_input_is_processed(float(post_wait))
+            return
+        # post_wait is True
+        Wait.until_input_is_processed()
+
+    @staticmethod
+    def move_by(
+        delta_x: int,
+        delta_y: int,
+        post_wait: Optional[Union[bool, float, Callable[[], None]]] = None,
+    ) -> None:
         """Moves the mouse by a given delta from the current position.
 
         :param delta_x: The delta for the x-axis
         :param delta_y: The delta for y-axis
+        :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
         CSMouse.MoveBy(delta_x, delta_y)
+        Mouse._apply_post_wait(post_wait)
 
     @staticmethod
-    def move_to(new_x: Optional[int] = None, new_y: Optional[int] = None, new_position: Optional[Point] = None) -> None:
+    def move_to(
+        new_x: Optional[int] = None,
+        new_y: Optional[int] = None,
+        new_position: Optional[Point] = None,
+        post_wait: Optional[Union[bool, float, Callable[[], None]]] = None,
+    ) -> None:
         """Moves the mouse to a new position.
 
         :param new_x: The new position on x-axis
         :param new_y: The new position on y-axis
         :param new_position: The new position for the mouse.
+        :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
         if (new_x is not None and new_y is not None) or new_position is not None:
             CSMouse.MoveTo(new_position.raw_value) if new_position is not None else CSMouse.MoveTo(new_x, new_y)
@@ -192,135 +249,317 @@ class Mouse:
             raise ValueError(
                 "`new_x, new_y or new_position argument needs to be sent for the Mouse to move to a new position`"
             )
+        Mouse._apply_post_wait(post_wait)
 
     @staticmethod
-    def click(point: Optional[Point] = None, mouse_button: MouseButton = MouseButton.Left) -> None:
+    def click(
+        point: Optional[Point] = None,
+        mouse_button: MouseButton = MouseButton.Left,
+        post_wait: Optional[Union[bool, float, Callable[[], None]]] = None,
+    ) -> None:
         """Clicks the specified mouse button at the current location.
 
         :param point:The position to move to before clicking.
         :param mouse_button: The mouse button to click. Defaults to the left button, defaults to MouseButton.Left
+        :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
         CSMouse.Click(mouse_button.value) if point is None else CSMouse.Click(point.raw_value, mouse_button.value)
+        Mouse._apply_post_wait(post_wait)
 
     @staticmethod
-    def double_click(point: Optional[Point] = None, mouse_button: MouseButton = MouseButton.Left) -> None:
+    def double_click(
+        point: Optional[Point] = None,
+        mouse_button: MouseButton = MouseButton.Left,
+        post_wait: Optional[Union[bool, float, Callable[[], None]]] = None,
+    ) -> None:
         """Double-Clicks the specified mouse button at the current location.
 
         :param point:The position to move to before clicking.
         :param mouse_button: The mouse button to click. Defaults to the left button, defaults to MouseButton.Left
+        :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
-        CSMouse.DoubleClick(mouse_button.value) if point is None else CSMouse.Click(point.raw_value, mouse_button.value)
+        CSMouse.DoubleClick(mouse_button.value) if point is None else CSMouse.DoubleClick(
+            point.raw_value, mouse_button.value
+        )
+        Mouse._apply_post_wait(post_wait)
 
     @staticmethod
-    def down(mouse_button: MouseButton = MouseButton.Left) -> None:
+    def down(
+        mouse_button: MouseButton = MouseButton.Left,
+        post_wait: Optional[Union[bool, float, Callable[[], None]]] = None,
+    ) -> None:
         """Sends a mouse down command for the specified mouse button.
 
         :param mouse_button: The mouse button to press, defaults to MouseButton.Left
+        :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
         CSMouse.Down(mouse_button.value)
+        Mouse._apply_post_wait(post_wait)
 
     @staticmethod
-    def up(mouse_button: MouseButton = MouseButton.Left) -> None:
+    def up(
+        mouse_button: MouseButton = MouseButton.Left,
+        post_wait: Optional[Union[bool, float, Callable[[], None]]] = None,
+    ) -> None:
         """Sends a mouse up command for the specified mouse button.
 
         :param mouse_button: The mouse button to press, defaults to MouseButton.Left
+        :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
         CSMouse.Up(mouse_button.value)
+        Mouse._apply_post_wait(post_wait)
 
     @staticmethod
-    def scroll(lines: int) -> None:
+    def scroll(lines: int, post_wait: Optional[Union[bool, float, Callable[[], None]]] = None) -> None:
         """Simulates scrolling of the mouse wheel up or down.
 
         :param lines: Lines to scroll
+        :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
         CSMouse.Scroll(lines)
+        Mouse._apply_post_wait(post_wait)
 
     @staticmethod
-    def horizontal_scroll(lines: int) -> None:
+    def horizontal_scroll(lines: int, post_wait: Optional[Union[bool, float, Callable[[], None]]] = None) -> None:
         """Simulates horizontal scrolling of the mouse wheel left or right.
 
         :param lines: Lines to scroll horizontally
+        :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
         CSMouse.HorizontalScroll(lines)
+        Mouse._apply_post_wait(post_wait)
 
     @staticmethod
-    def drag_horizontally(starting_point: Point, distance: int, mouse_button: MouseButton = MouseButton.Left) -> None:
+    def drag_horizontally(
+        starting_point: Point,
+        distance: int,
+        mouse_button: MouseButton = MouseButton.Left,
+        post_wait: Optional[Union[bool, float, Callable[[], None]]] = None,
+    ) -> None:
         """Drags the mouse horizontally.
 
         :param starting_point: Starting point of the drag
         :param distance: The distance to drag, + for right, - for left
         :param mouse_button: The mouse button to use for dragging, defaults to MouseButton.Left
+        :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
         CSMouse.DragHorizontally(starting_point.raw_value, distance, mouse_button.value)
+        Mouse._apply_post_wait(post_wait)
 
     @staticmethod
-    def drag_vertically(starting_point: Point, distance: int, mouse_button: MouseButton = MouseButton.Left) -> None:
+    def drag_vertically(
+        starting_point: Point,
+        distance: int,
+        mouse_button: MouseButton = MouseButton.Left,
+        post_wait: Optional[Union[bool, float, Callable[[], None]]] = None,
+    ) -> None:
         """Drags the mouse vertically.
 
         :param starting_point: Starting point of the drag
         :param distance: The distance to drag, + for right, - for left
         :param mouse_button: The mouse button to use for dragging, defaults to MouseButton.Left
+        :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
         CSMouse.DragVertically(starting_point.raw_value, distance, mouse_button.value)
+        Mouse._apply_post_wait(post_wait)
 
     @staticmethod
     def drag(
         starting_point: Point,
+        ending_point: Optional[Point] = None,
         distance_x: Optional[int] = None,
         distance_y: Optional[int] = None,
-        ending_point: Optional[Point] = None,
         mouse_button: MouseButton = MouseButton.Left,
+        post_wait: Optional[Union[bool, float, Callable[[], None]]] = None,
     ) -> None:
-        """Drags the mouse vertically.
+        """Drags the mouse from starting point to ending point or by distance.
 
         :param starting_point: Starting point of the drag
+        :param ending_point: Ending point of the drag (if using point-to-point drag)
         :param distance_x: The x distance to drag, + for right, - for left
         :param distance_y: The y distance to drag, + for right, - for left
-        :param ending_point: Ending point of the drag
         :param mouse_button: The mouse button to use for dragging, defaults to MouseButton.Left
+        :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
-        if (distance_x is not None and distance_y is not None) or ending_point is not None:
-            CSMouse.DragVertically(
-                starting_point.raw_value, distance_x, distance_y, mouse_button.value
-            ) if ending_point is None else CSMouse.DragVertically(
-                starting_point.raw_value, ending_point.raw_value, mouse_button.value
-            )
+        if ending_point is not None:
+            CSMouse.Drag(starting_point.raw_value, ending_point.raw_value, mouse_button.value)
+        elif distance_x is not None and distance_y is not None:
+            CSMouse.Drag(starting_point.raw_value, distance_x, distance_y, mouse_button.value)
         else:
-            raise ValueError(
-                "`distance_x and distance_y or ending_point has to be sent to the arguments to drag the mouse."
-            )
+            raise ValueError("`ending_point or (distance_x and distance_y) must be provided to drag the mouse.")
+        Mouse._apply_post_wait(post_wait)
 
     @staticmethod
-    def left_click(point: Optional[Point]) -> None:
+    def left_click(point: Optional[Point], post_wait: Optional[Union[bool, float, Callable[[], None]]] = None) -> None:
         """Performs a left click.
 
         :param: point: The position to move before clicking.
+        :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
         CSMouse.LeftClick() if point is None else CSMouse.LeftClick(point.raw_value)
+        Mouse._apply_post_wait(post_wait)
 
     @staticmethod
-    def left_double_click(point: Optional[Point]) -> None:
+    def left_double_click(
+        point: Optional[Point], post_wait: Optional[Union[bool, float, Callable[[], None]]] = None
+    ) -> None:
         """Performs a left double click.
 
         :param: point: The position to move before clicking.
+        :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
         CSMouse.LeftDoubleClick() if point is None else CSMouse.LeftDoubleClick(point.raw_value)
+        Mouse._apply_post_wait(post_wait)
 
     @staticmethod
-    def right_click(point: Optional[Point]) -> None:
+    def right_click(point: Optional[Point], post_wait: Optional[Union[bool, float, Callable[[], None]]] = None) -> None:
         """Performs a right click.
 
         :param: point: The position to move before clicking.
+        :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
         CSMouse.RightClick() if point is None else CSMouse.RightClick(point.raw_value)
+        Mouse._apply_post_wait(post_wait)
 
     @staticmethod
-    def right_double_click(point: Optional[Point]) -> None:
+    def right_double_click(
+        point: Optional[Point], post_wait: Optional[Union[bool, float, Callable[[], None]]] = None
+    ) -> None:
         """Performs a right double click.
 
         :param: point: The position to move before clicking.
+        :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
         CSMouse.RightDoubleClick() if point is None else CSMouse.RightDoubleClick(point.raw_value)
+        Mouse._apply_post_wait(post_wait)
+
+
+class Interpolation:
+    """Interpolation tool to transition points during a time frame, wrapper over Interpolation class in FlaUI.Core.Input namespace"""
+
+    @staticmethod
+    def execute(
+        action: Any,
+        start_end_points: List[Tuple[Point, Point]],
+        duration_ms: int,
+        interval_ms: int = 10,
+        skip_initial_position: bool = False,
+    ) -> None:
+        """Transitions the given points from start to end in the given duration.
+
+        :param action: The action (callable) to execute for each interval with Point[] argument
+        :param start_end_points: A list of tuples with start/end points
+        :param duration_ms: The total duration for the transition in milliseconds
+        :param interval_ms: The interval of each step in milliseconds, defaults to 10
+        :param skip_initial_position: Skip firing action for initial position, defaults to False
+        """
+        from System import (  # pyright: ignore
+            Action as CSAction,  # pyright: ignore
+            Array,
+            Tuple as CSTuple,
+        )
+        from System.Drawing import Point as CSPoint  # pyright: ignore
+
+        # Convert Python action to C# Action<Point[]>
+        def cs_action_wrapper(points):
+            """Wrapper to convert C# Point[] to Python Point list and call the Python action."""
+            # Convert C# Point[] to Python Point list
+            py_points = [Point(raw_value=p) for p in points]
+            action(py_points)
+
+        cs_action = CSAction[Array[CSPoint]](cs_action_wrapper)
+
+        # Convert start/end points to C# Tuple<Point, Point>[]
+        cs_tuples = [CSTuple.Create(p[0].raw_value, p[1].raw_value) for p in start_end_points]
+        cs_array = Array[CSTuple[CSPoint, CSPoint]](cs_tuples)
+
+        CSInterpolation.Execute(
+            cs_action,
+            cs_array,
+            TypeCast.cs_timespan(duration_ms),
+            TypeCast.cs_timespan(interval_ms),
+            skip_initial_position,
+        )
+
+    @staticmethod
+    def execute_single(
+        action: Any,
+        start_point: Point,
+        end_point: Point,
+        duration_ms: int,
+        interval_ms: int = 10,
+        skip_initial_position: bool = False,
+    ) -> None:
+        """Transitions a single point from start to end in the given duration.
+
+        :param action: The action (callable) to execute for each interval with Point argument
+        :param start_point: The starting point
+        :param end_point: The end point
+        :param duration_ms: The total duration for the transition in milliseconds
+        :param interval_ms: The interval of each step in milliseconds, defaults to 10
+        :param skip_initial_position: Skip firing action for initial position, defaults to False
+        """
+        from System import Action as CSAction  # pyright: ignore
+        from System.Drawing import Point as CSPoint  # pyright: ignore
+
+        # Convert Python action to C# Action<Point>
+        def cs_action_wrapper(point):
+            """Wrapper to convert C# Point to Python Point and call the Python action."""
+            action(Point(raw_value=point))
+
+        cs_action = CSAction[CSPoint](cs_action_wrapper)
+
+        CSInterpolation.Execute(
+            cs_action,
+            start_point.raw_value,
+            end_point.raw_value,
+            TypeCast.cs_timespan(duration_ms),
+            TypeCast.cs_timespan(interval_ms),
+            skip_initial_position,
+        )
+
+    @staticmethod
+    def execute_rotation(
+        action: Any,
+        center_point: Point,
+        radius: float,
+        start_angle: float,
+        end_angle: float,
+        duration_ms: int,
+        interval_ms: int = 10,
+        skip_initial_position: bool = False,
+    ) -> None:
+        """Performs a rotation transition around the given point.
+
+        :param action: The action (callable) to execute for each interval with Point argument
+        :param center_point: The center point of the rotation
+        :param radius: The radius of the rotation
+        :param start_angle: The starting angle (in radians)
+        :param end_angle: The ending angle (in radians)
+        :param duration_ms: The total duration for the transition in milliseconds
+        :param interval_ms: The interval of each step in milliseconds, defaults to 10
+        :param skip_initial_position: Skip firing action for initial position, defaults to False
+        """
+        from System import Action as CSAction  # pyright: ignore
+        from System.Drawing import Point as CSPoint  # pyright: ignore
+
+        # Convert Python action to C# Action<Point>
+        def cs_action_wrapper(point):
+            """Wrapper to convert C# Point to Python Point and call the Python action."""
+            action(Point(raw_value=point))
+
+        cs_action = CSAction[CSPoint](cs_action_wrapper)
+
+        CSInterpolation.ExecuteRotation(
+            cs_action,
+            center_point.raw_value,
+            radius,
+            start_angle,
+            end_angle,
+            TypeCast.cs_timespan(duration_ms),
+            TypeCast.cs_timespan(interval_ms),
+            skip_initial_position,
+        )
 
 
 class Touch:

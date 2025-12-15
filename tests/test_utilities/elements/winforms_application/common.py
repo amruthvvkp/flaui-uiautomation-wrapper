@@ -5,7 +5,8 @@ from abc import ABC
 from flaui.core.automation_elements import Window
 from pydantic_settings import BaseSettings
 
-class AbtstractControlCollection(BaseSettings, ABC):
+
+class AbstractControlCollection(BaseSettings, ABC):
     """This abstract class is used to store the element locators for the WPF application."""
 
     main_window: Window

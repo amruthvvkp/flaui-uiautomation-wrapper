@@ -4,6 +4,7 @@ import platform
 
 from flaui.core.application import Application
 from flaui.core.definitions import ControlType
+from flaui.lib.enums import UIAutomationTypes
 from flaui.modules.automation import Automation
 import pytest
 
@@ -11,99 +12,78 @@ import pytest
 class TestXPath:
     """Tests for XPath search functionality."""
 
-    def test_notepad_find_first_by_xpath(self, automation: Automation) -> None:
+    @pytest.mark.skip_notepad_on_win11(reason="Windows 11 Notepad is a Store app; see issue #89")
+    def test_notepad_find_first_by_xpath(self, notepad_window) -> None:
         """Test finding first element by XPath in Notepad.
 
         Ported from XPathTests.cs::NotepadFindFirst
         """
-        app = Application.launch("notepad.exe")
-        try:
-            window = app.get_main_window(automation)
-            assert window is not None
-            assert window.title is not None
+        window = notepad_window
+        assert window is not None
+        assert window.title is not None
 
-            # Find File menu item - text varies by Windows version/language
-            file_menu = window.find_first_by_x_path("/MenuBar/MenuItem[@Name='File']")
-            assert file_menu is not None
-        finally:
-            try:
-                app.close()
-            except Exception:
-                pass
+        # Find File menu item - text varies by Windows version/language
+        file_menu = window.find_first_by_x_path("/MenuBar/MenuItem[@Name='File']")
+        assert file_menu is not None
 
-    def test_notepad_find_all_by_xpath(self, automation: Automation) -> None:
+    @pytest.mark.skip_notepad_on_win11(reason="Windows 11 Notepad is a Store app; see issue #89")
+    def test_notepad_find_all_by_xpath(self, notepad_window) -> None:
         """Test finding all elements by XPath in Notepad.
 
         Ported from XPathTests.cs::NotePadFindAll
         """
-        app = Application.launch("notepad.exe")
-        try:
-            window = app.get_main_window(automation)
-            assert window is not None
-            assert window.title is not None
+        window = notepad_window
+        assert window is not None
+        assert window.title is not None
 
-            # Find all menu items
-            items = window.find_all_by_x_path("//MenuItem")
-            assert items is not None
-            # Note: Count may vary by Windows version
-            assert len(items) >= 5, f"Expected at least 5 menu items, found {len(items)}"
-        finally:
-            try:
-                app.close()
-            except Exception:
-                pass
+        # Find all menu items
+        items = window.find_all_by_x_path("//MenuItem")
+        assert items is not None
+        # Note: Count may vary by Windows version
+        assert len(items) >= 5, f"Expected at least 5 menu items, found {len(items)}"
 
-    def test_notepad_find_by_automation_id(self, automation: Automation) -> None:
+    @pytest.mark.skip_notepad_on_win11(reason="Windows 11 Notepad is a Store app; see issue #89")
+    def test_notepad_find_by_automation_id(self, notepad_window) -> None:
         """Test finding element by AutomationId using XPath.
 
         Ported from XPathTests.cs::NotepadFindByAutomationId
         """
-        app = Application.launch("notepad.exe")
-        try:
-            window = app.get_main_window(automation)
+        window = notepad_window
+        # Find element with AutomationId 15 (text document area)
+        elem = window.find_all_by_x_path("//*[@AutomationId='15']")
+        assert len(elem) == 1
+        assert elem[0].control_type == ControlType.Document
 
-            # Find element with AutomationId 15 (text document area)
-            elem = window.find_all_by_x_path("//*[@AutomationId='15']")
-            assert len(elem) == 1
-            assert elem[0].control_type == ControlType.Document
-        finally:
-            try:
-                app.close()
-            except Exception:
-                pass
-
-    def test_notepad_find_all_indexed(self, automation: Automation) -> None:
+    @pytest.mark.skip_notepad_on_win11(reason="Windows 11 Notepad is a Store app; see issue #89")
+    def test_notepad_find_all_indexed(self, notepad_window) -> None:
         """Test finding elements using indexed XPath expressions.
 
         Ported from XPathTests.cs::NotePadFindAllIndexed
         """
-        app = Application.launch("notepad.exe")
-        try:
-            window = app.get_main_window(automation)
-            assert window is not None
-            assert window.title is not None
+        window = notepad_window
+        assert window is not None
+        assert window.title is not None
 
-            # Find first MenuBar's MenuItem children
-            items = window.find_all_by_x_path("(//MenuBar)[1]/MenuItem")
-            assert items is not None
-            # Note: Result count may vary by Windows version
+        # Find first MenuBar's MenuItem children
+        items = window.find_all_by_x_path("(//MenuBar)[1]/MenuItem")
+        assert items is not None
+        # Note: Result count may vary by Windows version
 
-            # Find second MenuBar's MenuItem children (if exists)
-            items2 = window.find_all_by_x_path("(//MenuBar)[2]/MenuItem")
-            # May or may not exist depending on Notepad version
-        finally:
-            try:
-                app.close()
-            except Exception:
-                pass
+        # Find second MenuBar's MenuItem children (if exists)
+        # May or may not exist depending on Notepad version
+        window.find_all_by_x_path("(//MenuBar)[2]/MenuItem")
 
+    @pytest.mark.xfail(
+        reason="Windows 11 Paint UI changed - element names/structure unreliable. Low priority - see issue #89"
+    )
     @pytest.mark.skipif(platform.system() != "Windows", reason="MS Paint is Windows-specific")
     def test_paint_find_element_below_unknown(self, automation: Automation) -> None:
         """Test finding element below unknown element types in Paint.
 
         Ported from XPathTests.cs::PaintFindElementBelowUnknown
         """
-        app = Application.launch("mspaint.exe")
+        app = Application()
+        app.launch("mspaint.exe")
         try:
             window = app.get_main_window(automation)
 
@@ -123,13 +103,17 @@ class TestXPath:
             except Exception:
                 pass
 
+    @pytest.mark.xfail(
+        reason="Windows 11 Paint UI changed - element names/structure unreliable. Low priority - see issue #89"
+    )
     @pytest.mark.skipif(platform.system() != "Windows", reason="MS Paint is Windows-specific")
     def test_paint_reference_element_with_unknown_type(self, automation: Automation) -> None:
         """Test finding reference element with unknown control type in Paint.
 
         Ported from XPathTests.cs::PaintReferenceElementWithUnknownType
         """
-        app = Application.launch("mspaint.exe")
+        app = Application()
+        app.launch("mspaint.exe")
         try:
             window = app.get_main_window(automation)
 
@@ -142,25 +126,22 @@ class TestXPath:
             except Exception:
                 pass
 
-    def test_xpath_contains_function(self, automation: Automation) -> None:
+    @pytest.mark.skip_notepad_on_win11(reason="Windows 11 Notepad is a Store app; see issue #89")
+    def test_xpath_contains_function(self, notepad_window) -> None:
         """Test XPath contains() function.
 
         Ported from XPathTests.cs::ContainsTest
         """
-        app = Application.launch("notepad.exe")
-        try:
-            window = app.get_main_window(automation)
+        window = notepad_window
+        # Find elements containing text in Name
+        items = window.find_all_by_x_path("//MenuItem[contains(@Name,'ile')]")
+        assert items is not None
+        assert len(items) > 0, "Should find File menu item"
 
-            # Find elements containing text in Name
-            items = window.find_all_by_x_path("//MenuItem[contains(@Name,'ile')]")
-            assert items is not None
-            assert len(items) > 0, "Should find File menu item"
-        finally:
-            try:
-                app.close()
-            except Exception:
-                pass
-
+    @pytest.mark.skip_if_matrix(
+        {"ui_automation_type": [UIAutomationTypes.UIA2], "test_app_type": ["WinForms"]},
+        reason="IsPassword property not exposed in UIA2_WinForms",
+    )
     def test_xpath_is_password_property(self, test_application, automation: Automation) -> None:
         """Test XPath with IsPassword property.
 

@@ -14,7 +14,7 @@ from flaui.core.automation_type import AutomationType
 from flaui.core.application import Application
 
 # Choose UIA2 or UIA3
-app = Application.launch("path/to/app.exe", automation_type=AutomationType.UIA3)
+app = Application().launch("path/to/app.exe", automation_type=AutomationType.UIA3)
 ```
 
 ## Working with WinForms and WPF

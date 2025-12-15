@@ -12,6 +12,8 @@ from FlaUI.Core.Exceptions import (  # type: ignore
     NotCachedException as CSharpNotCachedException,
     NotSupportedByFrameworkException as CSharpNotSupportedByFrameworkException,
     NotSupportedException as CSharpNotSupportedException,
+    PatternNotCachedException as CSharpPatternNotCachedException,
+    PatternNotSupportedException as CSharpPatternNotSupportedException,
     PropertyNotCachedException as CSharpPropertyNotCachedException,
     PropertyNotSupportedException as CSharpPropertyNotSupportedException,
     ProxyAssemblyNotLoadedException as CSharpProxyAssemblyNotLoadedException,
@@ -41,6 +43,7 @@ def handle_csharp_exceptions(
 
     @wraps(func)
     def wrapper(*args, **kwargs) -> Any:
+        """Wrapper function to handle C# FlaUI exceptions."""
         try:
             return func(*args, **kwargs)
         except CSharpProxyAssemblyNotLoadedException as e:
@@ -57,6 +60,10 @@ def handle_csharp_exceptions(
             raise NotSupportedByFrameworkException(
                 f"The property or method '{func.__name__}' is not supported by the framework: {e}"
             )
+        except CSharpPatternNotCachedException as e:
+            raise PatternNotCachedException(f"The pattern for '{func.__name__}' is not cached: {e}")
+        except CSharpPatternNotSupportedException as e:
+            raise PatternNotSupportedException(f"The pattern for '{func.__name__}' is not supported: {e}")
         except CSharpNotCachedException:
             raise NotCachedException(f"The property or method '{func.__name__}' is not cached.")
         except CSharpNoClickablePointException as e:
@@ -101,6 +108,22 @@ class PropertyNotCachedException(Exception):
     """Raises a Python equivalent exception for PropertyNotCachedException from C# FlaUI."""
 
     def __init__(self, message="Property not cached") -> None:
+        self.message = message
+        super().__init__(self.message)
+
+
+class PatternNotCachedException(Exception):
+    """Raises a Python equivalent exception for PatternNotCachedException from C# FlaUI."""
+
+    def __init__(self, message="Pattern not cached") -> None:
+        self.message = message
+        super().__init__(self.message)
+
+
+class PatternNotSupportedException(Exception):
+    """Raises a Python equivalent exception for PatternNotSupportedException from C# FlaUI."""
+
+    def __init__(self, message="Pattern not supported") -> None:
         self.message = message
         super().__init__(self.message)
 

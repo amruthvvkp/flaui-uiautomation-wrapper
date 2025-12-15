@@ -1,6 +1,5 @@
 """Tests for pattern and property getters with caching, ported from C# GetterTests.cs."""
 
-from flaui.core.application import Application
 from flaui.core.automation_elements import Window
 from flaui.core.cache_request import CacheRequest
 from flaui.core.definitions import AutomationElementMode, TreeScope
@@ -14,31 +13,7 @@ from flaui.modules.automation import Automation
 import pytest
 
 
-@pytest.fixture(scope="module")
-def notepad_app() -> Application:
-    """Launch Notepad application for testing.
-
-    :return: Notepad application instance
-    """
-    app = Application.launch("notepad.exe")
-    yield app
-    try:
-        app.close()
-    except Exception:
-        pass
-
-
-@pytest.fixture
-def notepad_window(notepad_app: Application, automation: Automation) -> Window:
-    """Get main window of Notepad.
-
-    :param notepad_app: Notepad application
-    :param automation: Automation instance
-    :return: Main window
-    """
-    return notepad_app.get_main_window(automation)
-
-
+@pytest.mark.skip_notepad_on_win11(reason="Windows 11 Notepad is a Store app; see issue #89")
 class TestGetterPatterns:
     """Tests for pattern getters with and without caching."""
 
@@ -59,7 +34,7 @@ class TestGetterPatterns:
         Ported from GetterTests.cs::CorrectPatternCached
         """
         cache_request = CacheRequest(automation)
-        cache_request.automation_element_mode = AutomationElementMode.none
+        cache_request.automation_element_mode = AutomationElementMode.None_
         cache_request.tree_scope = TreeScope.Element
         cache_request.add_pattern(automation.cs_automation.PatternLibrary.WindowPattern)
 
@@ -87,7 +62,7 @@ class TestGetterPatterns:
         Ported from GetterTests.cs::UnsupportedPatternCached
         """
         cache_request = CacheRequest(automation)
-        cache_request.automation_element_mode = AutomationElementMode.none
+        cache_request.automation_element_mode = AutomationElementMode.None_
         cache_request.tree_scope = TreeScope.Element
         cache_request.add_pattern(automation.cs_automation.PatternLibrary.ExpandCollapsePattern)
 
@@ -105,7 +80,7 @@ class TestGetterPatterns:
         Ported from GetterTests.cs::CorrectPatternUncached
         """
         cache_request = CacheRequest(automation)
-        cache_request.automation_element_mode = AutomationElementMode.none
+        cache_request.automation_element_mode = AutomationElementMode.None_
         cache_request.tree_scope = TreeScope.Element
         cache_request.add_pattern(automation.cs_automation.PatternLibrary.ExpandCollapsePattern)
 
@@ -123,7 +98,7 @@ class TestGetterPatterns:
         Ported from GetterTests.cs::UnsupportedPatternUnCached
         """
         cache_request = CacheRequest(automation)
-        cache_request.automation_element_mode = AutomationElementMode.none
+        cache_request.automation_element_mode = AutomationElementMode.None_
         cache_request.tree_scope = TreeScope.Element
         cache_request.add_pattern(automation.cs_automation.PatternLibrary.WindowPattern)
 
@@ -136,6 +111,7 @@ class TestGetterPatterns:
                 )
 
 
+@pytest.mark.skip_notepad_on_win11(reason="Windows 11 Notepad is a Store app; see issue #89")
 class TestGetterProperties:
     """Tests for property getters with and without caching."""
 
@@ -156,7 +132,7 @@ class TestGetterProperties:
         Ported from GetterTests.cs::CorrectPropertyCached
         """
         cache_request = CacheRequest(automation)
-        cache_request.automation_element_mode = AutomationElementMode.none
+        cache_request.automation_element_mode = AutomationElementMode.None_
         cache_request.tree_scope = TreeScope.Element
         cache_request.add_property(automation.cs_automation.PropertyLibrary.Window.CanMaximize)
 
@@ -184,7 +160,7 @@ class TestGetterProperties:
         Ported from GetterTests.cs::UnsupportedPropertyCached
         """
         cache_request = CacheRequest(automation)
-        cache_request.automation_element_mode = AutomationElementMode.none
+        cache_request.automation_element_mode = AutomationElementMode.None_
         cache_request.tree_scope = TreeScope.Element
         cache_request.add_property(automation.cs_automation.PropertyLibrary.ExpandCollapse.ExpandCollapseState)
 
@@ -202,7 +178,7 @@ class TestGetterProperties:
         Ported from GetterTests.cs::CorrectPropertyUncached
         """
         cache_request = CacheRequest(automation)
-        cache_request.automation_element_mode = AutomationElementMode.none
+        cache_request.automation_element_mode = AutomationElementMode.None_
         cache_request.tree_scope = TreeScope.Element
         cache_request.add_property(automation.cs_automation.PropertyLibrary.ExpandCollapse.ExpandCollapseState)
 
@@ -220,7 +196,7 @@ class TestGetterProperties:
         Ported from GetterTests.cs::UnsupportedPropertyUnCached
         """
         cache_request = CacheRequest(automation)
-        cache_request.automation_element_mode = AutomationElementMode.none
+        cache_request.automation_element_mode = AutomationElementMode.None_
         cache_request.tree_scope = TreeScope.Element
         cache_request.add_property(automation.cs_automation.PropertyLibrary.Window.CanMaximize)
 

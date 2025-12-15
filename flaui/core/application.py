@@ -6,6 +6,7 @@ It contains methods to launch, attach, kill, dispose, and close an application. 
 from __future__ import annotations
 
 import logging
+import time
 from typing import Any, List, Optional, Union
 
 from flaui.core.automation_elements import Window
@@ -114,13 +115,62 @@ class Application:
             raise AttributeError(
                 "Invalid automation object sent to fetch main window, either send C# Automation object or Python automation object"
             )
+        # Robust retrieval with retries and process checks
+        # Keep total timeout under typical test-level limits (e.g., 15s)
+        total_timeout_ms = 7000
+        poll_interval_ms = 200
+        deadline = time.time() + (total_timeout_ms / 1000.0)
+
+        # Initial wait for main handle
         try:
-            main_window = Window(raw_element=self._application.GetMainWindow(_automation))
-        except (OSError, Exception) as e:
-            logging.exception("Failed to get main window: %s", e)
-            raise e
-        else:
-            return main_window
+            self.wait_while_main_handle_is_missing(time_out=3000)
+        except Exception:
+            pass
+
+        last_err: Optional[Exception] = None
+        while time.time() < deadline:
+            # If process exited or no process associated, break out with error
+            try:
+                if self.has_exited:
+                    last_err = RuntimeError("Application process has exited before main window was available")
+                    break
+                # ProcessId can be 0 when not yet associated
+                if not self.process_id:
+                    # small sleep and continue until association is ready
+                    time.sleep(poll_interval_ms / 1000.0)
+                    continue
+            except Exception as proc_err:
+                last_err = proc_err  # store and try once more
+
+            # Try to get the main window
+            try:
+                win = self._application.GetMainWindow(_automation, TypeCast.cs_timespan(poll_interval_ms))
+                if win is not None:
+                    return Window(raw_element=win)
+            except Exception as e:
+                last_err = e
+
+            # If main handle still missing, wait a bit and retry
+            try:
+                if not self.main_window_handle:
+                    self.wait_while_main_handle_is_missing(time_out=poll_interval_ms)
+            except Exception:
+                # swallow and retry
+                pass
+            time.sleep(poll_interval_ms / 1000.0)
+
+        # Final attempt before giving up
+        try:
+            win = self._application.GetMainWindow(_automation, TypeCast.cs_timespan(1000))
+            if win is not None:
+                return Window(raw_element=win)
+        except Exception as e:
+            last_err = e
+
+        logging.exception("Failed to get main window after retries: %s", last_err)
+        if last_err:
+            raise last_err
+        raise RuntimeError("Failed to get main window: unknown error")
 
     def launch(self, executable: str, arguments: Optional[str] = None) -> None:
         """Launches the given executable.
@@ -129,6 +179,22 @@ class Application:
         :param arguments: Arguments to executable, defaults to None
         """
         self._application = self._application.Launch(executable, arguments)
+        # Allow process association and main handle to stabilize for simple apps like Notepad
+        try:
+            self.wait_while_main_handle_is_missing(2000)
+        except Exception:
+            pass
+        # Fallback: Some modern Windows apps may require AttachOrLaunch to bind process
+        try:
+            pid = self.process_id
+        except Exception:
+            pid = 0
+        if not pid:
+            try:
+                self.attach_or_launch(executable)
+                self.wait_while_main_handle_is_missing(2000)
+            except Exception:
+                pass
 
     def launch_store_app(self, app_user_model_ltd: str, arguments: Optional[str] = None) -> None:
         """Launches a store application.

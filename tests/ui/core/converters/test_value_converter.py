@@ -9,6 +9,8 @@ from tests.test_utilities.elements.wpf_application import WPFApplicationElements
 
 
 class TestValueConverter:
+    """Tests for ValueConverter."""
+
     @pytest.mark.bug(
         "GH-82",
         "test_get_control_type fails intermittently on UIA2+WinForms - Tab element not found during setup",

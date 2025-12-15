@@ -16,7 +16,7 @@ from tests.test_utilities.elements.winforms_application.title_bar import TitleBa
 class WinFormsApplicationElements(BaseSettings):
     """This class is used to store the element locators for the WinForms application."""
 
-    process_name: str = test_settings.WPF_TEST_APP_PROCESS
+    process_name: str = test_settings.WINFORMS_TEST_APP_PROCESS
     application_name: str = "FlaUI WinForms Test App"
     main_window: Window
 

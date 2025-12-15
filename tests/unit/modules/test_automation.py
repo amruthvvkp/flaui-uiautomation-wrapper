@@ -23,8 +23,6 @@ def wordpad() -> Generator[Automation, Any, None]:
     try:
         wordpad.application.launch("wordpad.exe")
     except Exception as e:
-        import pytest
-
         pytest.skip(f"Could not launch wordpad.exe: {e}")
     yield wordpad
     wordpad.application.kill()
@@ -50,6 +48,6 @@ class TestAutomation:
             automation (Any): An instance of the automation module.
         """
         assert wordpad.application.process_id is not None
-        isinstance(wordpad.cs_automation, UIA3Automation)
+        assert isinstance(wordpad.cs_automation, UIA3Automation)
         assert isinstance(wordpad.cf, ConditionFactory)
         assert isinstance(wordpad.tree_walker, ITreeWalker)

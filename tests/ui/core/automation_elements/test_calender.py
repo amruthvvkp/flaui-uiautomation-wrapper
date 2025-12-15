@@ -1,4 +1,4 @@
-"""This tests the Calender element, equivalent of C# tests from FlaUI GitHub repository - src\\FlaUI.Core.UITests\\CalendarTests.cs"""
+"""This tests the Calendar element, equivalent of C# tests from FlaUI GitHub repository - src\\FlaUI.Core.UITests\\CalendarTests.cs"""
 
 from datetime import datetime
 from typing import Any, Generator
@@ -14,7 +14,7 @@ from tests.test_utilities.elements.wpf_application import WPFApplicationElements
 
 
 class TestCalendarElements:
-    """This tests the Calender element."""
+    """This tests the Calendar element."""
 
     @pytest.fixture(name="calendar")
     def get_calendar_element(
@@ -28,7 +28,7 @@ class TestCalendarElements:
         """
         if test_application_type != "WPF":
             pytest.skip("Does not support Winforms application type.")
-        yield test_application.more_controls_tab.calender
+        yield test_application.more_controls_tab.calendar
 
     def test_parse_date(self) -> None:
         """Parses the C# System date object from Python date object."""

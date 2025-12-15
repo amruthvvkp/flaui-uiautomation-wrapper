@@ -4,7 +4,6 @@ from typing import Any, Generator
 
 from dirty_equals import HasAttributes, HasLen
 from flaui.core.automation_elements import Tab
-from flaui.core.input import Wait
 import pytest
 
 from tests.test_utilities.elements.winforms_application import WinFormsApplicationElements
@@ -39,8 +38,7 @@ class TestTab:
             tab_index = WinFormsApplicationTabIndex
         for index in tab_index:
             if index != tab_index.SIMPLE_CONTROLS:
-                tab.select_tab_item(index.value)
-                Wait.until_input_is_processed()
+                tab.select_tab_item(index.value, post_wait=True)
 
             assert tab == HasAttributes(selected_tab_item_index=index.value), f"Tab item {index.value} not selected."
 

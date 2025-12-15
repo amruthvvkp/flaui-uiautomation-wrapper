@@ -1,3 +1,4 @@
+"""Test for focus changed event handling, ported from C# FocusChangedTests.cs."""
 # TODO: Implement this test when RegisterFocusChangedEvent is created in UIA3
 # """
 # Test for focus changed event handling, ported from C# FocusChangedTests.cs.

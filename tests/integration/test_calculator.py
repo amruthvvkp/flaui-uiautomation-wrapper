@@ -19,8 +19,10 @@ class TestCalculator:
         Ported from CalculatorTests.cs (basic test structure)
         Note: Calculator UI is highly dependent on Windows version
         """
+        app = None
         try:
-            app = Application.launch("calc.exe")
+            app = Application()
+            app.launch("calc.exe")
             window = app.get_main_window(automation)
 
             assert window is not None
@@ -31,7 +33,7 @@ class TestCalculator:
 
         finally:
             try:
-                if "app" in locals():
+                if app is not None:
                     app.close()
             except Exception:
                 pass

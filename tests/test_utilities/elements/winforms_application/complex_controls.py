@@ -1,7 +1,6 @@
 """This contains element map for the tab Complex Controls for the WPF test application."""
 
 from flaui.core.automation_elements import Button, DataGridView, Grid, Tab, TabItem, Tree
-from flaui.core.input import Wait
 
 from tests.test_utilities.elements.wpf_application.common import AbtstractControlCollection
 from tests.test_utilities.elements.wpf_application.constants import ApplicationTabIndex
@@ -19,8 +18,7 @@ class ComplexControlsElements(AbtstractControlCollection):
         :return: The Simple Controls element.
         """
         if self.tab.selected_tab_item_index != ApplicationTabIndex.COMPLEX_CONTROLS.value:
-            self.tab.select_tab_item(ApplicationTabIndex.COMPLEX_CONTROLS.value)
-            Wait.until_input_is_processed()
+            self.tab.select_tab_item(ApplicationTabIndex.COMPLEX_CONTROLS.value, post_wait=True)
         return self.tab.tab_items[ApplicationTabIndex.COMPLEX_CONTROLS.value]
 
     @property
@@ -30,7 +28,7 @@ class ComplexControlsElements(AbtstractControlCollection):
         :return: The Data Grid View element.
         """
         return self.parent_element.find_first_descendant(
-            condition=self._cf.by_automation_id("dataGridView")
+            condition=self._get_condition_factory.by_automation_id("dataGridView")
         ).as_data_grid_view()
 
     @property
@@ -40,7 +38,7 @@ class ComplexControlsElements(AbtstractControlCollection):
         :return: The Large List View element.
         """
         return self.parent_element.find_first_descendant(
-            condition=self._cf.by_automation_id("LargeListView")
+            condition=self._get_condition_factory.by_automation_id("LargeListView")
         ).as_data_grid_view()
 
     @property
@@ -49,7 +47,9 @@ class ComplexControlsElements(AbtstractControlCollection):
 
         :return: The List View 1 element.
         """
-        return self.parent_element.find_first_descendant(condition=self._cf.by_automation_id("listView1")).as_grid()
+        return self.parent_element.find_first_descendant(
+            condition=self._get_condition_factory.by_automation_id("listView1")
+        ).as_grid()
 
     @property
     def more_options_button(self) -> Button:
@@ -57,7 +57,9 @@ class ComplexControlsElements(AbtstractControlCollection):
 
         :return: The More Options Button element.
         """
-        return self.parent_element.find_first_descendant(condition=self._cf.by_automation_id("HeaderSite")).as_button()
+        return self.parent_element.find_first_descendant(
+            condition=self._get_condition_factory.by_automation_id("HeaderSite")
+        ).as_button()
 
     @property
     def tree_elements(self) -> Tree:
@@ -65,4 +67,6 @@ class ComplexControlsElements(AbtstractControlCollection):
 
         :return: The Tree Elements element.
         """
-        return self.parent_element.find_first_descendant(condition=self._cf.by_automation_id("treeView1")).as_tree()
+        return self.parent_element.find_first_descendant(
+            condition=self._get_condition_factory.by_automation_id("treeView1")
+        ).as_tree()

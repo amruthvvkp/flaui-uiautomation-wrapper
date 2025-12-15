@@ -1,7 +1,6 @@
 """This contains element map for the tab More Controls for the WPF test application."""
 
 from flaui.core.automation_elements import Calendar, ListBox, Tab, TabItem
-from flaui.core.input import Wait
 
 from tests.test_utilities.elements.wpf_application.common import AbtstractControlCollection
 from tests.test_utilities.elements.wpf_application.constants import ApplicationTabIndex
@@ -18,20 +17,23 @@ class MoreControlsElements(AbtstractControlCollection):
 
         :return: The Simple Controls element.
         """
-        element = self.tab.find_first_child(condition=self._cf.by_name("More Controls")).as_tab_item()
+        element = self.tab.find_first_child(
+            condition=self._get_condition_factory.by_name("More Controls")
+        ).as_tab_item()
 
         if not element.is_selected:
-            self.tab.select_tab_item(ApplicationTabIndex.MORE_CONTROLS.value)
-            Wait.until_input_is_processed()
+            self.tab.select_tab_item(ApplicationTabIndex.MORE_CONTROLS.value, post_wait=True)
         return element
 
     @property
     def calender(self) -> Calendar:
-        """Returns the Calender element.
+        """Returns the Calendar element.
 
-        :return: The Calender element.
+        :return: The Calendar element.
         """
-        return self.parent_element.find_first_child(condition=self._cf.by_automation_id("calendar")).as_calendar()
+        return self.parent_element.find_first_child(
+            condition=self._get_condition_factory.by_automation_id("calendar")
+        ).as_calendar()
 
     # @property
     # def date_picker_show_calendar_button(self) -> Button:
@@ -55,4 +57,6 @@ class MoreControlsElements(AbtstractControlCollection):
 
         :return: The Large ListBox element.
         """
-        return self.parent_element.find_first_child(condition=self._cf.by_automation_id("LargeListBox")).as_list_box()
+        return self.parent_element.find_first_child(
+            condition=self._get_condition_factory.by_automation_id("LargeListBox")
+        ).as_list_box()

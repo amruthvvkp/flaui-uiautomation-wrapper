@@ -1,5 +1,4 @@
-# Utilities for unit or example tests
-
+"""Utilities for unit or example tests"""
 
 from pathlib import Path
 import time
@@ -42,6 +41,7 @@ class FlaUITestBase:
         automation: Optional[Automation] = None,
         executable: Optional[Path] = None,
     ) -> None:
+        """Initialize FlaUITestBase."""
         self.ui_automation_type = ui_automation_type
         self.app_type = app_type
         self.automation = Automation(ui_automation_type) or automation
@@ -51,15 +51,18 @@ class FlaUITestBase:
         )
 
     def launch_test_app(self) -> None:
+        """Launch the test application."""
         self.automation.application.launch(str(self.executable_path))
         time.sleep(0.5)  # Wait for the application to start
         self.automation.application.wait_while_main_handle_is_missing(2000)
 
     def restart_test_app(self) -> None:
+        """Restart the test application."""
         self.close_test_app()
         self.launch_test_app()
 
     def close_test_app(self) -> None:
+        """Close the test application."""
         self.automation.application.kill()
         timeout = 2  # seconds
         start_time = time.time()

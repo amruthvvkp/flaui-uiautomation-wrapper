@@ -6,6 +6,7 @@ from enum import Enum
 
 # Wrapper class for the C# namespace FlaUI.Core.Definitions
 from FlaUI.Core.Definitions import (  # pyright: ignore
+    AutomationElementMode as CSAutomationElementMode,
     ControlType as CSControlType,
     ExpandCollapseState as CSExpandCollapseState,
     PropertyConditionFlags as CSPropertyConditionFlags,
@@ -14,6 +15,15 @@ from FlaUI.Core.Definitions import (  # pyright: ignore
     TreeScope as CSTreeScope,
     TreeTraversalOptions as CSTreeTraversalOptions,
 )
+
+
+class AutomationElementMode(Enum):
+    """Contains values that specify the type of reference to use when returning UI Automation elements."""
+
+    None_ = getattr(
+        CSAutomationElementMode, "None"
+    )  # Specifies returned elements have no reference to UI and contain only cached information
+    Full = CSAutomationElementMode.Full  # Specifies returned elements have a full reference to the underlying UI
 
 
 class PropertyConditionFlags(Enum):

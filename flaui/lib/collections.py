@@ -4,10 +4,7 @@ from datetime import date
 from typing import Any, Dict, List
 
 import arrow
-from System import (
-    DateTime as CSDateTime,
-    TimeSpan,  # pyright: ignore
-)
+from System import DateTime as CSDateTime, TimeSpan  # pyright: ignore[reportMissingImports]
 
 
 class TypeCast:

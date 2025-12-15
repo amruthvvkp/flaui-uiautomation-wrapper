@@ -39,24 +39,22 @@ from FlaUI.Core.WindowsAPI import (  # pyright: ignore
 class CommonHresultValues(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.CommonHresultValues enum"""
 
-    # TODO: Add inline description
-    E_ABORT = CSCommonHresultValues.E_ABORT
-    E_ACCESSDENIED = CSCommonHresultValues.E_ACCESSDENIED
-    E_FAIL = CSCommonHresultValues.E_FAIL
-    E_HANDLE = CSCommonHresultValues.E_HANDLE
-    E_INVALIDARG = CSCommonHresultValues.E_INVALIDARG
-    E_NOINTERFACE = CSCommonHresultValues.E_NOINTERFACE
-    E_NOTIMPL = CSCommonHresultValues.E_NOTIMPL
-    E_OUTOFMEMORY = CSCommonHresultValues.E_OUTOFMEMORY
-    E_POINTER = CSCommonHresultValues.E_POINTER
-    E_UNEXPECTED = CSCommonHresultValues.E_UNEXPECTED
-    S_OK = CSCommonHresultValues.S_OK
+    S_OK = CSCommonHresultValues.S_OK  # Operation successful
+    E_ABORT = CSCommonHresultValues.E_ABORT  # Operation aborted
+    E_ACCESSDENIED = CSCommonHresultValues.E_ACCESSDENIED  # General access denied error
+    E_FAIL = CSCommonHresultValues.E_FAIL  # Unspecified failure
+    E_HANDLE = CSCommonHresultValues.E_HANDLE  # Handle that is not valid
+    E_INVALIDARG = CSCommonHresultValues.E_INVALIDARG  # One or more arguments are not valid
+    E_NOINTERFACE = CSCommonHresultValues.E_NOINTERFACE  # No such interface supported
+    E_NOTIMPL = CSCommonHresultValues.E_NOTIMPL  # Not implemented
+    E_OUTOFMEMORY = CSCommonHresultValues.E_OUTOFMEMORY  # Failed to allocate necessary memory
+    E_POINTER = CSCommonHresultValues.E_POINTER  # Pointer that is not valid
+    E_UNEXPECTED = CSCommonHresultValues.E_UNEXPECTED  # Unexpected failure
 
 
 class WindowsMessages(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.WindowsMessages enum"""
 
-    # TODO: Add inline description
     WM_ACTIVATE = CSWindowsMessages.WM_ACTIVATE
     WM_ACTIVATEAPP = CSWindowsMessages.WM_ACTIVATEAPP
     WM_AFXFIRST = CSWindowsMessages.WM_AFXFIRST
@@ -176,7 +174,7 @@ class WindowsMessages(Enum):
     WM_MOUSEACTIVATE = CSWindowsMessages.WM_MOUSEACTIVATE
     WM_MOUSEFIRST = CSWindowsMessages.WM_MOUSEFIRST
     WM_MOUSEHOVER = CSWindowsMessages.WM_MOUSEHOVER
-    WM_MOUSELAST = CSWindowsMessages.WM_MOUSELAST
+    WM_MOUSELAST = CSWindowsMessages.WM_MOUSELAST  # Win95: 0x0209, WinNT4,98: 0x020A
     WM_MOUSELEAVE = CSWindowsMessages.WM_MOUSELEAVE
     WM_MOUSEMOVE = CSWindowsMessages.WM_MOUSEMOVE
     WM_MOUSEWHEEL = CSWindowsMessages.WM_MOUSEWHEEL
@@ -282,20 +280,18 @@ class WindowsMessages(Enum):
 class WindowLongParam(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.WindowLongParam enum"""
 
-    # TODO: Add inline description
-    GWL_EXSTYLE = CSWindowLongParam.GWL_EXSTYLE
+    GWL_WNDPROC = CSWindowLongParam.GWL_WNDPROC
     GWL_HINSTANCE = CSWindowLongParam.GWL_HINSTANCE
     GWL_HWNDPARENT = CSWindowLongParam.GWL_HWNDPARENT
-    GWL_ID = CSWindowLongParam.GWL_ID
     GWL_STYLE = CSWindowLongParam.GWL_STYLE
+    GWL_EXSTYLE = CSWindowLongParam.GWL_EXSTYLE
     GWL_USERDATA = CSWindowLongParam.GWL_USERDATA
-    GWL_WNDPROC = CSWindowLongParam.GWL_WNDPROC
+    GWL_ID = CSWindowLongParam.GWL_ID
 
 
 class WindowStyles(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.WindowStyles enum"""
 
-    # TODO: Add inline description
     WS_BORDER = CSWindowStyles.WS_BORDER
     WS_CAPTION = CSWindowStyles.WS_CAPTION
     WS_CHILD = CSWindowStyles.WS_CHILD
@@ -354,7 +350,6 @@ class WindowStyles(Enum):
 class SetWindowPosFlags(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.SetWindowPosFlags enum"""
 
-    # TODO: Add inline description
     SWP_ASYNCWINDOWPOS = CSSetWindowPosFlags.SWP_ASYNCWINDOWPOS
     SWP_DEFERERASE = CSSetWindowPosFlags.SWP_DEFERERASE
     SWP_DRAWFRAME = CSSetWindowPosFlags.SWP_DRAWFRAME
@@ -375,7 +370,6 @@ class SetWindowPosFlags(Enum):
 class ShowWindowTypes(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.ShowWindowTypes enum"""
 
-    # TODO: Add inline description
     SW_FORCEMINIMIZE = CSShowWindowTypes.SW_FORCEMINIMIZE
     SW_HIDE = CSShowWindowTypes.SW_HIDE
     SW_MAX = CSShowWindowTypes.SW_MAX
@@ -396,7 +390,6 @@ class ShowWindowTypes(Enum):
 class LayeredWindowAttributes(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.LayeredWindowAttributes enum"""
 
-    # TODO: Add inline description
     LWA_ALPHA = CSLayeredWindowAttributes.LWA_ALPHA
     LWA_COLORKEY = CSLayeredWindowAttributes.LWA_COLORKEY
 
@@ -404,8 +397,7 @@ class LayeredWindowAttributes(Enum):
 class SystemMetric(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.SystemMetric enum"""
 
-    # TODO: Add inline description
-    SM_ARRANGE = CSSystemMetric.SM_ARRANGE
+    SM_ARRANGE = CSSystemMetric.SM_ARRANGE  # The flags that specify how the system arranged minimized windows
     SM_CLEANBOOT = CSSystemMetric.SM_CLEANBOOT
     SM_CMONITORS = CSSystemMetric.SM_CMONITORS
     SM_CMOUSEBUTTONS = CSSystemMetric.SM_CMOUSEBUTTONS
@@ -505,7 +497,6 @@ class SystemMetric(Enum):
 class InputType(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.InputType enum"""
 
-    # TODO: Add inline description
     INPUT_HARDWARE = CSInputType.INPUT_HARDWARE
     INPUT_KEYBOARD = CSInputType.INPUT_KEYBOARD
     INPUT_MOUSE = CSInputType.INPUT_MOUSE
@@ -514,9 +505,8 @@ class InputType(Enum):
 class MouseEventFlags(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.MouseEventFlags enum"""
 
-    # TODO: Add inline description
     MOUSEEVENTF_ABSOLUTE = CSMouseEventFlags.MOUSEEVENTF_ABSOLUTE
-    MOUSEEVENTF_HWHEEL = CSMouseEventFlags.MOUSEEVENTF_HWHEEL
+    MOUSEEVENTF_HWHEEL = CSMouseEventFlags.MOUSEEVENTF_HWHEEL  # >= Win Vista only
     MOUSEEVENTF_LEFTDOWN = CSMouseEventFlags.MOUSEEVENTF_LEFTDOWN
     MOUSEEVENTF_LEFTUP = CSMouseEventFlags.MOUSEEVENTF_LEFTUP
     MOUSEEVENTF_MIDDLEDOWN = CSMouseEventFlags.MOUSEEVENTF_MIDDLEDOWN
@@ -534,7 +524,6 @@ class MouseEventFlags(Enum):
 class MouseEventDataXButtons(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.MouseEventDataXButtons enum"""
 
-    # TODO: Add inline description
     NOTHING = CSMouseEventDataXButtons.NOTHING
 
     XBUTTON1 = CSMouseEventDataXButtons.XBUTTON1
@@ -544,7 +533,6 @@ class MouseEventDataXButtons(Enum):
 class VkKeyScanModifiers(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.VkKeyScanModifiers enum"""
 
-    # TODO: Add inline description
     ALT = CSVkKeyScanModifiers.ALT
     CONTROL = CSVkKeyScanModifiers.CONTROL
 
@@ -560,7 +548,6 @@ class VkKeyScanModifiers(Enum):
 class VirtualKeyShort(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.VirtualKeyShort enum"""
 
-    # TODO: Add inline description
     ACCEPT = CSVirtualKeyShort.ACCEPT  # IME accept
     ADD = CSVirtualKeyShort.ADD  # Add key
     ALT = CSVirtualKeyShort.ALT  # ALT key
@@ -751,7 +738,6 @@ class VirtualKeyShort(Enum):
 class ScanCodeShort(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.ScanCodeShort enum"""
 
-    # TODO: Add inline description
     ADD = CSScanCodeShort.ADD
     ALT = CSScanCodeShort.ALT
     BACK = CSScanCodeShort.BACK
@@ -874,7 +860,6 @@ class ScanCodeShort(Enum):
 class KeyEventFlags(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.KeyEventFlags enum"""
 
-    # TODO: Add inline description
     KEYEVENTF_EXTENDEDKEY = CSKeyEventFlags.KEYEVENTF_EXTENDEDKEY
     KEYEVENTF_KEYDOWN = CSKeyEventFlags.KEYEVENTF_KEYDOWN
     KEYEVENTF_KEYUP = CSKeyEventFlags.KEYEVENTF_KEYUP
@@ -885,7 +870,6 @@ class KeyEventFlags(Enum):
 class SendMessageTimeoutFlags(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.SendMessageTimeoutFlags enum"""
 
-    # TODO: Add inline description
     SMTO_ABORTIFHUNG = CSSendMessageTimeoutFlags.SMTO_ABORTIFHUNG
     SMTO_BLOCK = CSSendMessageTimeoutFlags.SMTO_BLOCK
     SMTO_ERRORONEXIT = CSSendMessageTimeoutFlags.SMTO_ERRORONEXIT
@@ -896,7 +880,6 @@ class SendMessageTimeoutFlags(Enum):
 class AccessibilityState(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.AccessibilityState enum"""
 
-    # TODO: Add inline description
     STATE_SYSTEM_ALERT_HIGH = CSAccessibilityState.STATE_SYSTEM_ALERT_HIGH
     STATE_SYSTEM_ALERT_LOW = CSAccessibilityState.STATE_SYSTEM_ALERT_LOW
     STATE_SYSTEM_ALERT_MEDIUM = CSAccessibilityState.STATE_SYSTEM_ALERT_MEDIUM
@@ -932,7 +915,6 @@ class AccessibilityState(Enum):
 class AccessibilityRole(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.AccessibilityRole enum"""
 
-    # TODO: Add inline description
     ROLE_SYSTEM_ALERT = CSAccessibilityRole.ROLE_SYSTEM_ALERT
     ROLE_SYSTEM_ANIMATION = CSAccessibilityRole.ROLE_SYSTEM_ANIMATION
     ROLE_SYSTEM_APPLICATION = CSAccessibilityRole.ROLE_SYSTEM_APPLICATION
@@ -999,16 +981,14 @@ class AccessibilityRole(Enum):
 class CursorState(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.CursorState enum"""
 
-    # TODO: Add inline description
-    CURSOR_HIDING = CSCursorState.CURSOR_HIDING
-    CURSOR_SHOWING = CSCursorState.CURSOR_SHOWING
-    CURSOR_SUPPRESSED = CSCursorState.CURSOR_SUPPRESSED
+    CURSOR_HIDING = CSCursorState.CURSOR_HIDING  # The cursor is hidden
+    CURSOR_SHOWING = CSCursorState.CURSOR_SHOWING  # The cursor is showing
+    CURSOR_SUPPRESSED = CSCursorState.CURSOR_SUPPRESSED  # Windows 8: The cursor is suppressed
 
 
 class StretchMode(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.StretchMode enum"""
 
-    # TODO: Add inline description
     STRETCH_ANDSCANS = CSStretchMode.STRETCH_ANDSCANS
     STRETCH_DELETESCANS = CSStretchMode.STRETCH_DELETESCANS
     STRETCH_HALFTONE = CSStretchMode.STRETCH_HALFTONE
@@ -1018,57 +998,45 @@ class StretchMode(Enum):
 class TernaryRasterOperations(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.TernaryRasterOperations enum"""
 
-    # TODO: Add inline description
-    BLACKNESS = CSTernaryRasterOperations.BLACKNESS
-    CAPTUREBLT = CSTernaryRasterOperations.CAPTUREBLT
-
-    DSTINVERT = CSTernaryRasterOperations.DSTINVERT
-
-    MERGECOPY = CSTernaryRasterOperations.MERGECOPY
-    MERGEPAINT = CSTernaryRasterOperations.MERGEPAINT
-
-    NOTSRCCOPY = CSTernaryRasterOperations.NOTSRCCOPY
-    NOTSRCERASE = CSTernaryRasterOperations.NOTSRCERASE
-
-    PATCOPY = CSTernaryRasterOperations.PATCOPY
-    PATINVERT = CSTernaryRasterOperations.PATINVERT
-    PATPAINT = CSTernaryRasterOperations.PATPAINT
-
-    SRCAND = CSTernaryRasterOperations.SRCAND
-    SRCCOPY = CSTernaryRasterOperations.SRCCOPY
-    SRCERASE = CSTernaryRasterOperations.SRCERASE
-    SRCINVERT = CSTernaryRasterOperations.SRCINVERT
-    SRCPAINT = CSTernaryRasterOperations.SRCPAINT
-
-    WHITENESS = CSTernaryRasterOperations.WHITENESS
+    SRCCOPY = CSTernaryRasterOperations.SRCCOPY  # dest = source
+    SRCPAINT = CSTernaryRasterOperations.SRCPAINT  # dest = source OR dest
+    SRCAND = CSTernaryRasterOperations.SRCAND  # dest = source AND dest
+    SRCINVERT = CSTernaryRasterOperations.SRCINVERT  # dest = source XOR dest
+    SRCERASE = CSTernaryRasterOperations.SRCERASE  # dest = source AND (NOT dest)
+    NOTSRCCOPY = CSTernaryRasterOperations.NOTSRCCOPY  # dest = (NOT source)
+    NOTSRCERASE = CSTernaryRasterOperations.NOTSRCERASE  # dest = (NOT src) AND (NOT dest)
+    MERGECOPY = CSTernaryRasterOperations.MERGECOPY  # dest = (source AND pattern)
+    MERGEPAINT = CSTernaryRasterOperations.MERGEPAINT  # dest = (NOT source) OR dest
+    PATCOPY = CSTernaryRasterOperations.PATCOPY  # dest = pattern
+    PATPAINT = CSTernaryRasterOperations.PATPAINT  # dest = DPSnoo
+    PATINVERT = CSTernaryRasterOperations.PATINVERT  # dest = pattern XOR dest
+    DSTINVERT = CSTernaryRasterOperations.DSTINVERT  # dest = (NOT dest)
+    BLACKNESS = CSTernaryRasterOperations.BLACKNESS  # dest = BLACK
+    WHITENESS = CSTernaryRasterOperations.WHITENESS  # dest = WHITE
+    CAPTUREBLT = CSTernaryRasterOperations.CAPTUREBLT  # Capture window as seen on screen
 
 
 class InjectedInputVisualizationMode(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.InjectedInputVisualizationMode enum"""
 
-    # TODO: Add inline description
-    DEFAULT = CSInjectedInputVisualizationMode.DEFAULT
-
-    INDIREC = CSInjectedInputVisualizationMode.INDIREC
-
-    NONE = CSInjectedInputVisualizationMode.NONE
+    DEFAULT = CSInjectedInputVisualizationMode.DEFAULT  # Specifies default touch visualizations
+    INDIREC = CSInjectedInputVisualizationMode.INDIREC  # Specifies indirect touch visualizations
+    NONE = CSInjectedInputVisualizationMode.NONE  # Specifies no touch visualizations
 
 
 class PointerInputType(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.PointerInputType enum"""
 
-    # TODO: Add inline description
-    PT_MOUSE = CSPointerInputType.PT_MOUSE
-    PT_PEN = CSPointerInputType.PT_PEN
-    PT_POINTER = CSPointerInputType.PT_POINTER
-    PT_TOUCH = CSPointerInputType.PT_TOUCH
-    PT_TOUCHPAD = CSPointerInputType.PT_TOUCHPAD
+    PT_POINTER = CSPointerInputType.PT_POINTER  # Generic pointer type
+    PT_TOUCH = CSPointerInputType.PT_TOUCH  # Touch pointer type
+    PT_PEN = CSPointerInputType.PT_PEN  # Pen pointer type
+    PT_MOUSE = CSPointerInputType.PT_MOUSE  # Mouse pointer type
+    PT_TOUCHPAD = CSPointerInputType.PT_TOUCHPAD  # Touchpad pointer type (Windows 8.1 and later)
 
 
 class PointerFlags(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.PointerFlags enum"""
 
-    # TODO: Add inline description
     CANCELLED = CSPointerFlags.CANCELLED
     CAPTURECHANGED = CSPointerFlags.CAPTURECHANGED
     CONFIDENCE = CSPointerFlags.CONFIDENCE
@@ -1101,45 +1069,37 @@ class PointerFlags(Enum):
 class PointerButtonChangeType(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.PointerButtonChangeType enum"""
 
-    # TODO: Add inline description
-    FIFTHBUTTON_DOWN = CSPointerButtonChangeType.FIFTHBUTTON_DOWN
-    FIFTHBUTTON_UP = CSPointerButtonChangeType.FIFTHBUTTON_UP
-    FIRSTBUTTON_DOWN = CSPointerButtonChangeType.FIRSTBUTTON_DOWN
-    FIRSTBUTTON_UP = CSPointerButtonChangeType.FIRSTBUTTON_UP
-    FOURTHBUTTON_DOWN = CSPointerButtonChangeType.FOURTHBUTTON_DOWN
-    FOURTHBUTTON_UP = CSPointerButtonChangeType.FOURTHBUTTON_UP
-
-    NONE = CSPointerButtonChangeType.NONE
-
-    SECONDBUTTON_DOWN = CSPointerButtonChangeType.SECONDBUTTON_DOWN
-    SECONDBUTTON_UP = CSPointerButtonChangeType.SECONDBUTTON_UP
-    THIRDBUTTON_DOWN = CSPointerButtonChangeType.THIRDBUTTON_DOWN
-    THIRDBUTTON_UP = CSPointerButtonChangeType.THIRDBUTTON_UP
+    NONE = CSPointerButtonChangeType.NONE  # No change in button state
+    FIRSTBUTTON_DOWN = CSPointerButtonChangeType.FIRSTBUTTON_DOWN  # The first button transitioned to a pressed state
+    FIRSTBUTTON_UP = CSPointerButtonChangeType.FIRSTBUTTON_UP  # The first button transitioned to a released state
+    SECONDBUTTON_DOWN = CSPointerButtonChangeType.SECONDBUTTON_DOWN  # The second button transitioned to a pressed state
+    SECONDBUTTON_UP = CSPointerButtonChangeType.SECONDBUTTON_UP  # The second button transitioned to a released state
+    THIRDBUTTON_DOWN = CSPointerButtonChangeType.THIRDBUTTON_DOWN  # The third button transitioned to a pressed state
+    THIRDBUTTON_UP = CSPointerButtonChangeType.THIRDBUTTON_UP  # The third button transitioned to a released state
+    FOURTHBUTTON_DOWN = CSPointerButtonChangeType.FOURTHBUTTON_DOWN  # The fourth button transitioned to a pressed state
+    FOURTHBUTTON_UP = CSPointerButtonChangeType.FOURTHBUTTON_UP  # The fourth button transitioned to a released state
+    FIFTHBUTTON_DOWN = CSPointerButtonChangeType.FIFTHBUTTON_DOWN  # The fifth button transitioned to a pressed state
+    FIFTHBUTTON_UP = CSPointerButtonChangeType.FIFTHBUTTON_UP  # The fifth button transitioned to a released state
 
 
 class TouchFlags(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.TouchFlags enum"""
 
-    # TODO: Add inline description
-    NONE = CSTouchFlags.NONE
+    NONE = CSTouchFlags.NONE  # The default value
 
 
 class TouchMask(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.TouchMask enum"""
 
-    # TODO: Add inline description
-    CONTACTAREA = CSTouchMask.CONTACTAREA
-
-    NONE = CSTouchMask.NONE
-    ORIENTATION = CSTouchMask.ORIENTATION
-
-    PRESSURE = CSTouchMask.PRESSURE
+    NONE = CSTouchMask.NONE  # Default. None of the optional fields are valid
+    CONTACTAREA = CSTouchMask.CONTACTAREA  # rcContact of the POINTER_TOUCH_INFO structure is valid
+    ORIENTATION = CSTouchMask.ORIENTATION  # orientation of the POINTER_TOUCH_INFO structure is valid
+    PRESSURE = CSTouchMask.PRESSURE  # pressure of the POINTER_TOUCH_INFO structure is valid
 
 
 class ProcessAccessFlags(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.ProcessAccessFlags enum"""
 
-    # TODO: Add inline description
     All = CSProcessAccessFlags.All
 
     CreateProcess = CSProcessAccessFlags.CreateProcess
@@ -1162,7 +1122,6 @@ class ProcessAccessFlags(Enum):
 class AllocationType(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.AllocationType enum"""
 
-    # TODO: Add inline description
     Commit = CSAllocationType.Commit
 
     Decommit = CSAllocationType.Decommit
@@ -1183,7 +1142,6 @@ class AllocationType(Enum):
 class MemoryProtection(Enum):
     """Wrapper class for FlaUI.Core.WindowsAPI.MemoryProtection enum"""
 
-    # TODO: Add inline description
     Execute = CSMemoryProtection.Execute
     ExecuteRead = CSMemoryProtection.ExecuteRead
     ExecuteReadWrite = CSMemoryProtection.ExecuteReadWrite

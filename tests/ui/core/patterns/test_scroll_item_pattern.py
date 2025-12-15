@@ -1,6 +1,6 @@
-# """
-# Test for ScrollItem pattern, ported from C# ScrollItemPatternTests.cs.
-# """
+"""
+Test for ScrollItem pattern, ported from C# ScrollItemPatternTests.cs.
+"""
 
 # from flaui.core.automation_elements import AutomationElement
 # from flaui.core.condition_factory import ConditionFactory

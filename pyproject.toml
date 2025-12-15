@@ -72,6 +72,7 @@ unit-test = [
     "pytest-bug>=1.4.0",
     "pytest-pretty>=1.2.0",
     "pytest-reportlog>=0.4.0",
+    "pytest-timeout>=2.4.0",
 ]
 
 [project.optional-dependencies]
@@ -93,6 +94,10 @@ only-include = ["/README.md", "/flaui", "flaui/bin/*.dll"]
 minversion = "8.0"
 addopts = "-ra -q -p no:warnings --report-log=test-report.jsonl"
 testpaths = ["tests/"]
+# Timeout settings - prevent hanging tests in UI automation
+timeout = 30 # Default 30s per test (UI tests can be slow)
+timeout_method = "thread" # Use thread method on Windows for reliability
+session_timeout = 1800 # 30 minutes max for full suite
 markers = [
     "wpf_only: Tests that only run on WPF applications",
     "winforms_only: Tests that only run on WinForms applications",

@@ -1,7 +1,8 @@
-from flaui.core.automation_elements import AutomationElement, Button, TitleBar, Window
-from pydantic_settings import BaseSettings
+"""Element locators for the title bar of a WPF application."""
 
+from flaui.core.automation_elements import AutomationElement, Button, TitleBar, Window
 from flaui.core.condition_factory import ConditionFactory
+from pydantic_settings import BaseSettings
 
 
 class TitleBarElements(BaseSettings):
@@ -9,7 +10,8 @@ class TitleBarElements(BaseSettings):
 
     main_window: Window
 
-    def _cf(self) -> ConditionFactory:
+    @property
+    def _get_condition_factory(self) -> ConditionFactory:
         """Returns the condition factory for the title bar.
 
         :return: The condition factory for the title bar.
@@ -22,7 +24,9 @@ class TitleBarElements(BaseSettings):
 
         :return: The title bar element.
         """
-        return self.main_window.find_first_child(condition=self._cf.by_automation_id("TitleBar")).as_title_bar()
+        return self.main_window.find_first_child(
+            condition=self._get_condition_factory.by_automation_id("TitleBar")
+        ).as_title_bar()
 
     @property
     def minimize_button(self) -> Button:
@@ -30,7 +34,9 @@ class TitleBarElements(BaseSettings):
 
         :return: The minimize button element.
         """
-        return self.parent_element.find_first_child(condition=self._cf.by_automation_id("Minimize-Restore")).as_button()
+        return self.parent_element.find_first_child(
+            condition=self._get_condition_factory.by_automation_id("Minimize-Restore")
+        ).as_button()
 
     @property
     def maximize_button(self) -> Button:
@@ -38,7 +44,9 @@ class TitleBarElements(BaseSettings):
 
         :return: The maximize button element.
         """
-        return self.parent_element.find_first_child(condition=self._cf.by_automation_id("Maximize-Restore")).as_button()
+        return self.parent_element.find_first_child(
+            condition=self._get_condition_factory.by_automation_id("Maximize-Restore")
+        ).as_button()
 
     @property
     def close_button(self) -> Button:
@@ -46,7 +54,9 @@ class TitleBarElements(BaseSettings):
 
         :return: The close button element.
         """
-        return self.parent_element.find_first_child(condition=self._cf.by_automation_id("Close")).as_button()
+        return self.parent_element.find_first_child(
+            condition=self._get_condition_factory.by_automation_id("Close")
+        ).as_button()
 
     @property
     def menu_bar(self) -> AutomationElement:
@@ -54,4 +64,6 @@ class TitleBarElements(BaseSettings):
 
         :return: The menu bar element.
         """
-        return self.parent_element.find_first_child(condition=self._cf.by_automation_id("SystemMenuBar"))
+        return self.parent_element.find_first_child(
+            condition=self._get_condition_factory.by_automation_id("SystemMenuBar")
+        )

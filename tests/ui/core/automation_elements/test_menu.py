@@ -150,5 +150,6 @@ class TestMenu:
         test_application: WinFormsApplicationElements | WPFApplicationElements,
         condition_factory: ConditionFactory,
     ) -> Generator[Menu, Any, None]:
+        """Gets the application menu."""
         yield test_application.main_window.find_first_child(condition=condition_factory.menu()).as_menu()
         test_application.status_bar.click()

@@ -11,7 +11,7 @@ class AbtstractControlCollection(BaseSettings, ABC):
     main_window: Window
 
     @property
-    def _cf(self):
+    def _get_condition_factory(self):
         """Returns the condition factory for the Simple Controls.
 
         :return: The condition factory for the Simple Controls.

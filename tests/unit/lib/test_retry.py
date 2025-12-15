@@ -77,6 +77,7 @@ class TestRetry:
         exception_count = [0]  # Use list for closure mutability
 
         def condition_with_exception():
+            """Condition that raises exception for first second."""
             runtime = time.time() - start_time
             if runtime < 1.0:
                 exception_count[0] += 1
@@ -127,6 +128,7 @@ class TestRetry:
         exception_count = [0]
 
         def func_with_temporary_exception():
+            """Function that raises exception for first second."""
             runtime = time.time() - start_time
             if runtime < 1.0:
                 exception_count[0] += 1
@@ -149,6 +151,7 @@ class TestRetry:
         counter = [0]
 
         def find_element():
+            """Function that returns None for first second, then a mock element."""
             counter[0] += 1
             runtime = time.time() - start_time
             # Return None for first second, then return a mock element
@@ -164,9 +167,9 @@ class TestRetry:
 
     def test_retry_find_timeout(self) -> None:
         """Test Retry.find returns None on timeout."""
-        start_time = time.time()
 
         def find_never_succeeds():
+            """Function that always returns None."""
             return None
 
         result = Retry.WhileNull(
@@ -183,6 +186,7 @@ class TestRetry:
         attempt_count = [0]
 
         def counting_condition():
+            """Condition that counts attempts and returns True for 0.5 seconds."""
             attempt_count[0] += 1
             return time.time() - start_time < 0.5
 
@@ -201,6 +205,7 @@ class TestRetry:
         start_time = time.time()
 
         def returns_none_after_delay():
+            """Function that returns a non-None value for first 0.5 seconds, then None."""
             if time.time() - start_time < 0.5:
                 return "NotNone"
             return None
@@ -216,6 +221,7 @@ class TestRetry:
         start_time = time.time()
 
         def returns_value_after_delay():
+            """Function that returns None for first 0.5 seconds, then a non-None value."""
             if time.time() - start_time < 0.5:
                 return None
             return "Found"

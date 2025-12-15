@@ -27,7 +27,7 @@ FlaUI is a C# library for automating Windows UI applications. This Python port p
    ```python
    # Example: Launch a WinForms app
    from flaui.core.application import Application
-   app = Application.launch("path/to/WinFormsApplication.exe")
+   app = Application().launch("path/to/WinFormsApplication.exe")
    main_window = app.get_main_window()
    ```
    **C# Example:**

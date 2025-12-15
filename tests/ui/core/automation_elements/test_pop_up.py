@@ -4,7 +4,6 @@ from typing import Any, Generator
 
 from dirty_equals import HasAttributes, HasLen, IsList
 from flaui.core.automation_elements import Button
-from flaui.core.input import Wait
 import pytest
 
 from tests.test_utilities.elements.winforms_application import WinFormsApplicationElements
@@ -38,8 +37,7 @@ class TestPopUp:
         self, test_application: WinFormsApplicationElements | WPFApplicationElements, popup_toggle_button1: Button
     ) -> None:
         """Tests the check box in the pop up."""
-        popup_toggle_button1.click()
-        Wait.until_input_is_processed()
+        popup_toggle_button1.click(post_wait=True)
         popup = test_application.main_window.popup
         assert popup is not None, "Popup should be visible"
         popup_children = popup.find_all_children()
@@ -52,8 +50,7 @@ class TestPopUp:
         self, test_application: WinFormsApplicationElements | WPFApplicationElements, popup_toggle_button2: Button
     ) -> None:
         """Tests the menu in the pop up."""
-        popup_toggle_button2.click()
-        Wait.until_input_is_processed()
+        popup_toggle_button2.click(post_wait=True)
         popup = test_application.main_window.popup
         assert popup is not None, "Popup should be visible"
         popup_children = popup.find_all_children()

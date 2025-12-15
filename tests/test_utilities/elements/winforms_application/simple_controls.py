@@ -16,7 +16,6 @@ from flaui.core.automation_elements import (
     TabItem,
     TextBox,
 )
-from flaui.core.input import Wait
 from flaui.lib.exceptions import ElementNotFound
 
 from tests.test_utilities.elements.wpf_application.common import AbtstractControlCollection
@@ -35,8 +34,7 @@ class SimpleControlsElements(AbtstractControlCollection):
         :return: The Simple Controls element.
         """
         if self.tab.selected_tab_item_index != ApplicationTabIndex.SIMPLE_CONTROLS.value:
-            self.tab.select_tab_item(index=ApplicationTabIndex.SIMPLE_CONTROLS.value)
-            Wait.until_input_is_processed()
+            self.tab.select_tab_item(index=ApplicationTabIndex.SIMPLE_CONTROLS.value, post_wait=True)
         return self.tab.tab_items[ApplicationTabIndex.SIMPLE_CONTROLS.value]
 
     @property
@@ -45,7 +43,9 @@ class SimpleControlsElements(AbtstractControlCollection):
 
         :return: The Test Label element.
         """
-        return self.parent_element.find_first_child(condition=self._cf.by_text("Test Label")).as_label()
+        return self.parent_element.find_first_child(
+            condition=self._get_condition_factory.by_text("Test Label")
+        ).as_label()
 
     @property
     def test_text_box(self) -> TextBox:
@@ -53,7 +53,9 @@ class SimpleControlsElements(AbtstractControlCollection):
 
         :return: The Test TextBox element.
         """
-        return self.parent_element.find_first_child(condition=self._cf.by_automation_id("TextBox")).as_text_box()
+        return self.parent_element.find_first_child(
+            condition=self._get_condition_factory.by_automation_id("TextBox")
+        ).as_text_box()
 
     @property
     def password_box(self) -> TextBox:
@@ -61,7 +63,9 @@ class SimpleControlsElements(AbtstractControlCollection):
 
         :return: The password box element.
         """
-        return self.parent_element.find_first_child(condition=self._cf.by_automation_id("PasswordBox")).as_text_box()
+        return self.parent_element.find_first_child(
+            condition=self._get_condition_factory.by_automation_id("PasswordBox")
+        ).as_text_box()
 
     @property
     def editable_combo_box(self) -> ComboBox:
@@ -69,7 +73,9 @@ class SimpleControlsElements(AbtstractControlCollection):
 
         :return: The Editable ComboBox element.
         """
-        return self.parent_element.find_first_child(condition=self._cf.by_automation_id("EditableCombo")).as_combo_box()
+        return self.parent_element.find_first_child(
+            condition=self._get_condition_factory.by_automation_id("EditableCombo")
+        ).as_combo_box()
 
     @property
     def non_editable_combo_box(self) -> ComboBox:
@@ -78,7 +84,7 @@ class SimpleControlsElements(AbtstractControlCollection):
         :return: The Non-Editable ComboBox element.
         """
         return self.parent_element.find_first_child(
-            condition=self._cf.by_automation_id("NonEditableCombo")
+            condition=self._get_condition_factory.by_automation_id("NonEditableCombo")
         ).as_combo_box()
 
     @property
@@ -87,7 +93,9 @@ class SimpleControlsElements(AbtstractControlCollection):
 
         :return: The List Box element.
         """
-        return self.main_window.find_first_descendant(condition=self._cf.by_automation_id("ListBox")).as_list_box()
+        return self.main_window.find_first_descendant(
+            condition=self._get_condition_factory.by_automation_id("ListBox")
+        ).as_list_box()
 
     @property
     def test_check_box(self) -> CheckBox:
@@ -95,7 +103,9 @@ class SimpleControlsElements(AbtstractControlCollection):
 
         :return: The Test CheckBox element.
         """
-        return self.main_window.find_first_descendant(condition=self._cf.by_name("Test Checkbox")).as_check_box()
+        return self.main_window.find_first_descendant(
+            condition=self._get_condition_factory.by_name("Test Checkbox")
+        ).as_check_box()
 
     @property
     def three_way_check_box(self) -> CheckBox:
@@ -104,7 +114,7 @@ class SimpleControlsElements(AbtstractControlCollection):
         :return: The Three Way CheckBox element.
         """
         return self.parent_element.find_first_child(
-            condition=self._cf.by_automation_id("ThreeStateCheckBox")
+            condition=self._get_condition_factory.by_automation_id("ThreeStateCheckBox")
         ).as_check_box()
 
     @property
@@ -114,7 +124,7 @@ class SimpleControlsElements(AbtstractControlCollection):
         :return: The Radio Button 1 element.
         """
         return self.parent_element.find_first_child(
-            condition=self._cf.by_automation_id("RadioButton1")
+            condition=self._get_condition_factory.by_automation_id("RadioButton1")
         ).as_radio_button()
 
     @property
@@ -124,7 +134,7 @@ class SimpleControlsElements(AbtstractControlCollection):
         :return: The Radio Button 2 element.
         """
         return self.parent_element.find_first_child(
-            condition=self._cf.by_automation_id("RadioButton2")
+            condition=self._get_condition_factory.by_automation_id("RadioButton2")
         ).as_radio_button()
 
     @property
@@ -134,7 +144,7 @@ class SimpleControlsElements(AbtstractControlCollection):
         :return: The Progress Bar element.
         """
         return self.parent_element.find_first_child(
-            condition=self._cf.by_automation_id("ProgressBar")
+            condition=self._get_condition_factory.by_automation_id("ProgressBar")
         ).as_progress_bar()
 
     @property
@@ -143,7 +153,9 @@ class SimpleControlsElements(AbtstractControlCollection):
 
         :return: The Slider element.
         """
-        return self.parent_element.find_first_child(condition=self._cf.by_automation_id("Slider")).as_slider()
+        return self.parent_element.find_first_child(
+            condition=self._get_condition_factory.by_automation_id("Slider")
+        ).as_slider()
 
     @property
     def context_menu_button(self) -> Button:
@@ -151,7 +163,9 @@ class SimpleControlsElements(AbtstractControlCollection):
 
         :return: The Context Menu Button element.
         """
-        return self.parent_element.find_first_descendant(condition=self._cf.by_name("ContextMenu")).as_button()
+        return self.parent_element.find_first_descendant(
+            condition=self._get_condition_factory.by_name("ContextMenu")
+        ).as_button()
 
     @property
     def invoke_me_button(self) -> Button:
@@ -159,7 +173,9 @@ class SimpleControlsElements(AbtstractControlCollection):
 
         :return: The Invoke Me Button element.
         """
-        return self.parent_element.find_first_child(condition=self._cf.by_automation_id("InvokableButton")).as_button()
+        return self.parent_element.find_first_child(
+            condition=self._get_condition_factory.by_automation_id("InvokableButton")
+        ).as_button()
 
     @property
     def big_button(self) -> AutomationElement:
@@ -167,7 +183,9 @@ class SimpleControlsElements(AbtstractControlCollection):
 
         :return: The Big Button element.
         """
-        return self.parent_element.find_first_child(condition=self._cf.by_name("BigButton")).as_button()
+        return self.parent_element.find_first_child(
+            condition=self._get_condition_factory.by_name("BigButton")
+        ).as_button()
 
     @property
     def popup_toggle_button1(self) -> Button:
@@ -176,7 +194,7 @@ class SimpleControlsElements(AbtstractControlCollection):
         :return: The Popup Toggle Button 1 element.
         """
         return self.parent_element.find_first_child(
-            condition=self._cf.by_automation_id("PopupToggleButton1")
+            condition=self._get_condition_factory.by_automation_id("PopupToggleButton1")
         ).as_button()
 
     @property
@@ -186,7 +204,7 @@ class SimpleControlsElements(AbtstractControlCollection):
         :return: The Popup Toggle Button 2 element.
         """
         return self.parent_element.find_first_child(
-            condition=self._cf.by_automation_id("PopupToggleButton2")
+            condition=self._get_condition_factory.by_automation_id("PopupToggleButton2")
         ).as_button()
 
     @property
@@ -195,7 +213,9 @@ class SimpleControlsElements(AbtstractControlCollection):
 
         :return: The Menu Item Checked Label element.
         """
-        return self.parent_element.find_first_child(condition=self._cf.by_automation_id("lblMenuChk")).as_label()
+        return self.parent_element.find_first_child(
+            condition=self._get_condition_factory.by_automation_id("lblMenuChk")
+        ).as_label()
 
     @property
     def spinner(self) -> Spinner:
@@ -209,7 +229,7 @@ class SimpleControlsElements(AbtstractControlCollection):
         """
         try:
             return self.main_window.find_first_descendant(
-                condition=self._cf.by_automation_id("numericUpDown1")
+                condition=self._get_condition_factory.by_automation_id("numericUpDown1")
             ).as_spinner()
         except ElementNotFound:
             # Fallback: A hacky workaround since AutomationID sometimes returns as uuid
@@ -217,7 +237,9 @@ class SimpleControlsElements(AbtstractControlCollection):
             try:
                 elements = [
                     _
-                    for _ in self.main_window.find_all_descendants(condition=self._cf.by_name("Spinner"))
+                    for _ in self.main_window.find_all_descendants(
+                        condition=self._get_condition_factory.by_name("Spinner")
+                    )
                     if _.automation_id not in ["label2", "dateTimePicker1", "ProgressBar", "Slider"]
                 ]
                 if elements:
@@ -236,5 +258,5 @@ class SimpleControlsElements(AbtstractControlCollection):
         :return: The DatePicker element.
         """
         return self.parent_element.find_first_child(
-            condition=self._cf.by_automation_id("dateTimePicker1")
+            condition=self._get_condition_factory.by_automation_id("dateTimePicker1")
         ).as_date_time_picker()

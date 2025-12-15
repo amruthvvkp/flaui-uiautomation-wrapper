@@ -325,6 +325,123 @@ def click(self, move_mouse: bool = False) -> None:
     self.raw_element.Click(move_mouse)
 ```
 
+### Post-Wait Pattern for Input Operations
+
+Many UI automation operations require waiting for input to be processed after execution. To avoid repetitive `Wait.until_input_is_processed()` calls, the wrapper provides an optional `post_wait` parameter pattern.
+
+#### Pattern Implementation
+
+**Helper Method** (in `flaui/core/input.py`):
+```python
+from typing import Union, Callable, Optional
+
+class Mouse:
+    @staticmethod
+    def _apply_post_wait(post_wait: Optional[Union[bool, float, Callable[[], None]]]) -> None:
+        """Apply post-operation wait based on parameter type.
+
+        :param post_wait: True=100ms wait, float=custom seconds, callable=custom function
+        """
+        if post_wait is True:
+            Wait.until_input_is_processed()  # 100ms default
+        elif isinstance(post_wait, (int, float)):
+            Wait.for_seconds(post_wait)
+        elif callable(post_wait):
+            post_wait()
+```
+
+#### Methods Supporting post_wait
+
+**Mouse Class** (all 15 methods):
+- `move_by()`, `move_to()`, `click()`, `double_click()`, `down()`, `up()`
+- `scroll()`, `horizontal_scroll()`, `drag_horizontally()`, `drag_vertically()`, `drag()`
+- `left_click()`, `left_double_click()`, `right_click()`, `right_double_click()`
+
+**AutomationElement Methods**:
+- `click(move_mouse, post_wait)` - Performs left click
+- `Tab.select_tab_item(index, value, post_wait)` - Selects tab item
+- `TextBox.enter(value, post_wait)` - Types text
+
+#### Usage Examples
+
+**Before (Repetitive Wait Calls):**
+```python
+from flaui.core.input import Mouse, Wait
+
+# Multiple wait calls needed
+Mouse.move_by(800, 0)
+Wait.until_input_is_processed()
+
+Mouse.click(button.get_clickable_point())
+Wait.until_input_is_processed()
+
+tab.select_tab_item(1)
+Wait.until_input_is_processed()
+```
+
+**After (Cleaner with post_wait):**
+```python
+from flaui.core.input import Mouse
+
+# Built-in wait with default 100ms
+Mouse.move_by(800, 0, post_wait=True)
+
+# Custom wait duration
+Mouse.click(button.get_clickable_point(), post_wait=0.5)  # 500ms
+
+# Direct on element methods
+tab.select_tab_item(1, post_wait=True)
+textbox.enter("Hello World", post_wait=True)
+button.click(post_wait=True)
+```
+
+**Advanced (Custom Wait Function):**
+```python
+def custom_wait():
+    """Custom wait with retry logic."""
+    Wait.for_seconds(0.2)
+    Wait.until_input_is_processed()
+
+Mouse.drag(start_pos, end_pos, post_wait=custom_wait)
+```
+
+#### Implementation in New Methods
+
+When adding new methods that may require post-operation waits:
+
+```python
+from typing import Union, Callable, Optional
+
+@handle_csharp_exceptions
+def new_input_method(self, param: str, post_wait: Optional[Union[bool, float, Callable[[], None]]] = None) -> None:
+    """New input operation.
+
+    :param param: Operation parameter
+    :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
+    """
+    from flaui.core.input import Mouse  # Late import to avoid circular dependency
+
+    # Perform the operation
+    self.raw_element.DoSomething(param)
+
+    # Apply post-wait if requested
+    Mouse._apply_post_wait(post_wait)
+```
+
+#### Circular Import Prevention
+
+Since `automation_elements.py` and `input.py` import each other, use **late imports** inside methods:
+
+```python
+# In automation_elements.py
+def click(self, move_mouse: bool = False, post_wait: Optional[Union[bool, float, Callable[[], None]]] = None) -> None:
+    """Performs a left click on the element."""
+    from flaui.core.input import Mouse  # ← Import inside method
+
+    self.raw_element.Click(move_mouse)
+    Mouse._apply_post_wait(post_wait)
+```
+
 ### Type Conversion Pattern
 
 #### C# Collections to Python
@@ -1425,11 +1542,14 @@ class NoClickablePointException(Exception):
 
 ### AppVeyor Configuration
 
+The project uses AppVeyor for continuous integration testing on Windows with Visual Studio 2022.
+
 #### Matrix Testing
 
 ```yaml
 # From .appveyor.yml
 environment:
+  UV_FROZEN: "1"  # Use exact versions from uv.lock
   matrix:
     - job_name: Python 3.12 x64
       PYTHON: "C:\\Python312"
@@ -1437,17 +1557,54 @@ environment:
       PYTHON_ARCH: 64
 ```
 
-#### Build Script
+#### Test Script with Timeout and Allure
 
 ```yaml
 test_script:
   - ps: |
       $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
       Write-Host "Running tests with pytest..."
-      uv run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage coverage run -m pytest --junit-xml=test-results.xml
+      uv run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage coverage run -m pytest --timeout=15 --timeout-method=thread --junit-xml=test-results.xml --alluredir=allure-results
       if ($LASTEXITCODE -ne 0) { Write-Host "Tests failed."; exit 1 }
       Write-Host "Tests completed."
 ```
+
+**Key Parameters:**
+- `--timeout=15` - Maximum test execution time (15 seconds per test)
+- `--timeout-method=thread` - Use thread-based timeout (safe for Windows)
+- `--junit-xml=test-results.xml` - JUnit XML report for CI integration
+- `--alluredir=allure-results` - Generate Allure JSON reports for detailed test analytics
+
+#### Artifacts Collection
+
+```yaml
+artifacts:
+  - path: test-results.xml
+    name: test-results
+
+  - path: coverage.xml
+    name: coverage
+
+  - path: htmlcov
+    name: coverage-html
+    type: directory
+
+  - path: allure-results
+    name: allure-results
+    type: directory
+```
+
+**Available Artifacts:**
+1. **test-results.xml** - JUnit XML format for CI test result parsing
+2. **coverage.xml** - XML coverage report for code coverage tracking
+3. **htmlcov/** - HTML coverage report with line-by-line coverage details
+4. **allure-results/** - Allure JSON reports containing:
+   - Test execution history
+   - Test parameters (UIA2/UIA3, WinForms/WPF)
+   - Step-by-step execution details
+   - Screenshots and attachments (if configured)
+   - Timing information
+   - Categorization by test type
 
 #### Coverage Reporting
 
