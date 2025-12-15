@@ -8,10 +8,10 @@ from __future__ import annotations
 
 import abc
 from datetime import date
+import logging
 from typing import Any, Callable, List, Optional, Tuple, TypeVar, Union, overload
 
 import arrow
-from loguru import logger
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 from System import NullReferenceException  # pyright: ignore
 
@@ -2341,7 +2341,7 @@ class Tab(AutomationElement):
         try:
             self.raw_element.SelectTabItem(index) if index is not None else self.raw_element.SelectTabItem(value)
         except Exception as e:
-            logger.error(e)
+            logging.error("Failed to select tab item: %s", e)
 
 
 class TabItem(AutomationElement, SelectionItemAutomationElement):

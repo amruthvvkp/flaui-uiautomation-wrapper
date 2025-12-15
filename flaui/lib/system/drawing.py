@@ -648,7 +648,7 @@ class Point(BaseModel):
 
         :return: y-cordinate of the Point
         """
-        return self.raw_value.X  # type: ignore
+        return self.raw_value.Y  # type: ignore
 
     @y.setter
     def y(self, value: int) -> None:
@@ -656,7 +656,7 @@ class Point(BaseModel):
 
         :param value: Value to set
         """
-        self.raw_value.X = value  # type: ignore
+        self.raw_value.Y = value  # type: ignore
 
     @property
     def is_empty(self) -> bool:
@@ -1240,7 +1240,7 @@ class Rectangle(BaseModel):
         :param by: Move by, defaults to 0
         :return: Point object
         """
-        return Point(raw_value=(self.left, self.center().y))
+        return Point(raw_value=(self.left + by, self.center().y))
 
     def immediate_exterior_north(self) -> Point:
         """Returns immediate exterior North

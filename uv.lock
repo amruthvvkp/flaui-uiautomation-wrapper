@@ -1246,7 +1246,6 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "arrow" },
-    { name = "loguru" },
     { name = "pillow", version = "10.4.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "pillow", version = "11.3.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.9.*'" },
     { name = "pillow", version = "12.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
@@ -1288,6 +1287,7 @@ dev = [
 unit-test = [
     { name = "dirty-equals", version = "0.9.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "dirty-equals", version = "0.11", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
+    { name = "loguru" },
     { name = "psutil" },
     { name = "pyhamcrest" },
     { name = "pytest", version = "8.3.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
@@ -1306,7 +1306,6 @@ requires-dist = [
     { name = "allure-pytest", marker = "extra == 'allure-pytest'", specifier = ">=2.15.2" },
     { name = "arrow", specifier = ">=1.3.0" },
     { name = "coverage", marker = "extra == 'coverage'", specifier = ">=7.6.1" },
-    { name = "loguru", specifier = ">=0.7.3" },
     { name = "pillow", specifier = ">=10.4.0" },
     { name = "pydantic", specifier = ">=2.10.6" },
     { name = "pydantic-settings", specifier = ">=2.7.1" },
@@ -1326,6 +1325,7 @@ dev = [
 ]
 unit-test = [
     { name = "dirty-equals", specifier = ">=0.9.0" },
+    { name = "loguru", specifier = ">=0.7.3" },
     { name = "psutil", specifier = ">=6.1.1" },
     { name = "pyhamcrest", specifier = ">=2.1.0" },
     { name = "pytest", specifier = ">=8.3.4" },

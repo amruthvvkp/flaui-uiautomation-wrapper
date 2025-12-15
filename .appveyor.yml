@@ -80,9 +80,9 @@ after_test:
   - ps: |
       $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
       Write-Host "Generating test coverage report..."
-      uv run --no-project --with coverage coverage combine
-      uv run --no-project --with coverage coverage xml
-      uv run --no-project --with coverage coverage html
+      uv run --with coverage coverage combine
+      uv run --with coverage coverage xml
+      uv run --with coverage coverage html
       Write-Host "Coverage report generated."
 
 artifacts:

@@ -5,9 +5,8 @@ It contains methods to launch, attach, kill, dispose, and close an application. 
 
 from __future__ import annotations
 
+import logging
 from typing import Any, List, Optional, Union
-
-from loguru import logger
 
 from flaui.core.automation_elements import Window
 
@@ -118,7 +117,7 @@ class Application:
         try:
             main_window = Window(raw_element=self._application.GetMainWindow(_automation))
         except (OSError, Exception) as e:
-            logger.exception(e)
+            logging.exception("Failed to get main window: %s", e)
             raise e
         else:
             return main_window

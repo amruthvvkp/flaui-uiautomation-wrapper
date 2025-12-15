@@ -1,0 +1,233 @@
+"""Tests for pattern and property getters with caching, ported from C# GetterTests.cs."""
+
+from flaui.core.application import Application
+from flaui.core.automation_elements import Window
+from flaui.core.cache_request import CacheRequest
+from flaui.core.definitions import AutomationElementMode, TreeScope
+from flaui.lib.exceptions import (
+    PatternNotCachedException,
+    PatternNotSupportedException,
+    PropertyNotCachedException,
+    PropertyNotSupportedException,
+)
+from flaui.modules.automation import Automation
+import pytest
+
+
+@pytest.fixture(scope="module")
+def notepad_app() -> Application:
+    """Launch Notepad application for testing.
+
+    :return: Notepad application instance
+    """
+    app = Application.launch("notepad.exe")
+    yield app
+    try:
+        app.close()
+    except Exception:
+        pass
+
+
+@pytest.fixture
+def notepad_window(notepad_app: Application, automation: Automation) -> Window:
+    """Get main window of Notepad.
+
+    :param notepad_app: Notepad application
+    :param automation: Automation instance
+    :return: Main window
+    """
+    return notepad_app.get_main_window(automation)
+
+
+class TestGetterPatterns:
+    """Tests for pattern getters with and without caching."""
+
+    def test_correct_pattern(self, notepad_window: Window, automation: Automation) -> None:
+        """Test getting a supported pattern without caching.
+
+        Ported from GetterTests.cs::CorrectPattern
+        """
+        assert notepad_window is not None
+        window_pattern = notepad_window.framework_automation_element.GetNativePattern[object](
+            automation.cs_automation.PatternLibrary.WindowPattern
+        )
+        assert window_pattern is not None
+
+    def test_correct_pattern_cached(self, notepad_window: Window, automation: Automation) -> None:
+        """Test getting a supported pattern with caching.
+
+        Ported from GetterTests.cs::CorrectPatternCached
+        """
+        cache_request = CacheRequest(automation)
+        cache_request.automation_element_mode = AutomationElementMode.none
+        cache_request.tree_scope = TreeScope.Element
+        cache_request.add_pattern(automation.cs_automation.PatternLibrary.WindowPattern)
+
+        with cache_request.activate():
+            window = notepad_window.raw_element
+            window_pattern = window.FrameworkAutomationElement.GetNativePattern[object](
+                automation.cs_automation.PatternLibrary.WindowPattern
+            )
+            assert window_pattern is not None
+
+    def test_unsupported_pattern(self, notepad_window: Window, automation: Automation) -> None:
+        """Test getting an unsupported pattern throws PatternNotSupportedException.
+
+        Ported from GetterTests.cs::UnsupportedPattern
+        """
+        assert notepad_window is not None
+        with pytest.raises(PatternNotSupportedException, match="ExpandCollapse"):
+            notepad_window.framework_automation_element.GetNativePattern[object](
+                automation.cs_automation.PatternLibrary.ExpandCollapsePattern
+            )
+
+    def test_unsupported_pattern_cached(self, notepad_window: Window, automation: Automation) -> None:
+        """Test getting an unsupported pattern with caching throws PatternNotSupportedException.
+
+        Ported from GetterTests.cs::UnsupportedPatternCached
+        """
+        cache_request = CacheRequest(automation)
+        cache_request.automation_element_mode = AutomationElementMode.none
+        cache_request.tree_scope = TreeScope.Element
+        cache_request.add_pattern(automation.cs_automation.PatternLibrary.ExpandCollapsePattern)
+
+        with cache_request.activate():
+            window = notepad_window.raw_element
+            assert window is not None
+            with pytest.raises(PatternNotSupportedException, match="ExpandCollapse"):
+                window.FrameworkAutomationElement.GetNativePattern[object](
+                    automation.cs_automation.PatternLibrary.ExpandCollapsePattern
+                )
+
+    def test_correct_pattern_uncached(self, notepad_window: Window, automation: Automation) -> None:
+        """Test getting a supported but uncached pattern throws PatternNotCachedException.
+
+        Ported from GetterTests.cs::CorrectPatternUncached
+        """
+        cache_request = CacheRequest(automation)
+        cache_request.automation_element_mode = AutomationElementMode.none
+        cache_request.tree_scope = TreeScope.Element
+        cache_request.add_pattern(automation.cs_automation.PatternLibrary.ExpandCollapsePattern)
+
+        with cache_request.activate():
+            window = notepad_window.raw_element
+            assert window is not None
+            with pytest.raises(PatternNotCachedException, match="Window"):
+                window.FrameworkAutomationElement.GetNativePattern[object](
+                    automation.cs_automation.PatternLibrary.WindowPattern
+                )
+
+    def test_unsupported_pattern_uncached(self, notepad_window: Window, automation: Automation) -> None:
+        """Test getting an unsupported and uncached pattern throws PatternNotCachedException.
+
+        Ported from GetterTests.cs::UnsupportedPatternUnCached
+        """
+        cache_request = CacheRequest(automation)
+        cache_request.automation_element_mode = AutomationElementMode.none
+        cache_request.tree_scope = TreeScope.Element
+        cache_request.add_pattern(automation.cs_automation.PatternLibrary.WindowPattern)
+
+        with cache_request.activate():
+            window = notepad_window.raw_element
+            assert window is not None
+            with pytest.raises(PatternNotCachedException, match="ExpandCollapse"):
+                window.FrameworkAutomationElement.GetNativePattern[object](
+                    automation.cs_automation.PatternLibrary.ExpandCollapsePattern
+                )
+
+
+class TestGetterProperties:
+    """Tests for property getters with and without caching."""
+
+    def test_correct_property(self, notepad_window: Window, automation: Automation) -> None:
+        """Test getting a supported property without caching.
+
+        Ported from GetterTests.cs::CorrectProperty
+        """
+        assert notepad_window is not None
+        window_property = notepad_window.framework_automation_element.GetPropertyValue(
+            automation.cs_automation.PropertyLibrary.Window.CanMaximize
+        )
+        assert window_property is not None
+
+    def test_correct_property_cached(self, notepad_window: Window, automation: Automation) -> None:
+        """Test getting a supported property with caching.
+
+        Ported from GetterTests.cs::CorrectPropertyCached
+        """
+        cache_request = CacheRequest(automation)
+        cache_request.automation_element_mode = AutomationElementMode.none
+        cache_request.tree_scope = TreeScope.Element
+        cache_request.add_property(automation.cs_automation.PropertyLibrary.Window.CanMaximize)
+
+        with cache_request.activate():
+            window = notepad_window.raw_element
+            window_property = window.FrameworkAutomationElement.GetPropertyValue(
+                automation.cs_automation.PropertyLibrary.Window.CanMaximize
+            )
+            assert window_property is not None
+
+    def test_unsupported_property(self, notepad_window: Window, automation: Automation) -> None:
+        """Test getting an unsupported property throws PropertyNotSupportedException.
+
+        Ported from GetterTests.cs::UnsupportedProperty
+        """
+        assert notepad_window is not None
+        with pytest.raises(PropertyNotSupportedException, match="ExpandCollapseState"):
+            notepad_window.framework_automation_element.GetPropertyValue(
+                automation.cs_automation.PropertyLibrary.ExpandCollapse.ExpandCollapseState
+            )
+
+    def test_unsupported_property_cached(self, notepad_window: Window, automation: Automation) -> None:
+        """Test getting an unsupported property with caching throws PropertyNotSupportedException.
+
+        Ported from GetterTests.cs::UnsupportedPropertyCached
+        """
+        cache_request = CacheRequest(automation)
+        cache_request.automation_element_mode = AutomationElementMode.none
+        cache_request.tree_scope = TreeScope.Element
+        cache_request.add_property(automation.cs_automation.PropertyLibrary.ExpandCollapse.ExpandCollapseState)
+
+        with cache_request.activate():
+            window = notepad_window.raw_element
+            assert window is not None
+            with pytest.raises(PropertyNotSupportedException, match="ExpandCollapseState"):
+                window.FrameworkAutomationElement.GetPropertyValue(
+                    automation.cs_automation.PropertyLibrary.ExpandCollapse.ExpandCollapseState
+                )
+
+    def test_correct_property_uncached(self, notepad_window: Window, automation: Automation) -> None:
+        """Test getting a supported but uncached property throws PropertyNotCachedException.
+
+        Ported from GetterTests.cs::CorrectPropertyUncached
+        """
+        cache_request = CacheRequest(automation)
+        cache_request.automation_element_mode = AutomationElementMode.none
+        cache_request.tree_scope = TreeScope.Element
+        cache_request.add_property(automation.cs_automation.PropertyLibrary.ExpandCollapse.ExpandCollapseState)
+
+        with cache_request.activate():
+            window = notepad_window.raw_element
+            assert window is not None
+            with pytest.raises(PropertyNotCachedException, match="CanMaximize"):
+                window.FrameworkAutomationElement.GetPropertyValue(
+                    automation.cs_automation.PropertyLibrary.Window.CanMaximize
+                )
+
+    def test_unsupported_property_uncached(self, notepad_window: Window, automation: Automation) -> None:
+        """Test getting an unsupported and uncached property throws PropertyNotCachedException.
+
+        Ported from GetterTests.cs::UnsupportedPropertyUnCached
+        """
+        cache_request = CacheRequest(automation)
+        cache_request.automation_element_mode = AutomationElementMode.none
+        cache_request.tree_scope = TreeScope.Element
+        cache_request.add_property(automation.cs_automation.PropertyLibrary.Window.CanMaximize)
+
+        with cache_request.activate():
+            window = notepad_window.raw_element
+            assert window is not None
+            with pytest.raises(PropertyNotCachedException, match="ExpandCollapseState"):
+                window.FrameworkAutomationElement.GetPropertyValue(
+                    automation.cs_automation.PropertyLibrary.ExpandCollapse.ExpandCollapseState
+                )
