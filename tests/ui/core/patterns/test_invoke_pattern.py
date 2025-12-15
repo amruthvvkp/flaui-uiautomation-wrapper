@@ -43,6 +43,11 @@ class TestInvokePattern:
         button = tab_item.find_first_descendant(condition=test_application._cf.by_automation_id("InvokableButton"))
         yield button
 
+    @pytest.mark.bug(
+        id="GH-77",
+        url="https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/77",
+        reason="RegisterAutomationEvent not yet ported to Python wrapper",
+    )
     @pytest.mark.skip(reason="TODO: Implement once RegisterAutomationEvent is ported to Python wrapper")
     def test_invoke_with_event(
         self,

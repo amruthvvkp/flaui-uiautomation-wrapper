@@ -9,6 +9,7 @@
 - [C# to Python Mapping Patterns](#c-to-python-mapping-patterns)
 - [Pydantic Validation](#pydantic-validation)
 - [Pytest Matrix Configuration](#pytest-matrix-configuration)
+- [Pytest-Bug Integration](#pytest-bug-integration)
 - [Test Porting Methodology](#test-porting-methodology)
 - [Development Workflow](#development-workflow)
 - [CI/CD Configuration](#cicd-configuration)
@@ -508,6 +509,182 @@ class Point(BaseModel):
 
 ---
 
+## Python Compatibility & Library Preferences
+
+### Python 3.8+ Compatibility Requirement
+
+**CRITICAL**: This project **MUST** maintain compatibility with Python 3.8+.
+
+```toml
+# From pyproject.toml
+requires-python = ">=3.8"
+```
+
+#### Version-Specific Considerations
+
+**Python 3.8 Limitations:**
+- No `|` union syntax (use `Union[X, Y]` instead)
+- No `list[X]` syntax (use `List[X]` from typing)
+- No `dict[X, Y]` syntax (use `Dict[X, Y]` from typing)
+- No structural pattern matching (match/case)
+- No `Self` type hint (use string forward reference or TypeVar)
+
+**✅ Python 3.8+ Compatible:**
+```python
+from typing import List, Dict, Union, Optional
+
+def process_elements(items: List[str]) -> Dict[str, int]:
+    """Process a list of elements."""
+    result: Dict[str, int] = {}
+    value: Union[int, None] = None
+    return result
+```
+
+**❌ Python 3.9+ Only (DO NOT USE):**
+```python
+def process_elements(items: list[str]) -> dict[str, int]:  # ← Python 3.9+
+    result: dict[str, int] = {}
+    value: int | None = None  # ← Python 3.10+
+    return result
+```
+
+#### Testing Python 3.8 Compatibility
+
+```bash
+# Use tox or nox to test multiple Python versions
+uv run --python 3.8 pytest tests/
+
+# CI/CD should test against 3.8, 3.9, 3.10, 3.11, 3.12, 3.13
+```
+
+### Prefer Python Libraries Over Custom C# Ports
+
+When porting supplemental C# code that is **not** core FlaUI functionality, prefer well-established Python libraries over custom PythonNet ports **unless the C# implementation provides specific benefits**.
+
+#### Decision Framework
+
+**Use Python Library When:**
+- ✅ Equivalent functionality exists in Python stdlib or well-maintained package
+- ✅ No performance penalty compared to C# version
+- ✅ Reduces PythonNet complexity and potential interop issues
+- ✅ Better Python developer ergonomics
+- ✅ Fewer dependencies on C# runtime
+
+**Use C# PythonNet When:**
+- ✅ Core FlaUI functionality (automation elements, patterns, etc.)
+- ✅ C# version offers better performance for automation tasks
+- ✅ Python equivalent would require complex reimplementation
+- ✅ Need exact parity with FlaUI C# behavior
+- ✅ Deep integration with other C# FlaUI components
+
+#### Common C# → Python Library Mappings
+
+| C# Class/Namespace | Python Equivalent | When to Use Python |
+|-------------------|------------------|-------------------|
+| `System.DateTime` | `datetime.datetime` | ✅ For date/time operations unrelated to UI automation |
+| `System.TimeSpan` | `datetime.timedelta` | ✅ For duration calculations |
+| `System.IO.Path` | `pathlib.Path` | ✅ For file path manipulation |
+| `System.Text.RegularExpressions` | `re` module | ✅ For regex operations |
+| `System.Threading.Thread.Sleep()` | `time.sleep()` | ✅ For delays/waits |
+| `System.Linq` | `itertools`, comprehensions | ✅ For collection operations |
+| `System.Collections.Generic.List<T>` | `list` | ✅ For general collections |
+| `System.Collections.Generic.Dictionary<K,V>` | `dict` | ✅ For mappings |
+| `System.Drawing.Point` | **C# via PythonNet** | ❌ UI automation coordinate system |
+| `System.Drawing.Rectangle` | **C# via PythonNet** | ❌ UI automation bounding boxes |
+| `System.Windows.Automation.*` | **C# via PythonNet** | ❌ Core automation functionality |
+
+#### Example: DateTime Conversion
+
+**❌ Unnecessary C# PythonNet:**
+```python
+from System import DateTime as CSDateTime
+
+def log_timestamp() -> str:
+    """Get current timestamp for logging."""
+    # Unnecessarily uses C# when Python stdlib is sufficient
+    now = CSDateTime.Now
+    return now.ToString("yyyy-MM-dd HH:mm:ss")
+```
+
+**✅ Prefer Python stdlib:**
+```python
+from datetime import datetime
+
+def log_timestamp() -> str:
+    """Get current timestamp for logging."""
+    # Use Python's datetime - simpler and no interop overhead
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+```
+
+**✅ C# Required for Automation:**
+```python
+from System import DateTime as CSDateTime
+from arrow import Arrow
+
+def set_date_picker(element: DateTimePicker, date: datetime) -> None:
+    """Set DateTimePicker value - MUST use C# DateTime for FlaUI interop."""
+    # C# required here - FlaUI expects System.DateTime
+    cs_date = CSDateTime.Parse(date.strftime("%Y-%m-%d"))
+    element.raw_element.SelectedDate = cs_date
+```
+
+#### Example: File Path Operations
+
+**❌ Unnecessary C# PythonNet:**
+```python
+from System.IO import Path as CSPath
+
+def get_log_directory(base_path: str) -> str:
+    """Construct log directory path."""
+    return CSPath.Combine(base_path, "logs")
+```
+
+**✅ Prefer Python pathlib:**
+```python
+from pathlib import Path
+
+def get_log_directory(base_path: str) -> Path:
+    """Construct log directory path."""
+    return Path(base_path) / "logs"
+```
+
+#### Example: Collection Operations
+
+**❌ Unnecessary LINQ via C#:**
+```python
+from System.Linq import Enumerable
+
+def filter_visible_elements(elements: List[AutomationElement]) -> List[AutomationElement]:
+    """Filter to visible elements."""
+    cs_list = List[Object]([e.raw_element for e in elements])
+    filtered = Enumerable.Where(cs_list, lambda e: e.IsOffscreen == False)
+    return [AutomationElement(raw_element=e) for e in filtered]
+```
+
+**✅ Prefer Python comprehensions:**
+```python
+def filter_visible_elements(elements: List[AutomationElement]) -> List[AutomationElement]:
+    """Filter to visible elements."""
+    return [e for e in elements if not e.is_offscreen]
+```
+
+### Best Practices Summary
+
+1. **Always target Python 3.8+** - use `typing` module for type hints
+2. **Prefer Python stdlib** for general-purpose operations (datetime, pathlib, re, itertools)
+3. **Use C# PythonNet** for core FlaUI automation functionality
+4. **Document reasoning** when choosing C# over Python equivalent
+5. **Test with Python 3.8** to ensure compatibility
+6. **Minimize interop overhead** by batching C# calls when necessary
+
+### Related Documentation
+
+- [Python 3.8 Release Notes](https://docs.python.org/3/whatsnew/3.8.html)
+- [typing Module](https://docs.python.org/3/library/typing.html) - Type hints for 3.8+
+- [PEP 585](https://peps.python.org/pep-0585/) - Why `list[X]` requires Python 3.9+
+
+---
+
 ## Pytest Matrix Configuration
 
 ### The Challenge
@@ -725,6 +902,270 @@ test_combobox.py::TestComboBoxElements::test_selected_item[UIA2_WPF] PASSED
 test_combobox.py::TestComboBoxElements::test_selected_item[UIA3_WinForms] XFAIL
 test_combobox.py::TestComboBoxElements::test_selected_item[UIA3_WPF] PASSED
 ```
+
+---
+
+## Pytest-Bug Integration
+
+### Overview
+
+This project uses [pytest-bug](https://github.com/tolstislon/pytest-bug) plugin to mark and track tests with known bugs. The plugin provides:
+
+- **Bug Markers**: Tag tests with bug identifiers and descriptions
+- **Skip/XFail Control**: Choose whether to skip or run (xfail) bug-marked tests
+- **Query Capability**: Filter and run tests by bug pattern
+- **Summary Statistics**: See "Bugs skipped: X, Bugs passed: Y, Bugs failed: Z" in output
+- **GitHub Integration**: Link tests to GitHub issues for traceability
+
+### Installation
+
+pytest-bug is already included in project dependencies:
+
+```toml
+[dependency-groups]
+unit-test = [
+    "pytest>=9.0.0",
+    "pytest-bug>=1.4.0",
+    # ...
+]
+```
+
+Install with: `uv sync --all-groups --all-extras`
+
+### Basic Usage
+
+#### Marker Signature
+
+```python
+@pytest.mark.bug(identifier, description, run=False)
+```
+
+**Parameters:**
+- `identifier` (str): Bug ID or issue number (e.g., "GH-74", "C18")
+- `description` (str): Brief description of the bug
+- `run` (bool):
+  - `False` (default): Skip the test (shown as "BUG-SKIP")
+  - `True`: Run the test, mark as xfail if it fails (shown as "BUG-FAIL" or "BUG-PASS")
+
+#### Class-Level Skip Example
+
+```python
+@pytest.mark.bug("GH-74", "Spinner control AutomationID instability")
+class TestSpinner:
+    """All tests in this class will be skipped and marked as bugs"""
+
+    def test_set_value(self, spinner: Spinner) -> None:
+        spinner.value = 10
+        assert spinner.value == 10
+```
+
+#### Method-Level XFail Example
+
+```python
+@pytest.mark.bug("GH-77", "RegisterAutomationEvent not yet ported", run=True)
+def test_invoke_with_event(self, button: Button) -> None:
+    """Test will be marked as BUG-FAIL if run parameter is True"""
+    # This test would fail, so it's xfailed
+    button.invoke()
+    assert event_was_raised()
+```
+
+### Marker Relationship
+
+**CRITICAL**: pytest-bug markers are **additive metadata**, not replacements for xfail/skip.
+
+#### ✅ Correct Pattern (Both Markers)
+
+```python
+# For class-level skip
+@pytest.mark.bug("GH-74", "AutomationID instability")
+@pytest.mark.xfail(reason="Spinner broken")  # ← Still needed for behavior
+class TestSpinner:
+    pass
+
+# For method-level skip
+@pytest.mark.bug("GH-77", "Not yet ported", run=True)
+@pytest.mark.skip(reason="TODO: Port this feature")  # ← Still needed
+def test_feature():
+    pass
+
+# For conditional skip in body
+def test_conditional(test_application_type: str):
+    if test_application_type == "WinForms":
+        pytest.bug("GH-75", "Broken on WinForms")  # ← Metadata
+        pytest.skip("WinForms not supported")  # ← Actual behavior
+```
+
+#### ❌ Incorrect (Missing Behavior Control)
+
+```python
+# Bug marker alone doesn't control execution
+@pytest.mark.bug("GH-74", "Broken")  # ← Only metadata
+class TestSpinner:  # ← Tests will RUN normally
+    pass
+```
+
+### Output Symbols
+
+When tests run, pytest-bug uses special symbols:
+
+| Symbol | Meaning | Description |
+|--------|---------|-------------|
+| `b` | BUG-SKIP | Test skipped due to known bug |
+| `f` | BUG-FAIL | Test ran but failed (expected) |
+| `p` | BUG-PASS | Test ran and passed (bug may be fixed) |
+
+**Example output:**
+```bash
+$ uv run pytest tests/ui/core/automation_elements/test_spinner.py -v
+
+test_spinner.py::TestSpinner::test_set_value[UIA2_WinForms] BUG-SKIP  [ 25%]
+test_spinner.py::TestSpinner::test_set_value[UIA2_WPF] BUG-SKIP       [ 50%]
+test_spinner.py::TestSpinner::test_set_value[UIA3_WinForms] BUG-SKIP  [ 75%]
+test_spinner.py::TestSpinner::test_set_value[UIA3_WPF] BUG-SKIP       [100%]
+
+--------------------------- Bugs skipped: 4 ---------------------------
+Results (0.12s): 4 skipped
+```
+
+### CLI Options
+
+#### Query and Filter
+
+```bash
+# Run only bug-marked tests (using pytest -m)
+uv run pytest -m bug -v
+
+# Run tests matching bug pattern (using pytest-bug)
+uv run pytest --bug-pattern="GH-7[4-9]"
+
+# Run ALL bug-marked tests (even if normally skipped)
+uv run pytest --bug-all-run
+
+# Skip ALL bug-marked tests
+uv run pytest --bug-all-skip
+```
+
+#### Customize Output
+
+```bash
+# Disable bug statistics summary
+uv run pytest --bug-no-stats
+
+# Change output symbols
+uv run pytest --bug-skip-letter=s --bug-fail-letter=x --bug-pass-letter=o
+
+# Change verbose output words
+uv run pytest --bug-skip-word=SKIPPED --bug-fail-word=XFAIL --bug-pass-word=PASSED -v
+```
+
+### Configuration Options
+
+Add to `pyproject.toml`:
+
+```toml
+[tool.pytest.ini_options]
+markers = [
+    "bug: Known bug tracked in GitHub issues"
+]
+
+# Optional: Customize pytest-bug defaults
+bug_summary_stats = true  # Show "Bugs skipped: X" summary
+bug_skip_letter = "b"     # Symbol for skipped bugs
+bug_fail_letter = "f"     # Symbol for failed bugs
+bug_pass_letter = "p"     # Symbol for passed bugs
+bug_skip_word = "BUG-SKIP"  # Verbose output for skipped
+bug_fail_word = "BUG-FAIL"  # Verbose output for failed
+bug_pass_word = "BUG-PASS"  # Verbose output for passed
+```
+
+### GitHub Issue Integration
+
+Link tests to GitHub issues for full traceability:
+
+```python
+@pytest.mark.bug(
+    "GH-74",
+    "Spinner control element finding is flaky - AutomationID sometimes returns uuid. "
+    "See: https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/74"
+)
+@pytest.mark.xfail(reason="Spinner broken due to upstream FlaUI bug")
+class TestSpinner:
+    """
+    Known Issues:
+    - GH-74: AutomationID instability in bulk test runs
+    - Upstream: https://github.com/FlaUI/FlaUI/issues/XXX
+    """
+```
+
+**Benefits:**
+- Each bug ID maps to a GitHub issue
+- Issue contains detailed investigation, root cause, workarounds
+- Test docstring references upstream FlaUI issues when applicable
+- Use `pytest -m bug --co` to see all bug-marked tests without running
+
+### Current Bug Markers in Project
+
+| Issue | Description | Tests | Status |
+|-------|-------------|-------|--------|
+| [GH-74](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/74) | Spinner AutomationID instability | 3 | Flaky |
+| [GH-75](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/75) | Combobox broken on WinForms | 22 | Known issue |
+| [GH-76](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/76) | Tree test flaky on CI | 4 | CI-specific |
+| [GH-77](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/77) | RegisterAutomationEvent not ported | 4 | TODO |
+| [GH-78](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/78) | Toggle pattern unsupported WinForms | 2 | UIA limitation |
+| [GH-79](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/79) | Context menu UIA3+WinForms broken | 1 | .NET bug |
+
+**Total**: 36 tests marked with bugs (7.2% of test suite)
+
+### Best Practices
+
+1. **Always use both markers**: Bug marker for tracking + xfail/skip for behavior
+2. **Use descriptive IDs**: "GH-74" better than "bug1"
+3. **Link to issues**: Include GitHub issue URLs in docstrings
+4. **Use `run=True` sparingly**: Only when you want to detect if bug is fixed
+5. **Query before adding**: Check existing bugs with `pytest --bug-pattern="GH-" --co`
+6. **Update when fixed**: Remove bug markers when upstream issues resolved
+7. **Document in test class**: Add Known Issues section to docstring
+
+### Troubleshooting
+
+#### Bug marker not working
+
+**Problem**: Test runs normally despite bug marker
+
+**Solution**: Add `@pytest.mark.xfail` or `pytest.skip()`:
+```python
+@pytest.mark.bug("GH-74", "Broken")  # ← Only metadata
+@pytest.mark.xfail(reason="Known bug")  # ← Actual behavior control
+```
+
+#### "Bugs passed" count high
+
+**Problem**: Many tests show "BUG-PASS" (may indicate bugs are fixed)
+
+**Solution**: Review tests with `run=True`, verify if bugs are actually fixed:
+```bash
+uv run pytest --bug-all-run -v | Select-String "BUG-PASS"
+```
+
+#### Can't query specific bugs
+
+**Problem**: Need to see all Spinner-related bug tests
+
+**Solution**: Use bug-pattern or pytest markers:
+```bash
+# Using pytest-bug pattern
+uv run pytest --bug-pattern="GH-74" --co
+
+# Using pytest marker query
+uv run pytest -m bug --co -q | Select-String "spinner"
+```
+
+### Related Documentation
+
+- [docs/bug-tracking.md](docs/bug-tracking.md) - Full bug tracking guide
+- [pytest-bug GitHub](https://github.com/tolstislon/pytest-bug) - Official documentation
+- [pytest markers](https://docs.pytest.org/en/stable/how-to/mark.html) - pytest marker basics
 
 ---
 

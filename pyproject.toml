@@ -55,8 +55,8 @@ classifiers = [
     "Intended Audience :: Developers",
 ]
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "interrogate>=1.7.0",
     "isort>=5.13.2",
     "jupyter>=1.1.1",
@@ -64,13 +64,12 @@ dev-dependencies = [
     "pre-commit>=3.5.0",
     "ruff>=0.9.3",
 ]
-
-[dependency-groups]
 unit-test = [
     "dirty-equals>=0.9.0",
     "psutil>=6.1.1",
     "pyhamcrest>=2.1.0",
     "pytest>=8.3.4",
+    "pytest-bug>=1.4.0",
     "pytest-pretty>=1.2.0",
     "pytest-reportlog>=0.4.0",
 ]
@@ -100,6 +99,7 @@ markers = [
     "uia3_only: Tests that require UIA3 automation type",
     "platform_limitation: Known C# FlaUI platform limitation",
     "windows11: Tests affected by Windows 11 specific behavior",
+    "bug: Known bug tracked in GitHub issues (use id and url parameters)",
 ]
 
 [tool.interrogate]

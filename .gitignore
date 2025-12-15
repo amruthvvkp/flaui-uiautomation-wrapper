@@ -1368,3 +1368,4 @@ allure-report/widgets/default/tree.json
 allure-report/widgets/default/variables.json
 diagnostic-output.txt
 test-report.jsonl
+log.txt

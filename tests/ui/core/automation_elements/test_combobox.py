@@ -11,10 +11,12 @@ from tests.test_utilities.elements.winforms_application import WinFormsApplicati
 from tests.test_utilities.elements.wpf_application import WPFApplicationElements
 
 
-@pytest.mark.xfail(
-    condition=lambda request: request.getfixturevalue("test_application_type") == "WinForms",  # type: ignore
-    reason="Combobox got heavily broken with UIA2/UIA3 Winforms due to bugs in Windows/.Net",
+@pytest.mark.bug(
+    id="GH-75",
+    url="https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/75",
+    reason="Combobox heavily broken on WinForms due to Windows/.NET bugs",
 )
+@pytest.mark.xfail(reason="Combobox heavily broken on WinForms due to Windows/.NET bugs")
 class TestComboBoxElements:
     """Tests for the Combobox class."""
 

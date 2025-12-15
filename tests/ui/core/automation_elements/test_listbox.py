@@ -42,6 +42,11 @@ class TestListBox:
         """Tests the items property."""
         assert list_box == HasAttributes(items=HasLen(2)), "List box should have 2 items."
 
+    @pytest.mark.bug(
+        "GH-83",
+        "test_select_by_index fails on UIA3+WPF - ListBox.select(index) not working",
+        run=True,
+    )
     def test_select_by_index(self, list_box: ListBox) -> None:
         """Tests the select_by_index method."""
         assert list_box.items == HasLen(2), "List box should have 2 items."

@@ -13,10 +13,13 @@ from tests.test_utilities.elements.wpf_application import WPFApplicationElements
 @pytest.mark.platform_limitation
 @pytest.mark.uia3_only
 @pytest.mark.winforms_only
-@pytest.mark.xfail(
+@pytest.mark.bug(
+    id="GH-74",
+    url="https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/74",
     reason="Spinner control element finding is flaky - AutomationID sometimes returns as uuid. "
-    "This is a known issue mentioned in element locator comments, particularly noticeable in bulk test runs."
+    "This is a known issue mentioned in element locator comments, particularly noticeable in bulk test runs.",
 )
+@pytest.mark.xfail(reason="Spinner control broken - AutomationID returns uuid instead of expected string.")
 class TestSpinner:
     """Tests for Spinner control.
 

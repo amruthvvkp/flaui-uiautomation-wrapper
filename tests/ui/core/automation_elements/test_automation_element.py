@@ -222,13 +222,10 @@ class TestAutomationElementAdditional:
         ) == HasLen(1), "There should be one nested element"
 
     # TODO: Check why this test case fails on UIA2 Winforms/WPF and UIA3 WinForms
-    @pytest.mark.xfail(
-        condition=lambda request: (
-            request.getfixturevalue("ui_automation_type") == UIAutomationTypes.UIA2
-            or request.getfixturevalue("ui_automation_type") == UIAutomationTypes.UIA3
-        )
-        and request.getfixturevalue("test_application_type") == "WinForms",  # type: ignore
-        reason="Fails on UIA2 WinForms/WPF and UIA3 WinForms",
+    @pytest.mark.bug(
+        "GH-81",
+        "find_all_with_options fails on UIA2 (all) and UIA3+WinForms - TreeTraversalOptions support issue",
+        run=True,
     )
     def test_find_all_with_options(
         self,
@@ -309,11 +306,11 @@ class TestAutomationElementAdditional:
             condition_factory.by_control_type(ControlType.Tab)
         ) == HasAttributes(control_type=ControlType.Tab), "ControlType should be Tab"
 
-    # TODO: Check why this test case fails on UIA2 Winforms/WPF
-    @pytest.mark.xfail(
-        condition=lambda request: request.getfixturevalue("ui_automation_type") == UIAutomationTypes.UIA2
-        and request.getfixturevalue("test_application_type") == "WinForms",  # type: ignore
-        reason="Fails on UIA2 WinForms and UIA3 WinForms",
+    # TODO: Check why this test case fails on UIA2 Winforms
+    @pytest.mark.bug(
+        "GH-81",
+        "find_first_with_options fails on UIA2+WinForms - TreeTraversalOptions support issue",
+        run=True,
     )
     def test_find_first_with_options(
         self,
