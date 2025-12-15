@@ -73,12 +73,12 @@ unit-test = [
     "pytest-pretty>=1.2.0",
     "pytest-reportlog>=0.4.0",
     "pytest-timeout>=2.4.0",
+    "allure-pytest>=2.15.2",
 ]
 
 [project.optional-dependencies]
 pytest-sugar = ["pytest-sugar>=1.0.0"]
 coverage = ["coverage>=7.6.1"]
-allure-pytest = ["allure-pytest>=2.15.2"]
 
 [tool.uv.sources]
 flaui = { path = "./flaui" }
