@@ -5,9 +5,10 @@ import time
 
 from flaui.core.application import Application
 from flaui.core.definitions import ControlType
+from flaui.core.input import Keyboard
 from flaui.core.tools import Retry
+from flaui.core.windows_api import VirtualKeyShort
 from flaui.lib.enums import UIAutomationTypes
-from flaui.lib.keyboard import Keyboard, VirtualKeyShort
 from flaui.modules.automation import Automation
 import pytest
 
@@ -20,7 +21,8 @@ class TestSearch:
 
         Ported from SearchTests.cs::SearchWithRetryTest
         """
-        app = Application.launch("notepad.exe")
+        app = Application()
+        app.launch("notepad.exe")
         try:
             window = app.get_main_window(automation)
             assert window is not None
@@ -83,7 +85,8 @@ class TestSearch:
         if ui_automation_type != UIAutomationTypes.UIA3:
             pytest.skip("This test is only for UIA3")
 
-        app = Application.launch("notepad.exe")
+        app = Application()
+        app.launch("notepad.exe")
         try:
             window = app.get_main_window(automation)
             assert window is not None

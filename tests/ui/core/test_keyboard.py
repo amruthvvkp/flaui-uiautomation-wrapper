@@ -5,6 +5,7 @@ import time
 from flaui.core.application import Application
 from flaui.lib.keyboard import Keyboard, VirtualKeyShort
 from flaui.modules.automation import Automation
+from flaui.core.definitions import ControlType
 
 
 class TestKeyboard:
@@ -15,7 +16,8 @@ class TestKeyboard:
 
         Ported from KeyboardTests.cs::KeyboardTest
         """
-        app = Application.launch("notepad.exe")
+        app = Application()
+        app.launch("notepad.exe")
         try:
             window = app.get_main_window(automation)
             assert window is not None
@@ -41,14 +43,13 @@ class TestKeyboard:
             # Close window without saving
             window.close()
             time.sleep(0.5)
-            
+
             # Handle "Don't Save" dialog if it appears
             try:
                 dialog = window.find_first_child(
                     window.condition_factory.by_control_type_and_name(
-                        from flaui.core.definitions import ControlType
                         ControlType.Window,
-                        "Notepad"
+                        "Notepad",
                     )
                 )
                 if dialog is not None:
