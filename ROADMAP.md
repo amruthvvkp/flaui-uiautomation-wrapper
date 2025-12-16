@@ -6,6 +6,21 @@
 
 ---
 
+## 🚀 10-Day Sprint to v1.0.0 (Dec 17-26, 2025)
+
+**📋 Detailed Plan**: See [10-DAY-ROADMAP.md](./10-DAY-ROADMAP.md) for the complete implementation schedule
+
+**📊 Milestones**:
+- [Day 1-2: Foundation](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/2) - UI Automation Patterns & XPath (Due: Dec 18)
+- [Day 3-4: Core Features](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/3) - Event Handlers & Identifiers (Due: Dec 20)
+- [Day 5-6: Advanced Features](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/4) - Logging, Capturing, Tools (Due: Dec 22)
+- [Day 7-8: Testing & Fixes](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/5) - 100% Coverage & Bug Fixes (Due: Dec 24)
+- [Day 9-10: Documentation & Release](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/6) - Docs & v1.0.0 Release (Due: Dec 26)
+
+**📈 Progress**: 36 issues organized across 5 milestones | [View Project Board](https://github.com/users/amruthvvkp/projects/3)
+
+---
+
 ## Project History & Context
 
 ### Completed Milestones ✅
