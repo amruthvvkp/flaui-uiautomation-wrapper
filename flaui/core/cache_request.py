@@ -49,7 +49,13 @@ class CacheRequest:
     @automation_element_mode.setter
     def automation_element_mode(self, value: Any) -> None:
         """Get or set the automation element mode."""
-        self._cs_instance.AutomationElementMode = value
+        # Python.NET 3.0 requires extracting the underlying C# enum value
+        from flaui.core.definitions import AutomationElementMode
+
+        if isinstance(value, AutomationElementMode):
+            self._cs_instance.AutomationElementMode = value.value
+        else:
+            self._cs_instance.AutomationElementMode = value
 
     @property
     def tree_filter(self) -> Any:

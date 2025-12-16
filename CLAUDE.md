@@ -1687,14 +1687,32 @@ def bounding_rectangle(self) -> Rectangle:  # Python Rectangle wrapper
 
 ### 5. Docstrings
 
-**Rule**: Google-style docstrings for all public methods.
+**Rule**: Sphinx/reST docstrings with a one-line summary for all public symbols.
+
+- First line: single-sentence summary in imperative mood (Sphinx one-liner)
+- Follow with Sphinx fields for non-trivial APIs: `:param:`, `:return:`, `:raises:`
+- Keep summaries concise; add details after the blank line when needed
+
+Minimal one‑liner examples:
+
+```python
+@property
+def name(self) -> str:
+    """Return the element name."""
+
+def click(self) -> None:
+    """Perform a left click on the element."""
+```
+
+With Sphinx fields:
 
 ```python
 def find_all_children(self, condition: Optional[PropertyCondition] = None) -> List[AutomationElement]:
-    """Finds all children with the condition.
+    """Find all children matching the condition.
 
-    :param condition: The search condition.
-    :return: The found elements or an empty list if no elements were found.
+    :param condition: Search condition to filter results; matches all when omitted.
+    :return: List of matching elements; empty list when none are found.
+    :raises ElementNotAvailableException: If the element is no longer available.
     """
 ```
 

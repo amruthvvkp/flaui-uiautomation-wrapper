@@ -11,6 +11,7 @@ from flaui.lib.exceptions import (
 )
 from flaui.modules.automation import Automation
 import pytest
+from System import Object as SystemObject  # pyright: ignore[reportMissingImports]
 
 
 @pytest.mark.skip_notepad_on_win11(reason="Windows 11 Notepad is a Store app; see issue #89")
@@ -23,7 +24,7 @@ class TestGetterPatterns:
         Ported from GetterTests.cs::CorrectPattern
         """
         assert notepad_window is not None
-        window_pattern = notepad_window.framework_automation_element.GetNativePattern[object](
+        window_pattern = notepad_window.framework_automation_element.GetNativePattern[SystemObject](
             automation.cs_automation.PatternLibrary.WindowPattern
         )
         assert window_pattern is not None
@@ -40,7 +41,7 @@ class TestGetterPatterns:
 
         with cache_request.activate():
             window = notepad_window.raw_element
-            window_pattern = window.FrameworkAutomationElement.GetNativePattern[object](
+            window_pattern = window.FrameworkAutomationElement.GetNativePattern[SystemObject](
                 automation.cs_automation.PatternLibrary.WindowPattern
             )
             assert window_pattern is not None
@@ -52,7 +53,7 @@ class TestGetterPatterns:
         """
         assert notepad_window is not None
         with pytest.raises(PatternNotSupportedException, match="ExpandCollapse"):
-            notepad_window.framework_automation_element.GetNativePattern[object](
+            notepad_window.framework_automation_element.GetNativePattern[SystemObject](
                 automation.cs_automation.PatternLibrary.ExpandCollapsePattern
             )
 
@@ -70,7 +71,7 @@ class TestGetterPatterns:
             window = notepad_window.raw_element
             assert window is not None
             with pytest.raises(PatternNotSupportedException, match="ExpandCollapse"):
-                window.FrameworkAutomationElement.GetNativePattern[object](
+                window.FrameworkAutomationElement.GetNativePattern[SystemObject](
                     automation.cs_automation.PatternLibrary.ExpandCollapsePattern
                 )
 
@@ -88,7 +89,7 @@ class TestGetterPatterns:
             window = notepad_window.raw_element
             assert window is not None
             with pytest.raises(PatternNotCachedException, match="Window"):
-                window.FrameworkAutomationElement.GetNativePattern[object](
+                window.FrameworkAutomationElement.GetNativePattern[SystemObject](
                     automation.cs_automation.PatternLibrary.WindowPattern
                 )
 
@@ -106,7 +107,7 @@ class TestGetterPatterns:
             window = notepad_window.raw_element
             assert window is not None
             with pytest.raises(PatternNotCachedException, match="ExpandCollapse"):
-                window.FrameworkAutomationElement.GetNativePattern[object](
+                window.FrameworkAutomationElement.GetNativePattern[SystemObject](
                     automation.cs_automation.PatternLibrary.ExpandCollapsePattern
                 )
 
