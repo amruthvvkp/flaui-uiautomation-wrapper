@@ -100,6 +100,7 @@ ipython_config.py
 #   commonly ignored for libraries.
 #   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
 poetry.lock
+poetry.lock
 
 # pdm
 #   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
@@ -167,6 +168,19 @@ junit/*
 .pypirc
 flaui_arch
 
+
 # Test Applications
-test_applications
 pytest.xml
+assets/style.css
+report.html
+# Un-ignore everything in test_applications
+!test_applications/
+!test_applications/**
+.allure/history.jsonl
+.gitignore
+# Allure results and reports
+allure-results/*
+allure-report/*
+diagnostic-output.txt
+test-report.jsonl
+log.txt
