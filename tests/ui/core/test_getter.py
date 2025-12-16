@@ -40,8 +40,10 @@ class TestGetterPatterns:
         cache_request.add_pattern(automation.cs_automation.PatternLibrary.WindowPattern)
 
         with cache_request.activate():
-            window = notepad_window.raw_element
-            window_pattern = window.FrameworkAutomationElement.GetNativePattern[SystemObject](
+            # Must get window AFTER cache activation for cache to apply
+            window = automation.application.get_main_window(automation)
+            assert window is not None
+            window_pattern = window.framework_automation_element.GetNativePattern[SystemObject](
                 automation.cs_automation.PatternLibrary.WindowPattern
             )
             assert window_pattern is not None
@@ -68,10 +70,11 @@ class TestGetterPatterns:
         cache_request.add_pattern(automation.cs_automation.PatternLibrary.ExpandCollapsePattern)
 
         with cache_request.activate():
-            window = notepad_window.raw_element
+            # Must get window AFTER cache activation for cache to apply
+            window = automation.application.get_main_window(automation)
             assert window is not None
             with pytest.raises(PatternNotSupportedException, match="ExpandCollapse"):
-                window.FrameworkAutomationElement.GetNativePattern[SystemObject](
+                window.framework_automation_element.GetNativePattern[SystemObject](
                     automation.cs_automation.PatternLibrary.ExpandCollapsePattern
                 )
 
@@ -86,10 +89,11 @@ class TestGetterPatterns:
         cache_request.add_pattern(automation.cs_automation.PatternLibrary.ExpandCollapsePattern)
 
         with cache_request.activate():
-            window = notepad_window.raw_element
+            # Must get window AFTER cache activation for cache to apply
+            window = automation.application.get_main_window(automation)
             assert window is not None
             with pytest.raises(PatternNotCachedException, match="Window"):
-                window.FrameworkAutomationElement.GetNativePattern[SystemObject](
+                window.framework_automation_element.GetNativePattern[SystemObject](
                     automation.cs_automation.PatternLibrary.WindowPattern
                 )
 
@@ -104,10 +108,11 @@ class TestGetterPatterns:
         cache_request.add_pattern(automation.cs_automation.PatternLibrary.WindowPattern)
 
         with cache_request.activate():
-            window = notepad_window.raw_element
+            # Must get window AFTER cache activation for cache to apply
+            window = automation.application.get_main_window(automation)
             assert window is not None
             with pytest.raises(PatternNotCachedException, match="ExpandCollapse"):
-                window.FrameworkAutomationElement.GetNativePattern[SystemObject](
+                window.framework_automation_element.GetNativePattern[SystemObject](
                     automation.cs_automation.PatternLibrary.ExpandCollapsePattern
                 )
 
@@ -138,8 +143,10 @@ class TestGetterProperties:
         cache_request.add_property(automation.cs_automation.PropertyLibrary.Window.CanMaximize)
 
         with cache_request.activate():
-            window = notepad_window.raw_element
-            window_property = window.FrameworkAutomationElement.GetPropertyValue(
+            # Must get window AFTER cache activation for cache to apply
+            window = automation.application.get_main_window(automation)
+            assert window is not None
+            window_property = window.framework_automation_element.GetPropertyValue(
                 automation.cs_automation.PropertyLibrary.Window.CanMaximize
             )
             assert window_property is not None
@@ -166,10 +173,11 @@ class TestGetterProperties:
         cache_request.add_property(automation.cs_automation.PropertyLibrary.ExpandCollapse.ExpandCollapseState)
 
         with cache_request.activate():
-            window = notepad_window.raw_element
+            # Must get window AFTER cache activation for cache to apply
+            window = automation.application.get_main_window(automation)
             assert window is not None
             with pytest.raises(PropertyNotSupportedException, match="ExpandCollapseState"):
-                window.FrameworkAutomationElement.GetPropertyValue(
+                window.framework_automation_element.GetPropertyValue(
                     automation.cs_automation.PropertyLibrary.ExpandCollapse.ExpandCollapseState
                 )
 
@@ -184,10 +192,11 @@ class TestGetterProperties:
         cache_request.add_property(automation.cs_automation.PropertyLibrary.ExpandCollapse.ExpandCollapseState)
 
         with cache_request.activate():
-            window = notepad_window.raw_element
+            # Must get window AFTER cache activation for cache to apply
+            window = automation.application.get_main_window(automation)
             assert window is not None
             with pytest.raises(PropertyNotCachedException, match="CanMaximize"):
-                window.FrameworkAutomationElement.GetPropertyValue(
+                window.framework_automation_element.GetPropertyValue(
                     automation.cs_automation.PropertyLibrary.Window.CanMaximize
                 )
 
@@ -202,9 +211,10 @@ class TestGetterProperties:
         cache_request.add_property(automation.cs_automation.PropertyLibrary.Window.CanMaximize)
 
         with cache_request.activate():
-            window = notepad_window.raw_element
+            # Must get window AFTER cache activation for cache to apply
+            window = automation.application.get_main_window(automation)
             assert window is not None
             with pytest.raises(PropertyNotCachedException, match="ExpandCollapseState"):
-                window.FrameworkAutomationElement.GetPropertyValue(
+                window.framework_automation_element.GetPropertyValue(
                     automation.cs_automation.PropertyLibrary.ExpandCollapse.ExpandCollapseState
                 )
