@@ -1,42 +1,4 @@
 repos:
-  - repo: https://github.com/python-poetry/poetry
-    rev: "1.5.1"
-    hooks:
-      - id: poetry-check
-        name: Poetry Check
-        description: This hook runs poetry check.
-
-      - id: poetry-lock
-        name: Poetry Lock
-        description: This hook runs poetry lock.
-
-      - id: poetry-export
-        name: Poetry Export Core Requirements
-        description: This hook runs poetry export to export core dependencies to requirements.txt file which helps to keep this repository tool agnostic.
-        args:
-          ["-f", "requirements.txt", "-o", "requirements.txt"]
-        verbose: true
-
-      - id: poetry-export
-        name: Poetry Export Dev Requirements
-        description: This hook runs poetry export to export dev dependencies to requirements-dev.txt file which helps to keep this repository tool agnostic.
-        args:
-          ["-f", "requirements.txt", "-o", "requirements-dev.txt", "--only", "dev"]
-        verbose: true
-
-      - id: poetry-export
-        name: Poetry Export Docs Requirements
-        description: This hook runs poetry export to export docs dependencies to requirements-docs.txt file which helps to keep this repository tool agnostic.
-        args:
-          ["-f", "requirements.txt", "-o", "requirements-docs.txt", "--only", "docs"]
-
-      - id: poetry-export
-        name: Poetry Export Unit Test Requirements
-        description: This hook runs poetry export to export unit test dependencies to requirements-unit-test.txt file which helps to keep this repository tool agnostic.
-        args:
-          ["-f", "requirements.txt", "-o", "requirements-unit-test.txt", "--only", "unit_test"]
-        verbose: true
-
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
@@ -75,7 +37,7 @@ repos:
         description: This hook checks that files have a docstring as the first statement.
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.0.283
+    rev: v0.5.1
     hooks:
       - id: ruff
         name: Ruff Attempt Auto-Fixes
@@ -84,7 +46,7 @@ repos:
         args: [--fix, --exit-non-zero-on-fix]
 
   - repo: https://github.com/econchick/interrogate
-    rev: 1.5.0
+    rev: 1.6.0
     hooks:
       - id: interrogate
         name: Interrogate

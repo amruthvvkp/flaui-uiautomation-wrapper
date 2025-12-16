@@ -1,18 +1,24 @@
-"""Wrapper class for System.Drawing namespace objects"""
+"""This module provides a wrapper class for System.Drawing namespace objects. It also defines an Enum class KnownColor that specifies the known system colors. Wrapper class for System.Drawing namespace objects"""
 
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Optional
+from math import pow, sqrt
+from typing import Any, List, Optional, Tuple, Union
 
-from pydantic import Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from pydantic_settings import BaseSettings
-from System.Drawing import (
-    Color as CSColor,  # pyright: ignore
-    KnownColor as CSKnownColor,  # pyright: ignore
+from System.Drawing import (  # pyright: ignore
+    Color as CSColor,
+    KnownColor as CSKnownColor,
+    Point as CSPoint,
+    Rectangle as CSRectangle,
+    Size as CSSize,
 )
 
 
+# Reference: https://learn.microsoft.com/en-us/dotnet/api/system.drawing.color?view=net-6.0
+# # TODO: Consider integrating PIL.ImageColor as a bridge for Python usage, https://pillow.readthedocs.io/en/stable/_modules/PIL/ImageColor.html
 class KnownColor(Enum):
     """Specifies the known system colors"""
 
@@ -212,8 +218,8 @@ class KnownColor(Enum):
     YellowGreen = CSKnownColor.YellowGreen
 
 
-class Color(BaseSettings):
-    """Represents an ARGB (alpha, red, green, blue) color."""
+class ColorData(BaseSettings):
+    """Represents an ARGB (alpha, red, green, blue) System.Drawing.Color color object."""
 
     cs_object: Any = Field(...)
 
@@ -299,13 +305,13 @@ class Color(BaseSettings):
         """
         return self.cs_object.G
 
-    def equals(self, another_color: ColorCollection) -> bool:
+    def equals(self, another_color: ColorData) -> bool:
         """Indicates whether the current object is equal to another object of the same type.
 
         :param another_color: An object to compare with this object.
         :return: True if the current object is equal to other; otherwise, False.
         """
-        return self.cs_object.Equals(another_color)
+        return self.cs_object.Equals(another_color.cs_object)
 
     def get_brightness(self) -> float:
         """Gets the hue-saturation-lightness (HSL) lightness value for this System.Drawing.Color
@@ -369,16 +375,179 @@ class Color(BaseSettings):
         """
         return self.cs_object.ToString()
 
+
+# Treating this as an Enum class is resulting in the below error -
+# Unhandled Exception: System.ArgumentException: We should never receive instances of other managed types
+#    at Python.Runtime.Converter.ToManagedValue(BorrowedReference value, Type obType, Object& result, Boolean setError)
+#    at Python.Runtime.MethodBinder.TryConvertArgument(BorrowedReference op, Type parameterType, Object& arg, Boolean& isOut)
+#    at Python.Runtime.MethodBinder.TryConvertArguments(ParameterInfo[] pi, Boolean paramsArray, BorrowedReference args, Int32 pyArgCount, Dictionary`2 kwargDict, ArrayList defaultArgList, Int32& outs)
+#    at Python.Runtime.MethodBinder.Bind(BorrowedReference inst, BorrowedReference args, Dictionary`2 kwargDict, MethodBase[] methods, Boolean matchGenerics)
+#    at Python.Runtime.MethodBinder.Bind(BorrowedReference inst, BorrowedReference args, BorrowedReference kw, MethodBase info, MethodBase[] methodinfo)
+#    at Python.Runtime.MethodBinder.Invoke(BorrowedReference inst, BorrowedReference args, BorrowedReference kw, MethodBase info, MethodBase[] methodinfo)
+#    at Python.Runtime.MethodObject.Invoke(BorrowedReference target, BorrowedReference args, BorrowedReference kw, MethodBase info)
+#    at Python.Runtime.MethodObject.Invoke(BorrowedReference inst, BorrowedReference args, BorrowedReference kw)
+#    at Python.Runtime.ClassBase.tp_richcompare(BorrowedReference ob, BorrowedReference other, Int32 op)
+class Color:
+    """Represents an ARGB (alpha, red, green, blue) color from System.Drawing.Color object"""
+
+    # X11 colour table from https://drafts.csswg.org/css-color-4/, with
+    # gray/grey spelling issues fixed.  This is a superset of HTML 4.0
+    # colour names used in CSS 1.
+    AliceBlue = ColorData(cs_object=CSColor.AliceBlue)
+    AntiqueWhite = ColorData(cs_object=CSColor.AntiqueWhite)
+    Aqua = ColorData(cs_object=CSColor.Aqua)
+    Aquamarine = ColorData(cs_object=CSColor.Aquamarine)
+    Azure = ColorData(cs_object=CSColor.Azure)
+    Beige = ColorData(cs_object=CSColor.Beige)
+    Bisque = ColorData(cs_object=CSColor.Bisque)
+    Black = ColorData(cs_object=CSColor.Black)
+    BlanchedAlmond = ColorData(cs_object=CSColor.BlanchedAlmond)
+    Blue = ColorData(cs_object=CSColor.Blue)
+    BlueViolet = ColorData(cs_object=CSColor.BlueViolet)
+    Brown = ColorData(cs_object=CSColor.Brown)
+    BurlyWood = ColorData(cs_object=CSColor.BurlyWood)
+    CadetBlue = ColorData(cs_object=CSColor.CadetBlue)
+    Chartreuse = ColorData(cs_object=CSColor.Chartreuse)
+    Chocolate = ColorData(cs_object=CSColor.Chocolate)
+    Coral = ColorData(cs_object=CSColor.Coral)
+    CornflowerBlue = ColorData(cs_object=CSColor.CornflowerBlue)
+    Cornsilk = ColorData(cs_object=CSColor.Cornsilk)
+    Crimson = ColorData(cs_object=CSColor.Crimson)
+    Cyan = ColorData(cs_object=CSColor.Cyan)
+    DarkBlue = ColorData(cs_object=CSColor.DarkBlue)
+    DarkCyan = ColorData(cs_object=CSColor.DarkCyan)
+    DarkGoldenrod = ColorData(cs_object=CSColor.DarkGoldenrod)
+    DarkGray = ColorData(cs_object=CSColor.DarkGray)
+    DarkGreen = ColorData(cs_object=CSColor.DarkGreen)
+    DarkKhaki = ColorData(cs_object=CSColor.DarkKhaki)
+    DarkMagenta = ColorData(cs_object=CSColor.DarkMagenta)
+    DarkOliveGreen = ColorData(cs_object=CSColor.DarkOliveGreen)
+    DarkOrange = ColorData(cs_object=CSColor.DarkOrange)
+    DarkOrchid = ColorData(cs_object=CSColor.DarkOrchid)
+    DarkRed = ColorData(cs_object=CSColor.DarkRed)
+    DarkSalmon = ColorData(cs_object=CSColor.DarkSalmon)
+    DarkSeaGreen = ColorData(cs_object=CSColor.DarkSeaGreen)
+    DarkSlateBlue = ColorData(cs_object=CSColor.DarkSlateBlue)
+    DarkSlateGray = ColorData(cs_object=CSColor.DarkSlateGray)
+    DarkTurquoise = ColorData(cs_object=CSColor.DarkTurquoise)
+    DarkViolet = ColorData(cs_object=CSColor.DarkViolet)
+    DeepPink = ColorData(cs_object=CSColor.DeepPink)
+    DeepSkyBlue = ColorData(cs_object=CSColor.DeepSkyBlue)
+    DimGray = ColorData(cs_object=CSColor.DimGray)
+    DodgerBlue = ColorData(cs_object=CSColor.DodgerBlue)
+    Firebrick = ColorData(cs_object=CSColor.Firebrick)
+    FloralWhite = ColorData(cs_object=CSColor.FloralWhite)
+    ForestGreen = ColorData(cs_object=CSColor.ForestGreen)
+    Fuchsia = ColorData(cs_object=CSColor.Fuchsia)
+    Gainsboro = ColorData(cs_object=CSColor.Gainsboro)
+    GhostWhite = ColorData(cs_object=CSColor.GhostWhite)
+    Gold = ColorData(cs_object=CSColor.Gold)
+    Goldenrod = ColorData(cs_object=CSColor.Goldenrod)
+    Gray = ColorData(cs_object=CSColor.Gray)
+    Green = ColorData(cs_object=CSColor.Green)
+    GreenYellow = ColorData(cs_object=CSColor.GreenYellow)
+    Honeydew = ColorData(cs_object=CSColor.Honeydew)
+    HotPink = ColorData(cs_object=CSColor.HotPink)
+    IndianRed = ColorData(cs_object=CSColor.IndianRed)
+    Indigo = ColorData(cs_object=CSColor.Indigo)
+    Ivory = ColorData(cs_object=CSColor.Ivory)
+    Khaki = ColorData(cs_object=CSColor.Khaki)
+    Lavender = ColorData(cs_object=CSColor.Lavender)
+    LavenderBlush = ColorData(cs_object=CSColor.LavenderBlush)
+    LawnGreen = ColorData(cs_object=CSColor.LawnGreen)
+    LemonChiffon = ColorData(cs_object=CSColor.LemonChiffon)
+    LightBlue = ColorData(cs_object=CSColor.LightBlue)
+    LightCoral = ColorData(cs_object=CSColor.LightCoral)
+    LightCyan = ColorData(cs_object=CSColor.LightCyan)
+    LightGoldenrodYellow = ColorData(cs_object=CSColor.LightGoldenrodYellow)
+    LightGray = ColorData(cs_object=CSColor.LightGray)
+    LightGreen = ColorData(cs_object=CSColor.LightGreen)
+    LightPink = ColorData(cs_object=CSColor.LightPink)
+    LightSalmon = ColorData(cs_object=CSColor.LightSalmon)
+    LightSeaGreen = ColorData(cs_object=CSColor.LightSeaGreen)
+    LightSkyBlue = ColorData(cs_object=CSColor.LightSkyBlue)
+    LightSlateGray = ColorData(cs_object=CSColor.LightSlateGray)
+    LightSteelBlue = ColorData(cs_object=CSColor.LightSteelBlue)
+    LightYellow = ColorData(cs_object=CSColor.LightYellow)
+    Lime = ColorData(cs_object=CSColor.Lime)
+    LimeGreen = ColorData(cs_object=CSColor.LimeGreen)
+    Linen = ColorData(cs_object=CSColor.Linen)
+    Magenta = ColorData(cs_object=CSColor.Magenta)
+    Maroon = ColorData(cs_object=CSColor.Maroon)
+    MediumAquamarine = ColorData(cs_object=CSColor.MediumAquamarine)
+    MediumBlue = ColorData(cs_object=CSColor.MediumBlue)
+    MediumOrchid = ColorData(cs_object=CSColor.MediumOrchid)
+    MediumPurple = ColorData(cs_object=CSColor.MediumPurple)
+    MediumSeaGreen = ColorData(cs_object=CSColor.MediumSeaGreen)
+    MediumSlateBlue = ColorData(cs_object=CSColor.MediumSlateBlue)
+    MediumSpringGreen = ColorData(cs_object=CSColor.MediumSpringGreen)
+    MediumTurquoise = ColorData(cs_object=CSColor.MediumTurquoise)
+    MediumVioletRed = ColorData(cs_object=CSColor.MediumVioletRed)
+    MemberwiseClone = ColorData(cs_object=CSColor.MemberwiseClone)
+    MidnightBlue = ColorData(cs_object=CSColor.MidnightBlue)
+    MintCream = ColorData(cs_object=CSColor.MintCream)
+    MistyRose = ColorData(cs_object=CSColor.MistyRose)
+    Moccasin = ColorData(cs_object=CSColor.Moccasin)
+    NavajoWhite = ColorData(cs_object=CSColor.NavajoWhite)
+    Navy = ColorData(cs_object=CSColor.Navy)
+    OldLace = ColorData(cs_object=CSColor.OldLace)
+    Olive = ColorData(cs_object=CSColor.Olive)
+    OliveDrab = ColorData(cs_object=CSColor.OliveDrab)
+    Orange = ColorData(cs_object=CSColor.Orange)
+    OrangeRed = ColorData(cs_object=CSColor.OrangeRed)
+    Orchid = ColorData(cs_object=CSColor.Orchid)
+    Overloads = ColorData(cs_object=CSColor.Overloads)
+    PaleGoldenrod = ColorData(cs_object=CSColor.PaleGoldenrod)
+    PaleGreen = ColorData(cs_object=CSColor.PaleGreen)
+    PaleTurquoise = ColorData(cs_object=CSColor.PaleTurquoise)
+    PaleVioletRed = ColorData(cs_object=CSColor.PaleVioletRed)
+    PapayaWhip = ColorData(cs_object=CSColor.PapayaWhip)
+    PeachPuff = ColorData(cs_object=CSColor.PeachPuff)
+    Peru = ColorData(cs_object=CSColor.Peru)
+    Pink = ColorData(cs_object=CSColor.Pink)
+    Plum = ColorData(cs_object=CSColor.Plum)
+    PowderBlue = ColorData(cs_object=CSColor.PowderBlue)
+    Purple = ColorData(cs_object=CSColor.Purple)
+    Red = ColorData(cs_object=CSColor.Red)
+    RosyBrown = ColorData(cs_object=CSColor.RosyBrown)
+    RoyalBlue = ColorData(cs_object=CSColor.RoyalBlue)
+    SaddleBrown = ColorData(cs_object=CSColor.SaddleBrown)
+    Salmon = ColorData(cs_object=CSColor.Salmon)
+    SandyBrown = ColorData(cs_object=CSColor.SandyBrown)
+    SeaGreen = ColorData(cs_object=CSColor.SeaGreen)
+    SeaShell = ColorData(cs_object=CSColor.SeaShell)
+    Sienna = ColorData(cs_object=CSColor.Sienna)
+    Silver = ColorData(cs_object=CSColor.Silver)
+    SkyBlue = ColorData(cs_object=CSColor.SkyBlue)
+    SlateBlue = ColorData(cs_object=CSColor.SlateBlue)
+    SlateGray = ColorData(cs_object=CSColor.SlateGray)
+    Snow = ColorData(cs_object=CSColor.Snow)
+    SpringGreen = ColorData(cs_object=CSColor.SpringGreen)
+    SteelBlue = ColorData(cs_object=CSColor.SteelBlue)
+    Tan = ColorData(cs_object=CSColor.Tan)
+    Teal = ColorData(cs_object=CSColor.Teal)
+    Thistle = ColorData(cs_object=CSColor.Thistle)
+    Tomato = ColorData(cs_object=CSColor.Tomato)
+    Transparent = ColorData(cs_object=CSColor.Transparent)
+    Turquoise = ColorData(cs_object=CSColor.Turquoise)
+    Violet = ColorData(cs_object=CSColor.Violet)
+    Wheat = ColorData(cs_object=CSColor.Wheat)
+    White = ColorData(cs_object=CSColor.White)
+    WhiteSmoke = ColorData(cs_object=CSColor.WhiteSmoke)
+    Yellow = ColorData(cs_object=CSColor.Yellow)
+    YellowGreen = ColorData(cs_object=CSColor.YellowGreen)
+
+    @staticmethod
     def from_argb(
-        self,
         argb: Optional[int] = None,
         alpha: Optional[int] = None,
-        base_color: Optional[ColorCollection] = None,
+        base_color: Optional[ColorData] = None,
         red: Optional[int] = None,
         green: Optional[int] = None,
         blue: Optional[int] = None,
-    ) -> Color:
-        """Creates a System.Drawing.Color structure from a 32-bit ARGB value.
+    ) -> ColorData:
+        """
+        Creates a ColorData object from various input formats matching C# System.Drawing.Color
 
         :param argb: A value specifying the 32-bit ARGB value, defaults to None
         :param alpha: The alpha component. Valid values are 0 through 255, defaults to None
@@ -386,31 +555,43 @@ class Color(BaseSettings):
         :param red: The red component. Valid values are 0 through 255, defaults to None
         :param green: The green component. Valid values are 0 through 255, defaults to None
         :param blue: The blue component. Valid values are 0 through 255, defaults to None
-        :raises ValueError: On invalid input combination, input needs to be one among - argb or alpha+base_color or red+green+blue or alpha+red+green+blue
-        :return: The System.Drawing.Color that this method creates.
+        :raises ValueError: On invalid input combination
+        :return: The ColorData object representing the color.
         """
-        if all([alpha, red, green, blue]):
-            return Color(cs_object=self.cs_object.FromArgb(alpha, red, green, blue))
-        elif all([red, green, blue]):
-            return Color(cs_object=self.cs_object.FromArgb(red, green, blue))
-        elif all([alpha, base_color]):
-            return Color(cs_object=self.cs_object.FromArgb(alpha, base_color))
-        elif argb is not None and any([alpha, red, green, blue]) is False:
-            return Color(cs_object=self.cs_object.FromArgb(argb))
-        else:
-            raise ValueError(
-                "Invalid arguments sent as input, cannot fetch Color object from the given input parameters"
-            )
 
-    def from_known_color(self, known_color: KnownColor) -> Color:
+        # Check for valid input combinations
+        if all(
+            x is not None for x in [alpha, red, green, blue]
+        ):  # Check if all components are provided (including None)
+            # ARGB with all components provided
+            return ColorData(cs_object=CSColor.FromArgb(alpha, red, green, blue))
+        elif all(x is not None for x in [red, green, blue]) and alpha is None:
+            # RGB with implicit alpha 255
+            return ColorData(cs_object=CSColor.FromArgb(red, green, blue))
+        elif alpha is not None and base_color is not None:
+            # Set alpha for existing color
+            return ColorData(cs_object=CSColor.FromArgb(alpha, base_color.cs_object))
+        elif argb is not None and any([alpha, red, green, blue]) is False:
+            # Single ARGB value
+            alpha = (argb >> 24) & 0xFF  # Extract alpha (shift 24 bits and mask with 0xFF)
+            red = (argb >> 16) & 0xFF  # Extract red (shift 16 bits and mask with 0xFF)
+            green = (argb >> 8) & 0xFF  # Extract green (shift 8 bits and mask with 0xFF)
+            blue = argb & 0xFF  # Extract blue (mask with 0xFF)
+            return ColorData(cs_object=CSColor.FromArgb(alpha, red, green, blue))
+        else:
+            raise ValueError("Invalid arguments sent as input, cannot create ColorData object.")
+
+    @staticmethod
+    def from_known_color(known_color: KnownColor) -> ColorData:
         """Creates a System.Drawing.Color structure from the specified predefined color.
 
         :param known_color: An element of the System.Drawing.KnownColor enumeration.
         :return: The System.Drawing.Color that this method creates.
         """
-        return Color(cs_object=self.cs_object.FromKnownColor(known_color))
+        return ColorData(cs_object=CSColor.FromKnownColor(known_color.value))
 
-    def from_name(self, name: str) -> Color:
+    @staticmethod
+    def from_name(name: str) -> ColorData:
         """Creates a System.Drawing.Color structure from the specified name of a predefined
         color.
 
@@ -418,152 +599,720 @@ class Color(BaseSettings):
         the names of the elements of the System.Drawing.KnownColor enumeration.
         :return: The System.Drawing.Color that this method creates.
         """
-        return Color(cs_object=self.cs_object.FromName(name))
+        return ColorData(cs_object=CSColor.FromName(name))
 
 
-class ColorCollection(Enum):
-    """Represents an ARGB (alpha, red, green, blue) color"""
+class Point(BaseModel):
+    """Represents a Point object, works with underlying C# System.Drawing.Point object.
 
-    AliceBlue = Color(cs_object=CSColor.AliceBlue)
-    AntiqueWhite = Color(cs_object=CSColor.AntiqueWhite)
-    Aqua = Color(cs_object=CSColor.Aqua)
-    Aquamarine = Color(cs_object=CSColor.Aquamarine)
-    Azure = Color(cs_object=CSColor.Azure)
-    Beige = Color(cs_object=CSColor.Beige)
-    Bisque = Color(cs_object=CSColor.Bisque)
-    Black = Color(cs_object=CSColor.Black)
-    BlanchedAlmond = Color(cs_object=CSColor.BlanchedAlmond)
-    Blue = Color(cs_object=CSColor.Blue)
-    BlueViolet = Color(cs_object=CSColor.BlueViolet)
-    Brown = Color(cs_object=CSColor.Brown)
-    BurlyWood = Color(cs_object=CSColor.BurlyWood)
-    CadetBlue = Color(cs_object=CSColor.CadetBlue)
-    Chartreuse = Color(cs_object=CSColor.Chartreuse)
-    Chocolate = Color(cs_object=CSColor.Chocolate)
-    Coral = Color(cs_object=CSColor.Coral)
-    CornflowerBlue = Color(cs_object=CSColor.CornflowerBlue)
-    Cornsilk = Color(cs_object=CSColor.Cornsilk)
-    Crimson = Color(cs_object=CSColor.Crimson)
-    Cyan = Color(cs_object=CSColor.Cyan)
-    DarkBlue = Color(cs_object=CSColor.DarkBlue)
-    DarkCyan = Color(cs_object=CSColor.DarkCyan)
-    DarkGoldenrod = Color(cs_object=CSColor.DarkGoldenrod)
-    DarkGray = Color(cs_object=CSColor.DarkGray)
-    DarkGreen = Color(cs_object=CSColor.DarkGreen)
-    DarkKhaki = Color(cs_object=CSColor.DarkKhaki)
-    DarkMagenta = Color(cs_object=CSColor.DarkMagenta)
-    DarkOliveGreen = Color(cs_object=CSColor.DarkOliveGreen)
-    DarkOrange = Color(cs_object=CSColor.DarkOrange)
-    DarkOrchid = Color(cs_object=CSColor.DarkOrchid)
-    DarkRed = Color(cs_object=CSColor.DarkRed)
-    DarkSalmon = Color(cs_object=CSColor.DarkSalmon)
-    DarkSeaGreen = Color(cs_object=CSColor.DarkSeaGreen)
-    DarkSlateBlue = Color(cs_object=CSColor.DarkSlateBlue)
-    DarkSlateGray = Color(cs_object=CSColor.DarkSlateGray)
-    DarkTurquoise = Color(cs_object=CSColor.DarkTurquoise)
-    DarkViolet = Color(cs_object=CSColor.DarkViolet)
-    DeepPink = Color(cs_object=CSColor.DeepPink)
-    DeepSkyBlue = Color(cs_object=CSColor.DeepSkyBlue)
-    DimGray = Color(cs_object=CSColor.DimGray)
-    DodgerBlue = Color(cs_object=CSColor.DodgerBlue)
-    Firebrick = Color(cs_object=CSColor.Firebrick)
-    FloralWhite = Color(cs_object=CSColor.FloralWhite)
-    ForestGreen = Color(cs_object=CSColor.ForestGreen)
-    Fuchsia = Color(cs_object=CSColor.Fuchsia)
-    Gainsboro = Color(cs_object=CSColor.Gainsboro)
-    GhostWhite = Color(cs_object=CSColor.GhostWhite)
-    Gold = Color(cs_object=CSColor.Gold)
-    Goldenrod = Color(cs_object=CSColor.Goldenrod)
-    Gray = Color(cs_object=CSColor.Gray)
-    Green = Color(cs_object=CSColor.Green)
-    GreenYellow = Color(cs_object=CSColor.GreenYellow)
-    Honeydew = Color(cs_object=CSColor.Honeydew)
-    HotPink = Color(cs_object=CSColor.HotPink)
-    IndianRed = Color(cs_object=CSColor.IndianRed)
-    Indigo = Color(cs_object=CSColor.Indigo)
-    Ivory = Color(cs_object=CSColor.Ivory)
-    Khaki = Color(cs_object=CSColor.Khaki)
-    Lavender = Color(cs_object=CSColor.Lavender)
-    LavenderBlush = Color(cs_object=CSColor.LavenderBlush)
-    LawnGreen = Color(cs_object=CSColor.LawnGreen)
-    LemonChiffon = Color(cs_object=CSColor.LemonChiffon)
-    LightBlue = Color(cs_object=CSColor.LightBlue)
-    LightCoral = Color(cs_object=CSColor.LightCoral)
-    LightCyan = Color(cs_object=CSColor.LightCyan)
-    LightGoldenrodYellow = Color(cs_object=CSColor.LightGoldenrodYellow)
-    LightGray = Color(cs_object=CSColor.LightGray)
-    LightGreen = Color(cs_object=CSColor.LightGreen)
-    LightPink = Color(cs_object=CSColor.LightPink)
-    LightSalmon = Color(cs_object=CSColor.LightSalmon)
-    LightSeaGreen = Color(cs_object=CSColor.LightSeaGreen)
-    LightSkyBlue = Color(cs_object=CSColor.LightSkyBlue)
-    LightSlateGray = Color(cs_object=CSColor.LightSlateGray)
-    LightSteelBlue = Color(cs_object=CSColor.LightSteelBlue)
-    LightYellow = Color(cs_object=CSColor.LightYellow)
-    Lime = Color(cs_object=CSColor.Lime)
-    LimeGreen = Color(cs_object=CSColor.LimeGreen)
-    Linen = Color(cs_object=CSColor.Linen)
-    Magenta = Color(cs_object=CSColor.Magenta)
-    Maroon = Color(cs_object=CSColor.Maroon)
-    MediumAquamarine = Color(cs_object=CSColor.MediumAquamarine)
-    MediumBlue = Color(cs_object=CSColor.MediumBlue)
-    MediumOrchid = Color(cs_object=CSColor.MediumOrchid)
-    MediumPurple = Color(cs_object=CSColor.MediumPurple)
-    MediumSeaGreen = Color(cs_object=CSColor.MediumSeaGreen)
-    MediumSlateBlue = Color(cs_object=CSColor.MediumSlateBlue)
-    MediumSpringGreen = Color(cs_object=CSColor.MediumSpringGreen)
-    MediumTurquoise = Color(cs_object=CSColor.MediumTurquoise)
-    MediumVioletRed = Color(cs_object=CSColor.MediumVioletRed)
-    MemberwiseClone = Color(cs_object=CSColor.MemberwiseClone)
-    MidnightBlue = Color(cs_object=CSColor.MidnightBlue)
-    MintCream = Color(cs_object=CSColor.MintCream)
-    MistyRose = Color(cs_object=CSColor.MistyRose)
-    Moccasin = Color(cs_object=CSColor.Moccasin)
-    NavajoWhite = Color(cs_object=CSColor.NavajoWhite)
-    Navy = Color(cs_object=CSColor.Navy)
-    OldLace = Color(cs_object=CSColor.OldLace)
-    Olive = Color(cs_object=CSColor.Olive)
-    OliveDrab = Color(cs_object=CSColor.OliveDrab)
-    Orange = Color(cs_object=CSColor.Orange)
-    OrangeRed = Color(cs_object=CSColor.OrangeRed)
-    Orchid = Color(cs_object=CSColor.Orchid)
-    Overloads = Color(cs_object=CSColor.Overloads)
-    PaleGoldenrod = Color(cs_object=CSColor.PaleGoldenrod)
-    PaleGreen = Color(cs_object=CSColor.PaleGreen)
-    PaleTurquoise = Color(cs_object=CSColor.PaleTurquoise)
-    PaleVioletRed = Color(cs_object=CSColor.PaleVioletRed)
-    PapayaWhip = Color(cs_object=CSColor.PapayaWhip)
-    PeachPuff = Color(cs_object=CSColor.PeachPuff)
-    Peru = Color(cs_object=CSColor.Peru)
-    Pink = Color(cs_object=CSColor.Pink)
-    Plum = Color(cs_object=CSColor.Plum)
-    PowderBlue = Color(cs_object=CSColor.PowderBlue)
-    Purple = Color(cs_object=CSColor.Purple)
-    Red = Color(cs_object=CSColor.Red)
-    RosyBrown = Color(cs_object=CSColor.RosyBrown)
-    RoyalBlue = Color(cs_object=CSColor.RoyalBlue)
-    SaddleBrown = Color(cs_object=CSColor.SaddleBrown)
-    Salmon = Color(cs_object=CSColor.Salmon)
-    SandyBrown = Color(cs_object=CSColor.SandyBrown)
-    SeaGreen = Color(cs_object=CSColor.SeaGreen)
-    SeaShell = Color(cs_object=CSColor.SeaShell)
-    Sienna = Color(cs_object=CSColor.Sienna)
-    Silver = Color(cs_object=CSColor.Silver)
-    SkyBlue = Color(cs_object=CSColor.SkyBlue)
-    SlateBlue = Color(cs_object=CSColor.SlateBlue)
-    SlateGray = Color(cs_object=CSColor.SlateGray)
-    Snow = Color(cs_object=CSColor.Snow)
-    SpringGreen = Color(cs_object=CSColor.SpringGreen)
-    SteelBlue = Color(cs_object=CSColor.SteelBlue)
-    Tan = Color(cs_object=CSColor.Tan)
-    Teal = Color(cs_object=CSColor.Teal)
-    Thistle = Color(cs_object=CSColor.Thistle)
-    Tomato = Color(cs_object=CSColor.Tomato)
-    Transparent = Color(cs_object=CSColor.Transparent)
-    Turquoise = Color(cs_object=CSColor.Turquoise)
-    Violet = Color(cs_object=CSColor.Violet)
-    Wheat = Color(cs_object=CSColor.Wheat)
-    White = Color(cs_object=CSColor.White)
-    WhiteSmoke = Color(cs_object=CSColor.WhiteSmoke)
-    Yellow = Color(cs_object=CSColor.Yellow)
-    YellowGreen = Color(cs_object=CSColor.YellowGreen)
+    Note that this doesn't handle PointF object and the methods are currently listed only for Point object."""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True, revalidate_instances="always")
+
+    raw_value: Union[int, Tuple[int, int], Tuple[float, float], CSPoint, Size]
+
+    @field_validator("raw_value")
+    @classmethod
+    def parse_cs_object(cls, v: Union[int, Tuple[int, int], Tuple[float, float], CSPoint, Size]) -> CSPoint:
+        """Parses C# Point object from System.Drawing namespace
+
+        :param v: Input value
+        :return: Parsed C# object
+        """
+        if isinstance(v, CSPoint):
+            # Always create a new Point object to avoid shared mutable state
+            return CSPoint(v.X, v.Y)  # pyright: ignore[reportAttributeAccessIssue]
+        if isinstance(v, Size):
+            return CSPoint(v.raw_value)
+
+        return CSPoint(v) if isinstance(v, int) else CSPoint(round(v[0]), round(v[1]))
+
+    @property
+    def x(self) -> int:
+        """Gets x-cordinate of this Point
+
+        :return: x-cordinate of the Point
+        """
+        return self.raw_value.X  # type: ignore
+
+    @x.setter
+    def x(self, value: int) -> None:
+        """Sets the x-cordinate of this point
+
+        :param value: Value to set
+        """
+        self.raw_value.X = value  # type: ignore
+
+    @property
+    def y(self) -> int:
+        """Gets y-cordinate of this Point
+
+        :return: y-cordinate of the Point
+        """
+        return self.raw_value.Y  # type: ignore
+
+    @y.setter
+    def y(self, value: int) -> None:
+        """Sets the y-cordinate of this point
+
+        :param value: Value to set
+        """
+        self.raw_value.Y = value  # type: ignore
+
+    @property
+    def is_empty(self) -> bool:
+        """Indicates if the Point object is empty
+
+        :return: Flag True if empty else False
+        """
+        return self.raw_value.IsEmpty  # type: ignore
+
+    def add(self, point: Point, size: Size) -> Point:
+        """Adds the specified Size tot he specified Point
+
+        :param point: The point to add
+        :param size: The size to add
+        :return: The point that is the result of the addition operation
+        """
+        return Point(raw_value=self.raw_value.Add(point.raw_value, size.raw_value))  # type: ignore
+
+    def equals(self, other: Point) -> bool:
+        """Specifies whether this point instance contains the same coordinates as another point.
+
+        :param other: Value to compare
+        :return: True if equal, else False
+        """
+        return self.raw_value.Equals(other.raw_value)  # type: ignore
+
+    def get_hash_code(self) -> int:
+        """Returns a hash code for this Point.
+
+        :return: An integer value that specifies the hash code for this Point.
+        """
+        return self.raw_value.GetHashCode()  # type: ignore
+
+    def offset(self, x: Optional[int] = None, y: Optional[int] = None, point: Optional[Point] = None) -> None:
+        """Translates this Point by the specified amount/specified Point
+
+        :param x: x-coordinate, defaults to None
+        :param y: y-coordinate, defaults to None
+        :param point: Point object, defaults to None
+        """
+        self.raw_value.Offset(x, y) if point is None else self.raw_value.Offset(point.raw_value)  # type: ignore
+
+    def subtract(self, point: Point, size: Size) -> Point:
+        """Returns the result of subtracting specified Size from the specified Point.
+
+        :param point: Point object
+        :param size: Size object
+        :return: Subtracted Point object
+        """
+        return Point(raw_value=self.raw_value.Subtract(point.raw_value, size.raw_value))  # type: ignore
+
+    def to_string(self) -> str:
+        """Converts this Point to a human-readable string.
+
+        :return: Point as readable string.
+        """
+        return self.raw_value.ToString()  # type: ignore
+
+    def __add__(self, other: Size) -> Point:
+        """Translates a point by a given Size
+
+        :param other: Size object to add
+        :return: A new Point object with the translated coordinates
+        """
+        if isinstance(other, Size):
+            return Point(raw_value=self.raw_value.Add(self.raw_value, other.raw_value))  # type: ignore
+        else:
+            raise TypeError(f"Unsupported operand type(s) for +: 'Point' and '{type(other)}'")
+
+    def __eq__(self, other: object) -> bool:
+        """Compares two Point objects for equality
+
+        Accepts any object (matches BaseModel signature) and returns False when the
+        other object is not a Point.
+        """
+        if not isinstance(other, Point):
+            return False
+
+        return self.x == other.x and self.y == other.y
+
+    def __ne__(self, other: object) -> bool:
+        """Compares two Point objects for inequality
+
+        Accepts any object (matches BaseModel signature).
+        """
+        return not self == other
+
+    def __sub__(self, other: Size) -> Point:
+        """Translates the Point by the negative of the specified Size.
+
+        :param other: Size object to subtract
+        :return: A new Point object with the translated coordinates
+        """
+        if not isinstance(other, Size):
+            raise TypeError(f"Unsupported operand type(s) for +: 'Point' and '{type(other)}'")
+
+        return Point(raw_value=(self.x - other.width, self.y - other.height))  # type: ignore
+
+    def to_size(self) -> Size:
+        """Explicitly converts the specified Point structure to Size structure
+
+        :return: Size object
+        """
+        return Size(raw_value=self.raw_value)
+
+    def distance(
+        self, other_x: Optional[int] = None, other_y: Optional[int] = None, other_point: Optional[Point] = None
+    ) -> float:
+        """Calculates the distance between two points or the distance between a point and an x/y coordinate pair.
+
+        This is similar to Distance method listed in FlaUI.Core.Tools.ExtensionMethods.
+
+        :param other_x: The x-coordinate of the second point., defaults to None
+        :param other_y: The y-coordinate of the second point., defaults to None
+        :param other_point: The second point, defaults to None
+        :return: Distance calculated
+        """
+        if other_x is not None and other_y is not None:
+            return sqrt((pow(self.x - other_x, 2) + pow(self.y - other_y, 2)))
+        elif other_point is not None:
+            return sqrt((pow(self.x - other_point.x, 2) + pow(self.y - other_point.y, 2)))
+        else:
+            raise ValueError(
+                "Invalid arguments passed to measure distance, you need to pass x-coordinate & y-coordinate or Point object"
+            )
+
+
+class Size(BaseModel):
+    """Represents a Size object, works with underlying C# System.Drawing.Size object. Stores an ordered pair of integers, which specify a Height and Width.
+
+    Note, this does not utilize SizeF object, just works with Size object.
+    """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    raw_value: Union[Tuple[int, int], Tuple[float, float], Point, CSSize]
+
+    @field_validator("raw_value")
+    @classmethod
+    def parse_cs_object(cls, v: Union[Tuple[int, int], Tuple[float, float], Point, CSSize]) -> CSSize:
+        """Parses C# Size object from System.Drawing namespace
+
+        :param v: Input value
+        :return: Parsed C# object
+        """
+        if isinstance(v, CSSize):
+            return v
+
+        return CSSize(v.raw_value) if isinstance(v, Point) else CSSize(round(v[0]), round(v[1]))
+
+    @property
+    def height(self) -> int:
+        """Gets vertical component of this Size
+
+        :return: Vertical component of the Size
+        """
+        return self.raw_value.Height  # type: ignore
+
+    @height.setter
+    def height(self, value: int) -> None:
+        """Sets the vertical component of this size
+
+        :param value: Value to set
+        """
+        self.raw_value.Height = value  # type: ignore
+
+    @property
+    def width(self) -> int:
+        """Gets horizontal component of this Size
+
+        :return: horizontal component of the Size
+        """
+        return self.raw_value.Width  # type: ignore
+
+    @width.setter
+    def width(self, value: int) -> None:
+        """Sets the horizontal component of this size
+
+        :param value: Value to set
+        """
+        self.raw_value.Width = value  # type: ignore
+
+    @property
+    def is_empty(self) -> bool:
+        """Indicates if the Size object is empty
+
+        :return: Flag True if empty else False
+        """
+        return self.raw_value.IsEmpty  # type: ignore
+
+    def add(self, other: Size) -> Size:
+        """Adds the specified Size tot he specified Size
+
+        :param other: The size to add
+        :return: The size that is the result of the addition operation
+        """
+        return Size(raw_value=self.raw_value.Add(self.raw_value, other.raw_value))  # type: ignore
+
+    def equals(self, other: Size) -> bool:
+        """Specifies whether this size instance contains the same coordinates as another size.
+
+        :param other: Value to compare
+        :return: True if equal, else False
+        """
+        return self.raw_value.Equals(other.raw_value)  # type: ignore
+
+    def get_hash_code(self) -> int:
+        """Returns a hash code for this Size.
+
+        :return: An integer value that specifies the hash code for this Size.
+        """
+        return self.raw_value.GetHashCode()  # type: ignore
+
+    def subtract(self, other: Size) -> Size:
+        """Returns the result of subtracting specified Size from the specified Size.
+
+        :param other: Size object
+        :return: Subtracted Size object
+        """
+        return Size(raw_value=self.raw_value.Subtract(self.raw_value, other.raw_value))  # type: ignore
+
+    def to_string(self) -> str:
+        """Converts this Size to a human-readable string.
+
+        :return: Size as readable string.
+        """
+        return self.raw_value.ToString()  # type: ignore
+
+    def __add__(self, other: CSSize) -> Size:
+        """Translates a size by a given Size
+
+        :param other: Size object to add
+        :return: A new Size object with the translated coordinates
+        """
+        if not isinstance(other, CSSize):
+            raise TypeError(f"Unsupported operand type(s) for +: 'Size' and '{type(other)}'")
+
+        return Size(raw_value=self.raw_value.Add(self.raw_value, other))  # type: ignore
+
+    def __eq__(self, other: object) -> bool:
+        """Compares two Size objects for equality
+
+        Accepts any object (matches BaseModel signature) and returns False when the
+        other object is not a Size.
+        """
+        if not isinstance(other, Size):
+            return False
+
+        return self.width == other.width and self.height == other.height
+
+    def __ne__(self, other: object) -> bool:
+        """Compares two Size objects for inequality
+
+        Accepts any object (matches BaseModel signature).
+        """
+        return not self == other
+
+    def __sub__(self, other: CSSize) -> Size:
+        """Translates the Size by the negative of the specified Size.
+
+        :param other: Size object to subtract
+        :return: A new Size object with the translated coordinates
+        """
+        if not isinstance(other, CSSize):
+            raise TypeError(f"Unsupported operand type(s) for +: 'Size' and '{type(other)}'")
+
+        return Size(raw_value=(self.x - other.Width, self.y - other.Height))  # type: ignore
+
+    def to_point(self) -> Point:
+        """Explicitly converts Size structure to Point structure
+
+        :return: Parsed Point object
+        """
+        return Point(raw_value=self.raw_value)
+
+
+class Rectangle(BaseModel):
+    """Represents a Rectangle object, works with underlying C# System.Drawing.Rectangle object.
+
+    Note that this doesn't handle RectangleF object and the methods are currently listed only for Rectangle object."""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    raw_value: Union[List[int], Tuple[Point, Size], CSRectangle]
+
+    @field_validator("raw_value")
+    @classmethod
+    def parse_cs_object(cls, v: Union[List[int], Tuple[Point, Size], CSRectangle]) -> CSPoint:
+        """Parses C# Rectangle object from System.Drawing namespace
+
+        :param v: Input value
+        :return: Parsed C# object
+        """
+        if isinstance(v, CSRectangle):
+            return v
+        if isinstance(v, List) and len(v) == 4:
+            return CSRectangle(*v)
+        elif (isinstance(v, List) or isinstance(v, Tuple)) and (
+            len(v) == 2 and isinstance(v[0], Point) and isinstance(v[1], Size)
+        ):
+            return CSRectangle(v[0].raw_value, v[1].raw_value)
+
+        raise ValueError(f"Unable to parse input value to Rectable C# object, invalid input - {v}")
+
+    @property
+    def bottom(self) -> int:
+        """Gets the y-coordinate that is the sum of the Y and Height property values of this Rectangle structure.
+
+        :return: Parsed value
+        """
+        return self.raw_value.Bottom  # type: ignore
+
+    @property
+    def height(self) -> int:
+        """Gets vertical component of this Size
+
+        :return: Vertical component of the Size
+        """
+        return self.raw_value.Height  # type: ignore
+
+    @height.setter
+    def height(self, value: int) -> None:
+        """Sets the vertical component of this size
+
+        :param value: Value to set
+        """
+        self.raw_value.Height = value  # type: ignore
+
+    @property
+    def is_empty(self) -> bool:
+        """Indicates if the Point object is empty
+
+        :return: Flag True if empty else False
+        """
+        return self.raw_value.IsEmpty  # type: ignore
+
+    @property
+    def left(self) -> int:
+        """Gets the x-coordinate of the left edge of this Rectangle structure.
+
+        :return: X-coordinate
+        """
+        return self.raw_value.Left  # type: ignore
+
+    @property
+    def location(self) -> Point:
+        """Gets or sets the coordinates of the upper-left corner of this Rectangle structure.
+
+        :return: Point object
+        """
+        return Point(raw_value=self.raw_value.Location)  # type: ignore
+
+    @property
+    def right(self) -> int:
+        """Gets the x-coordinate that is the sum of X and Width property values of this Rectangle structure.
+
+        :return: X-coordinate
+        """
+        return self.raw_value.Right  # type: ignore
+
+    @property
+    def size(self) -> Size:
+        """Gets the size of this Rectangle.
+
+        :return: Size objects
+        """
+        return Size(raw_value=self.raw_value.Size)  # type: ignore
+
+    @size.setter
+    def size(self, value: Size) -> None:
+        """Sets the size of this Rectangle.
+
+        :param value: Value of size to set
+        """
+        self.raw_value.Size = value.raw_value  # type: ignore
+
+    @property
+    def top(self) -> int:
+        """Gets the y-coordinate of the top edge of this Rectangle structure.
+
+        :return: Y-coordinate
+        """
+        return self.raw_value.Top  # type: ignore
+
+    @property
+    def width(self) -> int:
+        """Gets the width of this Rectangle structure.
+
+        :return: Width value
+        """
+        return self.raw_value.Width  # type: ignore
+
+    @width.setter
+    def width(self, value: int) -> None:
+        """Sets the width of this Rectangle structure.
+
+        :param value: Value to set
+        """
+        self.raw_value.Width = value  # type: ignore
+
+    @property
+    def x(self) -> int:
+        """Gets the x of this Rectangle structure.
+
+        :return: X value
+        """
+        return self.raw_value.X  # type: ignore
+
+    @x.setter
+    def x(self, value: int) -> None:
+        """Sets the x of this Rectangle structure.
+
+        :param value: Value to set
+        """
+        self.raw_value.X = value  # type: ignore
+
+    @property
+    def y(self) -> int:
+        """Gets the y of this Rectangle structure.
+
+        :return: Y value
+        """
+        return self.raw_value.Y  # type: ignore
+
+    @y.setter
+    def y(self, value: int) -> None:
+        """Sets the y of this Rectangle structure.
+
+        :param value: Value to set
+        """
+        self.raw_value.Y = value  # type: ignore
+
+    def contains(self, other: Union[Tuple[int, int], Point]) -> bool:
+        """Determines if the specified point is contained within this Rectangle structure.
+
+        :param other: Value to compare
+        :return: True if it contains, else False
+        """
+        return (
+            self.raw_value.Contains(other.raw_value)  # type: ignore
+            if (isinstance(other, Point) or isinstance(other, Rectangle))
+            else self.raw_value.Contains(other[0], other[1])  # type: ignore
+        )
+
+    def equals(self, other: Rectangle) -> bool:
+        """Specifies whether this Rectangle instance contains the same coordinates as another point.
+
+        :param other: Value to compare
+        :return: True if equal, else False
+        """
+        return self.raw_value.Equals(other.raw_value)  # type: ignore
+
+    def from_ltrb(self, value: List[int]) -> Rectangle:
+        """Creates a Rectangle structure with the specified edge locations.
+
+        :param value: Value to set
+        :return: Rectangle object
+        """
+        if not len(value) == 4:
+            raise ValueError(
+                f"The input values have to be a list of 4 integers to create a Rectangle structure, current input - {value}"
+            )
+
+        return Rectangle(raw_value=self.raw_value.FromLTRB(*value))  # type: ignore
+
+    def get_hash_code(self) -> int:
+        """Returns a hash code for this Rectangle.
+
+        :return: An integer value that specifies the hash code for this Rectangle.
+        """
+        return self.raw_value.GetHashCode()  # type: ignore
+
+    def inflate(self, value: Tuple[int, int]) -> Rectangle:
+        """Enlarges this Rectangle by the specified amount.
+
+        :param value: Value to enlarge
+        :return: Enlarged Rectangle
+        """
+        return Rectangle(raw_value=self.raw_value.Inflate(*value))  # type: ignore
+
+    def interset(self, other: Union[Rectangle, Tuple[Rectangle, Rectangle]]) -> Rectangle:
+        """Replaces this Rectangle with the intersection of itself and the specified Rectangle.
+        Returns a third Rectangle structure that represents the intersection of two other Rectangle structures. If there is no intersection, an empty Rectangle is returned.
+
+        :param other: Value to intersect with
+        :return: Updated rectangle
+        """
+        return Rectangle(
+            raw_value=self.raw_value.Intersect(other.raw_value)  # type: ignore
+            if isinstance(other, Rectangle)
+            else self.raw_value.Intersect(*[_.raw_value for _ in other])  # type: ignore
+        )
+
+    def intersects_with(self, other: Rectangle) -> bool:
+        """Determines if this rectangle intersects with rect.
+
+        :param other: Value to check
+        :return: True if there is any intersection, otherwise False
+        """
+        return self.raw_value.IntersectsWith(other.raw_value)  # type: ignore
+
+    def offset(self, x: Optional[int] = None, y: Optional[int] = None, point: Optional[Point] = None) -> None:
+        """Adjusts the location of this rectangle by the specified amount.
+
+        :param x: x-coordinate, defaults to None
+        :param y: y-coordinate, defaults to None
+        :param point: Point object, defaults to None
+        """
+        self.raw_value.Offset(x, y) if point is None else self.raw_value.Offset(point.raw_value)  # type: ignore
+
+    def to_string(self) -> str:
+        """Converts the attributes of this Rectangle to a human-readable string.
+
+        :return: Point as readable string.
+        """
+        return self.raw_value.ToString()  # type: ignore
+
+    def union(self, others: Tuple[Rectangle, Rectangle]) -> Rectangle:
+        """Gets a Rectangle structure that contains the union of two Rectangle structures.
+
+        :param others: Tuple of rectangles to compare
+        :return: A Rectangle structure that bounds the union of the two Rectangle structures.
+        """
+        return Rectangle(raw_value=self.raw_value.Union(*[_.raw_value for _ in others]))  # type: ignore
+
+    def __eq__(self, other: object) -> bool:
+        """Tests whether two Rectangle structures have equal location and size.
+
+        Accepts any object (matches BaseModel signature) and returns False when the
+        other object is not a Rectangle.
+        """
+        if not isinstance(other, Rectangle):
+            return False
+
+        return self.left == other.left and self.right == other.right
+
+    def __ne__(self, other: object) -> bool:
+        """Compares two Rectangle objects for inequality
+
+        Accepts any object (matches BaseModel signature).
+        """
+        return not self == other
+
+    def center(self) -> Point:
+        """Returns center of this rectangle as a Point object
+
+        :return: Point object
+        """
+        return Point(raw_value=(self.width / 2 + self.left, self.height / 2 + self.top))
+
+    def north(self, by: int = 0) -> Point:
+        """Returns North of the rectangle as a Point object
+
+        :param by: Move by, defaults to 0
+        :return: Point object
+        """
+        return Point(raw_value=(self.center().x, self.top + by))
+
+    def east(self, by: int = 0) -> Point:
+        """Returns East of the rectangle as a Point object
+
+        :param by: Move by, defaults to 0
+        :return: Point object
+        """
+        return Point(raw_value=(self.right + by, self.center().y))
+
+    def south(self, by: int = 0) -> Point:
+        """Returns South of the rectangle as a Point object
+
+        :param by: Move by, defaults to 0
+        :return: Point object
+        """
+        return Point(raw_value=(self.center().x, self.bottom + by))
+
+    def west(self, by: int = 0) -> Point:
+        """Returns West of the rectangle as a Point object
+
+        :param by: Move by, defaults to 0
+        :return: Point object
+        """
+        return Point(raw_value=(self.left + by, self.center().y))
+
+    def immediate_exterior_north(self) -> Point:
+        """Returns immediate exterior North
+
+        :return: Point object
+        """
+        return self.north(-1)
+
+    def immediate_interior_north(self) -> Point:
+        """Returns immediate interior North
+
+        :return: Point object
+        """
+        return self.north(1)
+
+    def immediate_exterior_east(self) -> Point:
+        """Returns immediate exterior East
+
+        :return: Point object
+        """
+        return self.east(1)
+
+    def immediate_interior_east(self) -> Point:
+        """Returns immediate interior East
+
+        :return: Point object
+        """
+        return self.east(-1)
+
+    def immediate_exterior_south(self) -> Point:
+        """Returns immediate exterior South
+
+        :return: Point object
+        """
+        return self.south(1)
+
+    def immediate_interior_south(self) -> Point:
+        """Returns immediate interior South
+
+        :return: Point object
+        """
+        return self.south(-1)
+
+    def immediate_exterior_west(self) -> Point:
+        """Returns immediate exterior West
+
+        :return: Point object
+        """
+        return self.west(-1)
+
+    def immediate_interior_west(self) -> Point:
+        """Returns immediate interior West
+
+        :return: Point object
+        """
+        return self.west(1)
+
+    def make_even(self) -> Rectangle:
+        """
+        Makes the width and height of a rectangle a multiple of 2, if not already.
+
+        This is a direct coversion of Even method listed in FlaUI.Core.Tools.ExtensionMethods class.
+
+        :return: A new Rectangle object with even dimensions (optional), or None if the input rectangle is None.
+        """
+        # In-place modification (if possible)
+        try:
+            if self.width % 2 == 1:
+                self.width -= 1
+            if self.height % 2 == 1:
+                self.height -= 1
+
+        except AttributeError:  # Handle cases where width/height are not modifiable
+            raise ValueError("Something went wrong modifying width/height for the rectangle making it even.")
+        else:
+            # Create a new self if in-place modification is not possible
+            return Rectangle(raw_value=self.raw_value)

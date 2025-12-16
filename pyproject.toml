@@ -1,102 +1,111 @@
-[tool.poetry]
+[project]
 name = "flaui-uiautomation-wrapper"
-version = "0.0.8a24"
+version = "0.1.0"
 description = "Tool to perform UI Automation on Windows desktop applications using an underlying FlaUI wrapper."
-authors = [
-  "Amruth VVKP <amruthvvkp@gmail.com>",
-  "Varshith VVS <svvarsham@gmail.com>",
-  "Tejaswani Sathish Kumar <tejaswani12.92@gmail.com",
-]
-license = "LGPL-3.0-or-later"
 readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "arrow>=1.3.0",
+    "pillow>=10.4.0",
+    "pydantic>=2.10.6",
+    "pydantic-settings>=2.7.1",
+    "pythonnet>=3.0.5",
+]
+authors = [
+    { name = "Amruth VVKP", email = "amruthvvkp@gmail.com" },
+    { name = "Varshith VVS", email = "svvarsham@gmail.com" },
+    { name = "Tejaswani Sathish Kumar", email = "tejaswani12.92@gmail.com" },
+]
+license = { text = "LGPL-3.0-or-later" }
 keywords = [
-  "testing",
-  "ui",
-  "ui-automation",
-  "automation",
-  "windows",
-  "windows automation",
-  "windows testing",
-  "desktop automation",
-  "flaui",
-  "qa",
+    "testing",
+    "ui",
+    "ui-automation",
+    "automation",
+    "windows",
+    "windows automation",
+    "windows testing",
+    "desktop automation",
+    "flaui",
+    "qa",
 ]
-packages = [{ include = "flaui" }]
-include = [{ path = "flaui/bin/*.dll" }]
-exclude = ["tests", "docs"]
-repository = "https://github.com/amruthvvkp/flaui-uiautomation-wrapper"
 classifiers = [
-  "Development Status :: 3 - Alpha",
-  "Intended Audience :: Developers",
-  "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
-  "Operating System :: Microsoft :: Windows",
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.7",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3 :: Only",
-  "Topic :: Software Development :: Testing",
-  "Topic :: Software Development :: Quality Assurance",
-  "Topic :: Software Development :: Libraries :: Python Modules",
-  "Topic :: Utilities",
-  "Typing :: Typed",
-  "Operating System :: Microsoft :: Windows",
-  "Operating System :: POSIX :: Linux",
-  "Operating System :: MacOS :: MacOS X",
-  "Topic :: Software Development :: Testing",
-  "Intended Audience :: Developers",
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Utilities",
+    "Typing :: Typed",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS :: MacOS X",
+    "Topic :: Software Development :: Testing",
+    "Intended Audience :: Developers",
 ]
 
-[tool.poetry-git-version-plugin]
-make_alpha_version = true
-alpha_version_format = '{version}a{distance}+{commit_hash}'
-version_format = '{version}'
+[dependency-groups]
+dev = [
+    "interrogate>=1.7.0",
+    "isort>=5.13.2",
+    "jupyter>=1.1.1",
+    "mypy>=1.14.1",
+    "pre-commit>=3.5.0",
+    "ruff>=0.9.3",
+]
+unit-test = [
+    "dirty-equals>=0.9.0",
+    "loguru>=0.7.3",
+    "psutil>=6.1.1",
+    "pyhamcrest>=2.1.0",
+    "pytest>=8.3.4",
+    "pytest-bug>=1.4.0",
+    "pytest-pretty>=1.2.0",
+    "pytest-reportlog>=0.4.0",
+    "pytest-timeout>=2.4.0",
+    "allure-pytest>=2.15.2",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.7,<3.12"
-loguru = "^0.6.0"
-pillow = "^9.3.0"
-arrow = "^1.2.3"
-pythonnet = "^3.0.1"
-pydantic = "^2.0.0"
-pydantic-settings = "^2.0.0"
-pydantic-extra-types = "^2.0.0"
+[project.optional-dependencies]
+pytest-sugar = ["pytest-sugar>=1.0.0"]
+coverage = ["coverage>=7.6.1"]
 
-[tool.poetry.group.dev.dependencies]
-mypy = "^0.991"
-jupyter = "^1.0.0"
-isort = "^5.10.1"
-pre-commit = { version = "^3.3.3", python = ">=3.8" }
-interrogate = "^1.5.0"
-ruff = "^0.0.288"
-
-[tool.poetry.group.dev]
-optional = true
-
-[tool.poetry.group.unit_test.dependencies]
-pytest = "^7.2.0"
-pytest-cov = "^4.0.0"
-
-[tool.poetry.group.unit_test]
-optional = true
-
-[tool.poetry.group.docs.dependencies]
-mkdocs-material = "^9.1.17"
-mkdocs-markdownextradata-plugin = "^0.2.5"
-mkdocs-jupyter = "^0.24.1"
-
-[tool.poetry.group.docs]
-optional = true
+[tool.uv.sources]
+flaui = { path = "./flaui" }
 
 [build-system]
-requires = ["poetry-core>=1.0.0", "setuptools", "wheel"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+only-include = ["/README.md", "/flaui", "flaui/bin/*.dll"]
 
 [tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "-ra -q -p no:warnings --junitxml=test-results.xml"
-testpaths = ["tests/unit_tests/"]
+minversion = "8.0"
+addopts = "-ra -q -p no:warnings --report-log=test-report.jsonl"
+testpaths = ["tests/"]
+# Timeout settings - prevent hanging tests in UI automation
+timeout = 30 # Default 30s per test (UI tests can be slow)
+timeout_method = "thread" # Use thread method on Windows for reliability
+session_timeout = 1800 # 30 minutes max for full suite
+markers = [
+    "wpf_only: Tests that only run on WPF applications",
+    "winforms_only: Tests that only run on WinForms applications",
+    "uia3_only: Tests that require UIA3 automation type",
+    "platform_limitation: Known C# FlaUI platform limitation",
+    "windows11: Tests affected by Windows 11 specific behavior",
+    "bug: Known bug tracked in GitHub issues (use id and url parameters)",
+]
 
 [tool.interrogate]
 ignore-init-method = true
@@ -137,7 +146,6 @@ py_version = 310
 [tool.black]
 # https://github.com/psf/black
 line-length = 120
-target_version = ['py310']
 exclude = '''
 (
   /(
@@ -157,7 +165,6 @@ plugins = ["pydantic.mypy"]
 
 follow_imports = "skip"
 warn_redundant_casts = true
-swarn_unused_ignores = true
 no_implicit_reexport = true
 
 [tool.pydantic-mypy]
@@ -173,22 +180,6 @@ max-complexity = 10
 
 
 [tool.ruff]
-select = [
-  "E", # pycodestyle errors
-  "W", # pycodestyle warnings
-  "F", # pyflakes
-  # "I",  # isort
-  "B", # flake8-bugbear
-]
-ignore = [
-  "E501", # line too long, handled by black
-  "B904", # Within an except clause, raise exceptions with raise ... from err or raise ... from None to distinguish them from errors in exception handling
-  "B008", # Do not perform function call {name} in argument defaults
-  "B006", # Do not use mutable data structures for argument defaults
-  "C901", # too complex
-  "E402", # Module level import not at top of file
-]
-
 # Group violations by containing file.
 respect-gitignore = true
 src = ["flaui"]
@@ -196,21 +187,18 @@ src = ["flaui"]
 # Same as Black.
 line-length = 120
 
-# Allow unused variables when underscore-prefixed.
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-
 # Assume Python 3.10.
 target-version = "py310"
 fix = true
 
-[tool.ruff.mccabe]
+[tool.ruff.lint.mccabe]
 # Unlike Flake8, default to a complexity level of 10.
 max-complexity = 10
 
-[tool.ruff.flake8-quotes]
+[tool.ruff.lint.flake8-quotes]
 docstring-quotes = "double"
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 order-by-type = true
 combine-as-imports = true
 force-sort-within-sections = true
@@ -219,17 +207,37 @@ force-single-line = false
 split-on-trailing-comma = false
 known-third-party = ["pydantic"]
 
+[tool.ruff.lint]
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+ignore = [
+    "E501", # line too long, handled by black
+    "B904", # Within an except clause, raise exceptions with raise ... from err or raise ... from None to distinguish them from errors in exception handling
+    "B008", # Do not perform function call {name} in argument defaults
+    "B006", # Do not use mutable data structures for argument defaults
+    "C901", # too complex
+    "E402", # Module level import not at top of file
+]
+
+select = [
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflakes
+    # "I",  # isort
+    "B", # flake8-bugbear
+]
+
 [tool.coverage.run]
 disable_warnings = ["no-data-collected"]
 branch = true
 source = ["flaui"]
-command_line = "-m pytest . -v"
+command_line = "-m pytest"
 relative_files = true
 
 [tool.coverage.html]
 directory = "htmlcov"
 skip_empty = true
-title = "FlaUI Test Coverage Report"
+title = "FlaUI Python Wrapper Coverage Report"
 
 [tool.coverage.xml]
 output = "coverage.xml"
@@ -238,10 +246,5 @@ output = "coverage.xml"
 output = "coverage.lcov"
 
 [tool.coverage.report]
-exclude_also = [
-  "raise RuntimeError",
-  "if waiter_config is None:",
-  "except AssertionError",
-  "except ClientError",
-  "except WaiterError",
-]
+exclude_also = []
+omit = []

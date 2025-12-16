@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="0.845" timestamp="2023-09-11T01:16:47.174920" hostname="DESKTOP-HR00K2A"><testcase classname="tests.lib.test_pythonnet_bridge" name="test_setup_pythonnet_bridge" time="0.603" /></testsuite></testsuites>
