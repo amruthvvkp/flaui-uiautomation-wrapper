@@ -393,7 +393,7 @@ class Mouse:
     def left_click(point: Optional[Point], post_wait: Optional[Union[bool, float, Callable[[], None]]] = None) -> None:
         """Performs a left click.
 
-        :param: point: The position to move before clicking.
+        :param point: The position to move before clicking.
         :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
         CSMouse.LeftClick() if point is None else CSMouse.LeftClick(point.raw_value)
@@ -405,7 +405,7 @@ class Mouse:
     ) -> None:
         """Performs a left double click.
 
-        :param: point: The position to move before clicking.
+        :param point: The position to move before clicking.
         :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
         CSMouse.LeftDoubleClick() if point is None else CSMouse.LeftDoubleClick(point.raw_value)
@@ -415,7 +415,7 @@ class Mouse:
     def right_click(point: Optional[Point], post_wait: Optional[Union[bool, float, Callable[[], None]]] = None) -> None:
         """Performs a right click.
 
-        :param: point: The position to move before clicking.
+        :param point: The position to move before clicking.
         :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
         CSMouse.RightClick() if point is None else CSMouse.RightClick(point.raw_value)
@@ -427,7 +427,7 @@ class Mouse:
     ) -> None:
         """Performs a right double click.
 
-        :param: point: The position to move before clicking.
+        :param point: The position to move before clicking.
         :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
         CSMouse.RightDoubleClick() if point is None else CSMouse.RightDoubleClick(point.raw_value)

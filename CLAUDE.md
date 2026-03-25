@@ -1796,6 +1796,19 @@ pytest tests/  # May use wrong Python environment
 
 ---
 
+## Documentation Standards
+
+- Use Sphinx-style docstrings (first-line summary, then :param:, :return:, :raises:).
+- Maintain ≥95% docstring coverage (`interrogate`).
+- Keep Python 3.8 compatibility in examples and type hints (no `|` unions, no `match`).
+- Update docs when adding or changing APIs: Basics for simple flows, Advanced for deep detail, API Reference auto-generated via mkdocstrings.
+- Prefer Python/C# tabbed examples where parity helps users.
+- Add UIA2/UIA3 "In Development" warnings where functionality is still being ported.
+- Regenerate `docs/includes/flaui_versions.md` with `scripts/extract_versions.py` whenever `flaui/bin/Version.md` changes.
+- Follow `Agentic Guidelines` for LLM/system prompt instructions; keep `AGENTS.md` aligned.
+
+---
+
 ## Quick Reference
 
 ### Common Tasks

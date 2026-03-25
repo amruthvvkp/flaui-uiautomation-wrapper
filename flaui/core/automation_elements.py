@@ -433,7 +433,7 @@ class AutomationElement(ElementBase):
     def equals(self, another_element: AutomationElement) -> bool:
         """Compares two elements.
 
-        :param other_element: Another element
+        :param another_element: Another element
         :return: True/False
         """
         return self.raw_element.Equals(another_element.raw_element)
@@ -701,7 +701,7 @@ class AutomationElement(ElementBase):
     def is_property_supported_direct(self, property: Any) -> bool:
         """Method to check if the element supports the given property via UIA method. Does not work with cached elements and might be unreliable.
 
-        :param pattern_id: Pattern ID
+        :param property: Property to check
         :return: True if supported else False
         """
         return self.raw_element.IsPropertySupportedDirect(property)
@@ -1198,7 +1198,6 @@ class ComboBox(AutomationElement):
     def animation_duration(self) -> Any:
         """Timespan to wait until the animation for opening/closing is finished.
 
-        :param time_span: Timespan in milliseconds, defaults to 100
         :return: C# TimeSpan object from System namespace
         """
         return self.raw_element.AnimationDuration

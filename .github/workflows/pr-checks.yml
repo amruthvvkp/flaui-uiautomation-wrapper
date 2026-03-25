@@ -3,7 +3,7 @@ name: PR Checks
 on:
   pull_request:
     branches: [master]
-    types: [opened]
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
@@ -23,10 +23,9 @@ jobs:
           persist-credentials: false
 
       - name: Run Ruff checks
-        uses: chartboost/ruff-action@v1
+        uses: astral-sh/ruff-action@v3
         with:
-          src: "."
-          args: --format=github --target-version=py311
+          args: "check --output-format=github flaui"
 
       - name: Python Interrogate Check
         uses: JackMcKew/python-interrogate-check@main
@@ -48,68 +47,71 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.head_ref }}
 
-  publish:
-    name: Publish to Test PyPI
+  docs:
+    name: Build documentation (strict)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false
 
-      - name: Set up Python 3.x
-        uses: actions/setup-python@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.x"
+          python-version: "3.12"
 
-      - name: Setup Poetry
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-          poetry self add poetry-git-version-plugin
-          poetry config virtualenvs.in-project true
+      - name: Install UV
+        uses: astral-sh/setup-uv@v5
 
-      - name: Update Package Alpha Version
-        id: update_version
-        run: |
-          echo "Checking package version before publishing to Test PyPI"
-          poetry version
-          echo "Updating package version to alpha based on the latest head release tag"
-          poetry set-git-version
-          echo "UPGRADED_VERSION=$(poetry git-version)" >> $GITHUB_OUTPUT
+      - name: Install docs dependencies
+        run: uv sync --group docs
 
-      - name: Build and publish distribution 📦 to Test PyPI
-        uses: JRubics/poetry-publish@v1.17
+      - name: Extract FlaUI versions
+        run: uv run python scripts/extract_versions.py
+
+      - name: Build docs
+        run: uv run mkdocs build --strict
+
+  publish:
+    name: Publish to Test PyPI
+    needs: [linting_checks, docs]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          pypi_token: ${{ secrets.TEST_PYPI_API_TOKEN }}
-          allow_poetry_pre_release: "yes"
-          ignore_dev_requirements: "yes"
-          repository_url: https://test.pypi.org/legacy/
-          repository_name: flaui-uiautomation-wrapper
+          fetch-depth: 0
 
-      - name: Commit files
+      - name: Install UV
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set unique Test PyPI version
+        id: version
         run: |
-          git config user.email "actions@github.com"
-          git config user.name "GitHub Actions"
-          git add pyproject.toml
-          git commit -m "Bump version to $(poetry version | cut -d' ' -f2)"
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
+          BASE=$(uv version --short)
+          NEW_VER="${BASE}+g${SHORT_SHA}"
+          uv version --frozen "${NEW_VER}"
+          echo "version=${NEW_VER}" >> "${GITHUB_OUTPUT}"
 
-      - name: Push changes
-        if: success()
-        uses: ad-m/github-push-action@master
+      - name: Build distributions
+        run: uv build
+
+      - name: Publish to Test PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.head_ref }}
+          repository-url: https://test.pypi.org/legacy/
+          user: __token__
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
 
       - name: Comment on pull request
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         env:
-          UPGRADED_PACKAGE_VERSION: ${{ steps.update_version.outputs.UPGRADED_VERSION }}
+          UPGRADED_PACKAGE_VERSION: ${{ steps.version.outputs.version }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            // 1. Retrieve existing bot comments for the PR
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -119,7 +121,6 @@ jobs:
               return comment.user.type === 'Bot' && comment.body.includes('Deployed to Test PyPI')
             })
 
-            // 2. Prepare format of the comment
             const output = `#### Deployed to Test PyPI 🚀
 
             <details>
@@ -128,16 +129,15 @@ jobs:
 
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Workflow: \`${{ github.workflow }}\`*`;
 
-            // 3. If we have a comment, update it, otherwise create a new one
             if (botComment) {
-              github.rest.issues.updateComment({
+              await github.rest.issues.updateComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 comment_id: botComment.id,
                 body: output
               })
             } else {
-              github.rest.issues.createComment({
+              await github.rest.issues.createComment({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,

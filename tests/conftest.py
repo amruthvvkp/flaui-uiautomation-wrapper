@@ -1,5 +1,6 @@
 """Fixtures for the test suite."""
 
+import os
 import sys
 from typing import Any, Generator
 
@@ -152,7 +153,8 @@ def launch_all_test_applications() -> Generator[dict[UIAutomationTypes, dict[str
             try:
                 logger.debug(f"Launching test application: {app_type} with {ui_automation_type}")
                 test_base.launch_test_app()
-                time.sleep(1)  # Give time for UI to initialize
+                # CI VMs need more time before the main window is reachable
+                time.sleep(3 if os.environ.get("CI") else 1)
                 assert test_base.automation.application, "Application did not start correctly!"
             except Exception as e:
                 logger.error(f"Error launching test app: {e}")

@@ -1,0 +1,159 @@
+site_name: FlaUI for Python
+site_description: Complete Windows UI Automation for Python with 1:1 FlaUI parity
+site_url: https://amruthvvkp.github.io/flaui-uiautomation-wrapper
+repo_url: https://github.com/amruthvvkp/flaui-uiautomation-wrapper
+repo_name: amruthvvkp/flaui-uiautomation-wrapper
+edit_uri: ''
+
+nav:
+  - Home: index.md
+  - Motivation: motivation.md
+  - Basics: basics.md
+  - Advanced: advanced.md
+  - API Reference:
+    - Overview: api/index.md
+    - Core:
+      - Automation: api/automation.md
+      - Application: api/application.md
+      - Condition Factory: api/condition_factory.md
+      - Automation Element: api/automation_element.md
+    - Input:
+      - Mouse: api/mouse.md
+      - Keyboard: api/keyboard.md
+      - Wait: api/wait.md
+    - Tools:
+      - Retry: api/retry.md
+      - Cache Request: api/cache_request.md
+      - Drawing: api/drawing.md
+      - Collections: api/collections.md
+      - Exceptions: api/exceptions.md
+    - Elements:
+      - Button: api/elements/button.md
+      - Calendar: api/elements/calendar.md
+      - CheckBox: api/elements/checkbox.md
+      - ComboBox: api/elements/combobox.md
+      - ComboBoxItem: api/elements/combobox_item.md
+      - DataGridView: api/elements/datagridview.md
+      - DateTimePicker: api/elements/datetimepicker.md
+      - Grid: api/elements/grid.md
+      - Label: api/elements/label.md
+      - ListBox: api/elements/listbox.md
+      - ListBoxItem: api/elements/listbox_item.md
+      - Menu: api/elements/menu.md
+      - MenuItem: api/elements/menu_item.md
+      - ProgressBar: api/elements/progressbar.md
+      - RadioButton: api/elements/radiobutton.md
+      - Slider: api/elements/slider.md
+      - Spinner: api/elements/spinner.md
+      - Tab: api/elements/tab.md
+      - TabItem: api/elements/tab_item.md
+      - TextBox: api/elements/textbox.md
+      - Thumb: api/elements/thumb.md
+      - TitleBar: api/elements/titlebar.md
+      - ToggleButton: api/elements/togglebutton.md
+      - Tree: api/elements/tree.md
+      - TreeItem: api/elements/tree_item.md
+      - Window: api/elements/window.md
+  - Concepts: concepts.md
+  - Troubleshooting: troubleshooting.md
+  - Agentic Guidelines: agentic-guidelines.md
+  - Contributing:
+    - Guide: contributing.md
+    - Bug Tracking: bug-tracking.md
+  - Examples:
+    - Pytest: examples/pytest.md
+    - Unittest: examples/unittest.md
+    - Robot Framework: examples/robot-framework.md
+    - Behave: examples/behave.md
+    - TestPlan: examples/testplan.md
+    - Element Cookbook: examples/element-cookbook.md
+
+theme:
+  name: material
+  logo: logo.png
+  palette:
+    - scheme: default
+      primary: deep purple
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep purple
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.indexes
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - content.code.copy
+    - content.code.annotate
+    - search.highlight
+    - search.suggest
+    - to.follow
+    - toc.integrate
+    - content.tabs.link
+  font: false
+
+plugins:
+  - search
+  - awesome-pages
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_root_heading: true
+            show_root_toc_entry: false
+            show_symbol_type_heading: true
+            heading_level: 2
+            merge_init_into_class: true
+            docstring_style: sphinx
+  - minify:
+      minify_html: true
+  - redirects
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: false
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.details
+  - pymdownx.snippets
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+extra:
+  version:
+    provider: mike
+    default: latest
+    alias: true
+  search:
+    boost:
+      api: 2.0
+      examples: 1.5
+      agentic: 1.3
+      contributing: 1.2
+  generator: false
+
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js
+
+hooks:
+  - scripts/extract_versions.py
