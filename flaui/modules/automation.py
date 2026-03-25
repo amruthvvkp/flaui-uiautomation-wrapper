@@ -32,7 +32,6 @@ class Automation:
 
         :param ui_automation_type: The type of UI automation to use (UIA2 or UIA3).
         :param timeout: The timeout value in milliseconds.
-        :param element_map: The element map instance, map of the entire application elements for reference.
         """
         self._ui_automation_types: UIAutomationTypes = ui_automation_type
         self.timeout: int = timeout

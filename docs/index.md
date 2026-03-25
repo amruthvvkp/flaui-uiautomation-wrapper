@@ -1,21 +1,66 @@
-# Introduction
+# FlaUI for Python
 
-Welcome to the FlaUI Python port documentation! This library provides a 1:1 mapping of the FlaUI C# API for Windows UI automation, making it fully accessible to Python developers. Unlike RobotFlaUI, which is limited to Robot Framework and XPath, this project aims for complete feature parity and plug-and-play usage for Python automation.
+> The premier Windows UI Automation library for Python.
 
-## What is FlaUI?
+![FlaUI Logo](logo.png)
 
-FlaUI is a C# library for UI test automation on Windows, supporting both UIA2 and UIA3. It enables robust automation of WinForms, WPF, and other Windows applications.
+## Get Started
 
-## Why a Python Port?
+=== "Python"
 
-The Python ecosystem lacked a comprehensive UI automation library with the capabilities of FlaUI. This project bridges that gap, allowing Python developers to leverage the full power of FlaUI using PythonNet for C# interop, with Pydantic models for validation and type safety.
+    ```python
+    # Standard initialization
+    from flaui.lib.pythonnet_bridge import setup_pythonnet_bridge
+    setup_pythonnet_bridge()
+
+    from flaui.modules.automation import Automation
+    from flaui.lib.enums import UIAutomationTypes
+
+    automation = Automation(UIAutomationTypes.UIA3)
+    main_window = automation.application.launch("notepad.exe").get_main_window(automation)
+    main_window.find_first_by_x_path("//Button[@Name='OK']").as_button().invoke()
+    ```
+
+=== "C#"
+
+    ```csharp
+    using FlaUI.UIA3;
+    using FlaUI.Core;
+
+    var automation = new UIA3Automation();
+    var app = Application.Launch("notepad.exe");
+    var mainWindow = app.GetMainWindow(automation);
+    mainWindow.FindFirstByXPath("//Button[@Name='OK']").AsButton().Invoke();
+    ```
+
+## Why FlaUI?
+
+FlaUI provides a modern, clean, and typed API for automating Windows applications.
+
+- **Native UI Automation**: Built on Microsoft's UI Automation (UIA) technology, allowing you to inspect and interact with any Windows application (WinForms, WPF, Store Apps, etc.).
+- **Modern & Typed**: Fully typed with **Pydantic** models, offering excellent IDE support, autocompletion, and compile-time-like checks.
+- **Batteries Included**: Zero-configuration setup. All necessary dependencies are bundled, so you don't need to manage external driver binaries.
+- **Rich Interaction Model**: Beyond simple clicks, FlaUI fully supports complex UIA patterns (Toggle, Select, Expand, Scroll, etc.) for robust application control.
 
 ## Key Features
 
-- Full mapping of C# endpoints to Python
-- Support for WinForms and WPF test applications
-- Plug-and-play usage with all required C# binaries included
-- PyTest-based unit and UI tests
-- Extensible for other test frameworks
+- **Dual-Backend Support**: Seamlessly switch between UIA3 (COM-based, recommended for modern apps) and UIA2 (Managed, for legacy apps).
+- **Advanced Element Search**: flexible strategies including Accessibility ID, Name, XPath, or arbitrary condition logic.
+- **Resilient Automation**: Built-in mechanisms for `Retry`, dynamic timeouts, and input waiting ensure your tests aren't flaky.
+- **Drawing & Debugging**: Helpers to highlight elements on screen during test execution.
 
-For more details, see the Motivation and Contributing pages.
+## Bundled Library Versions
+
+--8<-- "docs/_includes/flaui_versions.md"
+
+## Credits
+
+- **[FlaUI](https://github.com/FlaUI/FlaUI)**: The core logic and test applications are derived from the upstream C# project.
+- **Community**: Special thanks to the contributors of FlaUI and the Python.NET team.
+
+## Next Steps
+
+- **[Basics](basics.md)**: Learn the core workflow: Initialize → Launch → Find → Interact.
+- **[Advanced Concepts](advanced.md)**: Master XPath, ConditionFactory, and Caching.
+- **[API Reference](api/index.md)**: Explore the full method documentation for every control.
+- **[Troubleshooting](troubleshooting.md)**: Resolve common setup and finding issues.

@@ -6,6 +6,7 @@ It contains methods to launch, attach, kill, dispose, and close an application. 
 from __future__ import annotations
 
 import logging
+import os
 import time
 from typing import Any, List, Optional, Union
 
@@ -116,8 +117,8 @@ class Application:
                 "Invalid automation object sent to fetch main window, either send C# Automation object or Python automation object"
             )
         # Robust retrieval with retries and process checks
-        # Keep total timeout under typical test-level limits (e.g., 15s)
-        total_timeout_ms = 7000
+        # CI hosts (AppVeyor, etc.) often need longer than local desktops for main window.
+        total_timeout_ms = 20000 if os.environ.get("CI") else 7000
         poll_interval_ms = 200
         deadline = time.time() + (total_timeout_ms / 1000.0)
 
