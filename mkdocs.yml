@@ -9,11 +9,13 @@ nav:
   - Home: index.md
   - Motivation: motivation.md
   - Basics: basics.md
+  - UIA2 vs UIA3: uia2-uia3.md
   - Advanced: advanced.md
   - API Reference:
     - Overview: api/index.md
     - Core:
       - Automation: api/automation.md
+      - AutomationBase (UIA facades): api/automation_base.md
       - Application: api/application.md
       - Condition Factory: api/condition_factory.md
       - Automation Element: api/automation_element.md
