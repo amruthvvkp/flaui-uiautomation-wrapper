@@ -1,0 +1,85 @@
+/* Custom styling for FlaUI Python Wrapper docs */
+
+/* Grid cards styling for feature boxes */
+.grid.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.grid.cards > div {
+  background: var(--md-code-bg-color);
+  border-radius: 0.2rem;
+  padding: 1.5rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+}
+
+.grid.cards > div:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.3s ease;
+}
+
+/* Centered logo on home page */
+.md-content img[alt="FlaUI Python Wrapper"] {
+  display: block;
+  margin: 0 auto;
+}
+
+/* Better code block styling */
+.highlight {
+  margin: 1rem 0;
+}
+
+/* Tabbed content improvements */
+.tabbed-set {
+  margin: 1.5rem 0;
+}
+
+/* Remove permalink hover symbols */
+.headerlink {
+  display: none !important;
+}
+
+/* Better admonition styling */
+.admonition {
+  margin: 1.5rem 0;
+  border-left: 4px solid var(--md-accent-fg-color);
+}
+
+/* Table improvements */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+}
+
+table th {
+  background: var(--md-code-bg-color);
+  font-weight: 600;
+}
+
+table td,
+table th {
+  padding: 0.75rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+}
+
+/* Navigation tabs enhancement */
+.md-tabs {
+  background: linear-gradient(
+    to bottom,
+    var(--md-primary-fg-color),
+    var(--md-primary-fg-color--dark)
+  );
+}
+
+/* Footer copyright only, no generator text */
+.md-footer-meta__inner {
+  display: flex;
+  justify-content: center;
+}
+
+.md-footer-copyright {
+  margin: 0 auto;
+}

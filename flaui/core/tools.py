@@ -17,7 +17,6 @@ class Retry:
     """This class contains methods for retrying actions.
 
     :raises TimeoutError: If the timeout has been reached.
-    :return: The result of the retry method.
     """
 
     @staticmethod
