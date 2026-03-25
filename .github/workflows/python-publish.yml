@@ -1,10 +1,4 @@
-# This workflow will upload a Python Package using Twine when a release is created
-# For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
+# Upload distributions to PyPI when a GitHub release is published (PEP 621 + Hatchling + UV).
 
 name: Publish Python 🐍 distributions 📦 to PyPI and TestPyPI
 
@@ -13,8 +7,7 @@ on:
     types: [published]
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
   id-token: write
 
 jobs:
@@ -22,44 +15,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Get release tag
-        id: get_tag
-        run: echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ steps.get_tag.outputs.tag }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.x"
+      - name: Install UV
+        uses: astral-sh/setup-uv@v5
 
-      - name: Setup Poetry
+      - name: Set package version from release tag
         run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-          poetry self add poetry-git-version-plugin
-          poetry config virtualenvs.in-project true
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+          uv version --frozen "${VERSION}"
 
-      - name: Update Poetry version in pyproject.toml
-        run: |
-          echo "Updating package version to alpha based on the latest head release tag"
-          poetry set-git-version
+      - name: Build distributions
+        run: uv build
 
-      - name: Build and Publish distribution 📦 to PyPI
-        if: startsWith(github.ref, 'refs/tags')
-        uses: JRubics/poetry-publish@v1.17
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          pypi_token: ${{ secrets.PYPI_API_TOKEN  }}
-          allow_poetry_pre_release: "yes"
-          ignore_dev_requirements: "yes"
-          repository_name: flaui-uiautomation-wrapper
-
-      - name: Commit changes
-        if: success()
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: "Update Poetry version to ${{ github.ref }}"
-          commit_options: "--no-verify"
-          branch: "master"
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
