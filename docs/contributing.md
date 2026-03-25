@@ -1,34 +1,60 @@
 # Contributing
 
-We welcome contributions to the FlaUI Python port! Please read the guidelines below to get started.
+Welcome! Follow these steps to keep parity with FlaUI C# and maintain quality.
 
-## How to contribute
+## Getting started
+- Fork and branch from `master` (dev docs are published as "dev").
+- Run `uv sync --all-groups --all-extras`.
+- Read `CLAUDE.md` and `AGENTS.md` for standards and workflows.
 
-- Fork the repository and create a feature branch from `master`.
-- Read the entire codebase if required before making changes.
-- Follow the structure and mapping conventions for new features or bug fixes.
-- All new code should be covered by unit tests (see `tests/` and `test_utilities/`).
-- Use Pydantic models and validators for all Python-side data validation.
-- Ensure input/output types are translated correctly between Python and C#.
-- Maintain clear docstrings and type hints for IDE intellisense.
-- Follow Python naming conventions (snake_case for methods/properties, PascalCase for classes).
-- Reference C# source files for implementation details and parity.
+## Adding/Updating elements
+- Locate the C# source in `FlaUI.Core/AutomationElements` and mirror structure.
+- Use snake_case for methods/properties; keep class names PascalCase.
+- Add `as_*()` conversion in `AutomationElement` when introducing a new element class.
+- Decorate interop methods with `@handle_csharp_exceptions`; use late imports to avoid cycles.
+- Add docstrings (Sphinx style) and type hints (Python 3.8 compatible).
 
-## Testing
+## Tests (matrix: UIA2/UIA3 × WinForms/WPF)
+- Use fixtures from `tests/conftest.py` (`test_application`, `ui_automation_type`, `test_application_type`).
+- Keep skip logic in fixtures (`skip_notepad_on_win11`, `skip_if_matrix`), not inside tests.
+- Use `pytest.mark.xfail` for tracked failures (see Troubleshooting for current list).
+- Port C# tests from `FlaUI.Core.UITests` and mirror logic.
 
-- Port all C# UI and unit tests to Python using PyTest.
-- Add additional tests for new features and edge cases.
-- Use fixtures for setup/teardown as needed.
-- Validate both Python-side and C#-side behaviors through PythonNet interop.
+### Matrix fixtures example
 
-## Packaging and Dependencies
+All UI tests run 4x: UIA2/UIA3 × WinForms/WPF. Use the fixtures in `tests/conftest.py`:
 
-- Use UV for dependency management (`uv sync --all-groups --all-extras` to install, `uv build` to build, `uv version <version>` to bump version).
-- Ensure all required C# binaries in `flaui/bin` are included in the wheel for plug-and-play usage.
+```python
+from tests.test_utilities.elements.winforms_application import WinFormsApplicationElements
+from tests.test_utilities.elements.wpf_application import WPFApplicationElements
 
-## Code Review and Pull Requests
+def test_button(test_application: WinFormsApplicationElements | WPFApplicationElements):
+    test_application.simple_controls_tab.invoke_button.invoke()
+```
 
-- Ensure your code follows the repository Copilot instructions and mapping guidelines.
-- Submit a pull request and respond to feedback from maintainers.
+The `test_application` fixture is parametrized to provide both WinForms and WPF element maps, and combined with the `ui_automation_type` fixture (UIA2/UIA3), each test automatically runs in all 4 combinations.
 
-Thank you for helping improve the FlaUI Python port!
+## Code quality
+- `ruff check --fix .` and `ruff format .`
+- Docstring coverage 95%+ (`interrogate`)
+- Python 3.8 typing (no `|` unions, no match/case)
+
+## Packaging & dependencies
+- Build: `uv build`
+- Version bump: `uv version <version>`
+- Ensure `flaui/bin` DLLs stay packaged; update `Version.md` when DLLs change and regenerate `docs/includes/flaui_versions.md` via `scripts/extract_versions.py`.
+
+## Documentation
+- Update mkdocstrings docstrings when adding APIs.
+- Basics page stays simple and focused; Advanced gets full detail; API Reference is auto-generated.
+- Add C# tabs for parity when helpful.
+
+## Pull requests
+- Include tests for new features/bug fixes.
+- Link issues/bug markers if applicable.
+- Describe matrix coverage and any skips/xfails used.
+
+## Useful references
+- `tests/test_utilities` element maps (page objects)
+- `tests/ui/core` for usage patterns
+- `Agentic Guidelines` for LLM-ready prompts
