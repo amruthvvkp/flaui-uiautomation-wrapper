@@ -8,6 +8,7 @@ guides live in `docs/` (see [Where to find the tutorials](#where-to-find-the-tut
 - [Project Overview](#project-overview)
 - [Repository Structure](#repository-structure)
 - [Architecture](#architecture)
+- [Automation stack (UIA2 / UIA3)](#automation-stack-uia2--uia3)
 - [PythonNet Bridge](#pythonnet-bridge)
 - [C# to Python Mapping Patterns](#c-to-python-mapping-patterns)
 - [Pydantic Conventions](#pydantic-conventions)
@@ -47,6 +48,7 @@ flaui/
 │   └── System.CodeDom.dll
 ├── core/              # Core automation wrappers
 │   ├── automation_elements.py    # Main element classes (largest module)
+│   ├── automation_base.py        # Python facade for C# AutomationBase (UIA2/UIA3)
 │   ├── application.py            # Application launch/attach
 │   ├── condition_factory.py      # Search-condition builders
 │   ├── input.py                  # Mouse / Keyboard / Wait
@@ -54,6 +56,8 @@ flaui/
 │   ├── tools.py                  # Retry helpers
 │   ├── definitions.py            # Enums and constants
 │   └── ...
+├── uia2/              # Python facades for FlaUI.UIA2 (delegate to C#)
+├── uia3/              # Python facades for FlaUI.UIA3 (delegate to C#)
 ├── lib/               # Supporting libraries
 │   ├── pythonnet_bridge.py       # PythonNet initialization / DLL loading
 │   ├── exceptions.py             # C# -> Python exception translation
@@ -161,6 +165,20 @@ class CheckBox(AutomationElement, ToggleAutomationElement):
         """Return whether the element is checked."""
         return self.raw_element.IsChecked
 ```
+
+### Automation stack (UIA2 / UIA3)
+
+C# FlaUI exposes `FlaUI.Core.AutomationBase` with concrete implementations `FlaUI.UIA2.UIA2Automation` and `FlaUI.UIA3.UIA3Automation`. The Python package mirrors this with Pydantic facades:
+
+- [`flaui/core/automation_base.py`](flaui/core/automation_base.py) — `AutomationBase` (`raw_automation` holds the C# instance); snake_case methods (`get_desktop`, `from_point`, `compare`, `dispose`, …) with `@handle_csharp_exceptions`.
+- [`flaui/uia2/automation.py`](flaui/uia2/automation.py) / [`flaui/uia3/automation.py`](flaui/uia3/automation.py) — `UIA2Automation` / `UIA3Automation` construct or wrap the matching C# type.
+- [`wrap_cs_automation`](flaui/core/automation_base.py) — maps an existing C# `AutomationBase` (e.g. from `AutomationElement.Automation`) to the correct Python subclass.
+
+[`flaui/modules/automation.py`](flaui/modules/automation.py) sets **`automation_base`** to the Python facade (preferred for typed APIs) and **`cs_automation`** to the **raw C#** object (backward compatible for `isinstance(..., FlaUI.UIA3.UIA3Automation)`, `PatternLibrary`, interop). [`Application`](flaui/core/application.py) accepts C# automation, Python `AutomationBase`, or objects with `cs_automation` via `_coerce_cs_automation`.
+
+[`AutomationElement.automation`](flaui/core/automation_elements.py) returns the Python `AutomationBase` facade, not the bare C# reference.
+
+User-facing docs: [docs/uia2-uia3.md](docs/uia2-uia3.md). Issue tracker: [GH-107](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/107).
 
 ---
 
@@ -445,6 +463,9 @@ assert element.toggle_state == ToggleState.On
 | File | Purpose |
 |------|---------|
 | [flaui/core/automation_elements.py](flaui/core/automation_elements.py) | Main element mapping — all automation element classes |
+| [flaui/core/automation_base.py](flaui/core/automation_base.py) | Python `AutomationBase` + `wrap_cs_automation` (UIA2/UIA3 facades) |
+| [flaui/uia2/automation.py](flaui/uia2/automation.py) | `UIA2Automation` Python wrapper |
+| [flaui/uia3/automation.py](flaui/uia3/automation.py) | `UIA3Automation` Python wrapper |
 | [flaui/core/application.py](flaui/core/application.py) | Application launch/attach helpers |
 | [flaui/core/condition_factory.py](flaui/core/condition_factory.py) | Search-condition builders |
 | [flaui/core/input.py](flaui/core/input.py) | Mouse / Keyboard / Wait, `post_wait` helper |
