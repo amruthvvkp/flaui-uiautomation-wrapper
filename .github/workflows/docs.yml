@@ -11,12 +11,12 @@ on:
                 default: "master"
 
 permissions:
-    contents: write
+    contents: read
     pages: write
     id-token: write
 
 jobs:
-    build-and-deploy:
+    build:
         runs-on: windows-latest
         steps:
             - name: Checkout
@@ -31,7 +31,7 @@ jobs:
                   python-version: "3.12"
 
             - name: Install UV
-              uses: astral-sh/setup-uv@v1
+              uses: astral-sh/setup-uv@v5
 
             - name: Install docs dependencies
               run: uv sync --group docs
@@ -40,22 +40,23 @@ jobs:
               run: uv run python scripts/extract_versions.py
 
             - name: Build docs
-              run: uv run mkdocs build --strict
+              run: uv run zensical build --strict -f zensical.toml
 
-            - name: Configure git for mike
-              run: |
-                  git config user.name "github-actions[bot]"
-                  git config user.email "github-actions[bot]@users.noreply.github.com"
+            - name: Configure Pages
+              uses: actions/configure-pages@v5
 
-            - name: Deploy docs
-              env:
-                  MIKE_COMMIT_MESSAGE: "Deploy docs from ${GITHUB_REF}"
-              run: |
-                  if [[ "${{ github.event_name }}" == "release" ]]; then
-                    VERSION="${{ github.event.release.tag_name }}"
-                    uv run mike deploy --push --update-aliases ${VERSION} latest
-                    uv run mike set-default latest
-                  else
-                    uv run mike deploy --push dev
-                    uv run mike set-default latest
-                  fi
+            - name: Upload Pages artifact
+              uses: actions/upload-pages-artifact@v3
+              with:
+                  path: site
+
+    deploy:
+        needs: build
+        runs-on: ubuntu-latest
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+        steps:
+            - name: Deploy to GitHub Pages
+              id: deployment
+              uses: actions/deploy-pages@v4

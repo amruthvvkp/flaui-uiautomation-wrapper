@@ -1,6 +1,6 @@
-# Create MkDocs Documentation Pages
+# Create Documentation Pages
 
-This prompt helps you create documentation for the FlaUI Python port using MkDocs. The documentation should be placed in the `docs/` folder and follow repository standards.
+This prompt helps you create documentation for the FlaUI Python port. The site is built with [Zensical](https://zensical.org) (configured by `zensical.toml`); pages go in the `docs/` folder and follow repository standards.
 
 ## Instructions
 

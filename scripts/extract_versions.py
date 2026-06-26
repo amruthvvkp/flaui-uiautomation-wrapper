@@ -82,11 +82,5 @@ def main() -> int:
     return 0
 
 
-def on_startup(command, dirty):
-    """MkDocs hook: Run extraction before build."""
-    print("Hook: Extracting FlaUI versions...")
-    main()
-
-
 if __name__ == "__main__":
     raise SystemExit(main())
