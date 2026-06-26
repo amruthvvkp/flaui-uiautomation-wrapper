@@ -7,16 +7,7 @@ image: Visual Studio 2022
 environment:
   UV_FROZEN: "1"
   matrix:
-    # - job_name: Python 3.8 x86
-    #   PYTHON: "C:\\Python38"
-    #   PYTHON_VERSION: 3.8
-    #   PYTHON_ARCH: 32
-
-    # - job_name: Python 3.9 x86
-    #   PYTHON: "C:\\Python39"
-    #   PYTHON_VERSION: 3.9
-    #   PYTHON_ARCH: 32
-
+    # Supported range: Python 3.10 - 3.14 (x86 jobs kept commented for opt-in).
     # - job_name: Python 3.10 x86
     #   PYTHON: "C:\\Python310"
     #   PYTHON_VERSION: 3.10
@@ -31,16 +22,6 @@ environment:
     #   PYTHON: "C:\\Python312"
     #   PYTHON_VERSION: 3.12
     #   PYTHON_ARCH: 32
-
-    # - job_name: Python 3.8 x64
-    #   PYTHON: "C:\\Python38-x64"
-    #   PYTHON_VERSION: 3.8
-    #   PYTHON_ARCH: 64
-
-    # - job_name: Python 3.9 x64
-    #   PYTHON: "C:\\Python39-x64"
-    #   PYTHON_VERSION: 3.9
-    #   PYTHON_ARCH: 64
 
     # - job_name: Python 3.10 x64
     #   PYTHON: "C:\\Python310-x64"
