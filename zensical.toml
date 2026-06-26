@@ -24,6 +24,7 @@ nav = [
       { "Application" = "api/application.md" },
       { "Condition Factory" = "api/condition_factory.md" },
       { "Automation Element" = "api/automation_element.md" },
+      { "Identifiers" = "api/identifiers.md" },
     ] },
     { "Input" = [
       { "Mouse" = "api/mouse.md" },
