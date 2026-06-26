@@ -9,7 +9,7 @@ from __future__ import annotations
 import abc
 from datetime import date
 import logging
-from typing import Any, Callable, List, Optional, Tuple, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Tuple, TypeVar, Union, overload
 
 import arrow
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
@@ -40,6 +40,9 @@ from flaui.lib.system.drawing import (
     Rectangle,
     Size,
 )
+
+if TYPE_CHECKING:
+    from flaui.core.patterns import Patterns
 
 # ================================================================================
 #   Element base Pydantic abstract class
@@ -241,12 +244,18 @@ class ElementBase(ElementModel, abc.ABC):  # pragma: no cover
 
     @property
     @handle_csharp_exceptions
-    def patterns(self) -> Any:
-        """Standard UIA patterns of this element
+    def patterns(self) -> "Patterns":
+        """Standard UIA patterns of this element.
 
-        :return: UIA Patterns
+        Mirrors C# ``element.Patterns``: each accessor returns a typed pattern accessor, e.g.
+        ``element.patterns.value.pattern.value.value``. The underlying C# object remains reachable
+        via ``element.patterns.raw_patterns``.
+
+        :return: UIA Patterns facade
         """
-        return self.raw_element.Patterns
+        from flaui.core.patterns import Patterns
+
+        return Patterns(raw_patterns=self.raw_element.Patterns)
 
     @property
     @handle_csharp_exceptions
