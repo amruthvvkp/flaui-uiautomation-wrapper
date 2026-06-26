@@ -50,7 +50,7 @@ class TestTextbox:
 
         text_range = textbox.patterns.Text.Pattern  # TODO: Check if we can add a C# wrapper to Python
         color_int = text_range.DocumentRange.GetAttributeValue(
-            test_application.main_window.automation.TextAttributeLibrary.ForegroundColor
+            test_application.main_window.automation.text_attribute_library.ForegroundColor
         )
         color = Color.from_argb(color_int)
         assert color == Color.from_argb(alpha=0, base_color=Color.Green), "Text box should have green text color"
