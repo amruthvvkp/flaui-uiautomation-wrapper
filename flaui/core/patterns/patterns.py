@@ -19,9 +19,17 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from flaui.core.patterns.automation_pattern import AutomationPattern
 from flaui.core.patterns.expand_collapse_pattern import ExpandCollapsePattern
+from flaui.core.patterns.grid_item_pattern import GridItemPattern
 from flaui.core.patterns.grid_pattern import GridPattern
 from flaui.core.patterns.invoke_pattern import InvokePattern
 from flaui.core.patterns.range_value_pattern import RangeValuePattern
+from flaui.core.patterns.scroll_item_pattern import ScrollItemPattern
+from flaui.core.patterns.scroll_pattern import ScrollPattern
+from flaui.core.patterns.selection2_pattern import Selection2Pattern
+from flaui.core.patterns.selection_item_pattern import SelectionItemPattern
+from flaui.core.patterns.selection_pattern import SelectionPattern
+from flaui.core.patterns.table_item_pattern import TableItemPattern
+from flaui.core.patterns.table_pattern import TablePattern
 from flaui.core.patterns.toggle_pattern import TogglePattern
 from flaui.core.patterns.value_pattern import ValuePattern
 
@@ -90,3 +98,83 @@ class Patterns(BaseModel):
         :return: The Grid pattern accessor.
         """
         return AutomationPattern[GridPattern](raw_automation_pattern=self.raw_patterns.Grid, pattern_type=GridPattern)
+
+    @property
+    def grid_item(self) -> AutomationPattern[GridItemPattern]:
+        """Access the GridItem pattern.
+
+        :return: The GridItem pattern accessor.
+        """
+        return AutomationPattern[GridItemPattern](
+            raw_automation_pattern=self.raw_patterns.GridItem, pattern_type=GridItemPattern
+        )
+
+    @property
+    def table(self) -> AutomationPattern[TablePattern]:
+        """Access the Table pattern.
+
+        :return: The Table pattern accessor.
+        """
+        return AutomationPattern[TablePattern](
+            raw_automation_pattern=self.raw_patterns.Table, pattern_type=TablePattern
+        )
+
+    @property
+    def table_item(self) -> AutomationPattern[TableItemPattern]:
+        """Access the TableItem pattern.
+
+        :return: The TableItem pattern accessor.
+        """
+        return AutomationPattern[TableItemPattern](
+            raw_automation_pattern=self.raw_patterns.TableItem, pattern_type=TableItemPattern
+        )
+
+    @property
+    def scroll(self) -> AutomationPattern[ScrollPattern]:
+        """Access the Scroll pattern.
+
+        :return: The Scroll pattern accessor.
+        """
+        return AutomationPattern[ScrollPattern](
+            raw_automation_pattern=self.raw_patterns.Scroll, pattern_type=ScrollPattern
+        )
+
+    @property
+    def scroll_item(self) -> AutomationPattern[ScrollItemPattern]:
+        """Access the ScrollItem pattern.
+
+        :return: The ScrollItem pattern accessor.
+        """
+        return AutomationPattern[ScrollItemPattern](
+            raw_automation_pattern=self.raw_patterns.ScrollItem, pattern_type=ScrollItemPattern
+        )
+
+    @property
+    def selection(self) -> AutomationPattern[SelectionPattern]:
+        """Access the Selection pattern.
+
+        :return: The Selection pattern accessor.
+        """
+        return AutomationPattern[SelectionPattern](
+            raw_automation_pattern=self.raw_patterns.Selection, pattern_type=SelectionPattern
+        )
+
+    @property
+    def selection2(self) -> AutomationPattern[Selection2Pattern]:
+        """Access the Selection2 pattern.
+
+        :return: The Selection2 pattern accessor.
+        """
+        return AutomationPattern[Selection2Pattern](
+            raw_automation_pattern=self.raw_patterns.Selection2, pattern_type=Selection2Pattern
+        )
+
+    @property
+    def selection_item(self) -> AutomationPattern[SelectionItemPattern]:
+        """Access the SelectionItem pattern.
+
+        :return: The SelectionItem pattern accessor.
+        """
+        return AutomationPattern[SelectionItemPattern](
+            raw_automation_pattern=self.raw_patterns.SelectionItem, pattern_type=SelectionItemPattern
+        )

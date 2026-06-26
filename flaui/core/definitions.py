@@ -11,6 +11,7 @@ from FlaUI.Core.Definitions import (  # pyright: ignore
     ExpandCollapseState as CSExpandCollapseState,
     PropertyConditionFlags as CSPropertyConditionFlags,
     RowOrColumnMajor as CSRowOrColumnMajor,
+    ScrollAmount as CSScrollAmount,
     ToggleState as CSToggleState,
     TreeScope as CSTreeScope,
     TreeTraversalOptions as CSTreeTraversalOptions,
@@ -126,6 +127,16 @@ class RowOrColumnMajor(Enum):
     RowMajor = CSRowOrColumnMajor.RowMajor
     ColumnMajor = CSRowOrColumnMajor.ColumnMajor
     Indeterminate = CSRowOrColumnMajor.Indeterminate
+
+
+class ScrollAmount(Enum):
+    """Contains values that specify the direction and distance to scroll."""
+
+    LargeDecrement = CSScrollAmount.LargeDecrement
+    SmallDecrement = CSScrollAmount.SmallDecrement
+    NoAmount = CSScrollAmount.NoAmount
+    LargeIncrement = CSScrollAmount.LargeIncrement
+    SmallIncrement = CSScrollAmount.SmallIncrement
 
 
 class TreeScope(Enum):
