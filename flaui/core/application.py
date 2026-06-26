@@ -14,10 +14,25 @@ from flaui.core.automation_elements import Window
 
 # isort: off
 from FlaUI.Core import Application as CSApplication  # pyright: ignore
-from FlaUI.Core import AutomationBase  # pyright: ignore
+from FlaUI.Core import AutomationBase as CSAutomationBase  # pyright: ignore
 # isort: on
 
+from flaui.core.automation_base import AutomationBase as PyAutomationBase
 from flaui.lib.collections import TypeCast
+
+
+def _coerce_cs_automation(automation: Any) -> Any:
+    """Resolve a C# FlaUI.Core.AutomationBase from common Python wrapper shapes."""
+    if isinstance(automation, CSAutomationBase):
+        return automation
+    if isinstance(automation, PyAutomationBase):
+        return automation.raw_automation
+    if hasattr(automation, "cs_automation"):
+        return automation.cs_automation
+    raise AttributeError(
+        "Invalid automation object: expected C# AutomationBase, flaui.core.automation_base.AutomationBase, "
+        "or an object with attribute cs_automation"
+    )
 
 
 class Application:
@@ -99,7 +114,7 @@ class Application:
         :param automation: The automation object to use.
         :return: Get's all top level windows form the application
         """
-        parsed = self._application.GetAllTopLevelWindows(automation)
+        parsed = self._application.GetAllTopLevelWindows(_coerce_cs_automation(automation))
         return [Window(raw_element=element) for element in parsed]
 
     def get_main_window(self, automation: Any) -> Window:
@@ -108,14 +123,7 @@ class Application:
         :param automation: The automation object to use.
         :return: The main window object as Window element or null if no main window was found within the timeout.
         """
-        if isinstance(automation, AutomationBase):
-            _automation = automation
-        elif hasattr(automation, "cs_automation"):
-            _automation = automation.cs_automation
-        else:
-            raise AttributeError(
-                "Invalid automation object sent to fetch main window, either send C# Automation object or Python automation object"
-            )
+        _automation = _coerce_cs_automation(automation)
         # Robust retrieval with retries and process checks
         # CI hosts (AppVeyor, etc.) often need longer than local desktops for main window.
         total_timeout_ms = 20000 if os.environ.get("CI") else 7000
