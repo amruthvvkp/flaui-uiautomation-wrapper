@@ -71,6 +71,9 @@ nav = [
   { "Agentic Guidelines" = "agentic-guidelines.md" },
   { "Contributing" = [
     { "Guide" = "contributing.md" },
+    { "Development Workflow" = "contributing/development.md" },
+    { "Testing" = "contributing/testing.md" },
+    { "Porting C# Tests" = "contributing/porting-tests.md" },
     { "Bug Tracking" = "bug-tracking.md" },
   ] },
   { "Examples" = [
