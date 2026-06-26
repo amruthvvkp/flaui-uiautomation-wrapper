@@ -45,6 +45,8 @@ The `test_application` fixture is parametrized to provide both WinForms and WPF 
 - Ensure `flaui/bin` DLLs stay packaged; update `Version.md` when DLLs change and regenerate `docs/includes/flaui_versions.md` via `scripts/extract_versions.py`.
 
 ## Documentation
+- The site is built with [Zensical](https://zensical.org), configured by `zensical.toml`.
+- Build locally: `uv run python scripts/extract_versions.py && uv run zensical build -f zensical.toml` (preview with `uv run zensical serve -f zensical.toml`).
 - Update mkdocstrings docstrings when adding APIs.
 - Basics page stays simple and focused; Advanced gets full detail; API Reference is auto-generated.
 - Add C# tabs for parity when helpful.
