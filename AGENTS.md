@@ -4,18 +4,24 @@
 
 **All development, testing, and contribution guidelines are consolidated in [CLAUDE.md](CLAUDE.md).**
 
-CLAUDE.md is the **single source of truth** for this project and contains:
+CLAUDE.md is the **single source of truth** for durable project reference and contains:
 
 - Complete architecture overview
 - PythonNet bridge initialization patterns
 - C# to Python mapping conventions
 - Pydantic validation patterns
-- Comprehensive pytest matrix configuration for UIA2/UIA3 × WinForms/WPF testing
-- Test porting methodology from FlaUI C#
-- Development workflow with UV package manager
-- CI/CD configuration and compatibility matrix
-- Coding standards and best practices
-- Quick reference guides and troubleshooting
+- Python compatibility and library preferences
+- Coding standards and key files reference
+- Documentation standards
+
+Step-by-step / procedural guides live in `docs/` and are linked from CLAUDE.md's
+"Where to find the tutorials" section:
+
+- Pytest matrix configuration & writing matrix tests — [docs/contributing/testing.md](docs/contributing/testing.md)
+- Test porting methodology from FlaUI C# — [docs/contributing/porting-tests.md](docs/contributing/porting-tests.md)
+- Development workflow (UV), code quality, CI/CD — [docs/contributing/development.md](docs/contributing/development.md)
+- Bug tracking with pytest-bug — [docs/bug-tracking.md](docs/bug-tracking.md)
+- Troubleshooting and known skips/xfails — [docs/troubleshooting.md](docs/troubleshooting.md)
 
 ## Agent Guidelines
 
@@ -64,16 +70,16 @@ When working on this project:
 3. Create Python class with appropriate mixins
 4. Add all properties and methods with decorators
 5. Add `as_*` conversion method to AutomationElement
-6. Create tests following matrix configuration pattern
+6. Create tests following the matrix pattern (see [docs/contributing/testing.md](docs/contributing/testing.md))
 7. Update element maps in `test_utilities/elements/`
 
 ### Porting C# Tests
 
-1. Reference "Test Porting Methodology" section in CLAUDE.md
+1. Reference [docs/contributing/porting-tests.md](docs/contributing/porting-tests.md)
 2. Locate original test in `FlaUI/src/FlaUI.Core.UITests/`
 3. Create test class with proper fixtures
 4. Port test methods maintaining logic parity
-5. Add matrix skip logic if needed (see "Pytest Matrix Configuration")
+5. Add matrix skip logic if needed (see [docs/contributing/testing.md](docs/contributing/testing.md))
 6. Run all 4 parametrizations to verify
 
 ### Debugging PythonNet Issues
