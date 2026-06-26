@@ -6,6 +6,7 @@ from FlaUI.Core import ITreeWalker  # pyright: ignore
 from flaui.core.condition_factory import ConditionFactory
 from flaui.lib.enums import UIAutomationTypes
 from flaui.modules.automation import Automation
+from flaui.uia3 import UIA3Automation as PyUIA3Automation
 from FlaUI.UIA3 import UIA3Automation  # pyright: ignore
 import pytest
 
@@ -49,5 +50,6 @@ class TestAutomation:
         """
         assert wordpad.application.process_id is not None
         assert isinstance(wordpad.cs_automation, UIA3Automation)
+        assert isinstance(wordpad.automation_base, PyUIA3Automation)
         assert isinstance(wordpad.cf, ConditionFactory)
         assert isinstance(wordpad.tree_walker, ITreeWalker)
