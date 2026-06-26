@@ -19,9 +19,9 @@ Common issues, fixes, and known test skips/xfails.
 ## C# exception translation
 - Ensure interop methods use `@handle_csharp_exceptions`; otherwise raw C# exceptions may leak.
 
-## Python 3.8 compatibility
-- Use `typing` types (`Union`, `Optional`) instead of `|` unions.
-- Avoid structural pattern matching.
+## Python compatibility
+- Targets Python 3.10–3.14 (`requires-python = ">=3.10,<3.15"`); modern syntax (`|` unions, `match`, built-in generics) is supported.
+- If you hit syntax errors, confirm you are running Python ≥ 3.10.
 
 ## DLL loading
 - Confirm `flaui/bin` is packaged and reachable; rerun `setup_pythonnet_bridge()`.
