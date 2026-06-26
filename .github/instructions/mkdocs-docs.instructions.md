@@ -2,7 +2,11 @@
 applyTo: "docs/**/*.md"
 ---
 
-# MkDocs Documentation Guidelines
+# Documentation Guidelines (Zensical)
+
+> The docs site is built with [Zensical](https://zensical.org) configured by `zensical.toml`.
+> Build locally with `uv run python scripts/extract_versions.py && uv run zensical build -f zensical.toml`
+> (or `uv run zensical serve -f zensical.toml` for live preview). API reference is auto-generated via mkdocstrings.
 
 - All documentation should be written in Markdown and placed in the `docs/` folder.
 - The documentation must include:
