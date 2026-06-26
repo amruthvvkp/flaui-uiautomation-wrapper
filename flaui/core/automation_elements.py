@@ -27,6 +27,7 @@ from flaui.core.definitions import (
 )
 from flaui.core.framework_types import FrameworkType
 from flaui.lib.collections import TypeCast
+from flaui.core.automation_base import AutomationBase as PyAutomationBase, wrap_cs_automation
 from flaui.lib.exceptions import ElementNotFound, handle_csharp_exceptions
 from flaui.lib.system.drawing import (
     Color,
@@ -361,14 +362,12 @@ class AutomationElement(ElementBase):
 
     @property
     @handle_csharp_exceptions
-    def automation(self) -> Any:
-        """The current used automation object.
+    def automation(self) -> PyAutomationBase:
+        """The current used automation object as a Python AutomationBase facade.
 
-        :return: Automation object
+        :return: Python UIA2Automation or UIA3Automation wrapper
         """
-        return self.raw_element.Automation
-
-    # TODO: Create AutomationBase based on FlaUI.Core.AutomationBase and return that over here
+        return wrap_cs_automation(self.raw_element.Automation)
 
     @property
     @handle_csharp_exceptions
