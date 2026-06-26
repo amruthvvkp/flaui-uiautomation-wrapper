@@ -81,12 +81,47 @@ class TestSpinner:
 - Don't change test execution behavior
 - Are metadata only
 
+### `run` parameter
+
+The marker accepts a `run` flag that controls whether the marked test is skipped or executed:
+
+- `run=False` (default): skip the test, shown as **BUG-SKIP**.
+- `run=True`: run the test; it is treated as xfail, shown as **BUG-PASS** if it passes or **BUG-FAIL** if it fails. Use this sparingly, only when you want to detect that a bug has been fixed upstream.
+
+### Output symbols
+
+| Symbol | Word | Meaning |
+|--------|------|---------|
+| `b` | BUG-SKIP | Test skipped due to a known bug |
+| `f` | BUG-FAIL | Bug-marked test ran and failed (expected) |
+| `p` | BUG-PASS | Bug-marked test ran and passed (bug may be fixed) |
+
+A summary line such as `Bugs skipped: 4` is printed at the end of the run.
+
 ### Available pytest-bug Options
 
 - `--bug-all-skip`: Skip all bug-marked tests
 - `--bug-all-run`: Run all bug-marked tests (respects their xfail/skip)
 - `--bug-pattern=REGEX`: Run matching bug tests only
 - `--bug-no-stats`: Disable summary statistics
+- `--bug-skip-letter` / `--bug-fail-letter` / `--bug-pass-letter`: customize output symbols
+- `--bug-skip-word` / `--bug-fail-word` / `--bug-pass-word`: customize verbose output words
+
+### Customizing defaults in `pyproject.toml`
+
+```toml
+[tool.pytest.ini_options]
+markers = ["bug: Known bug tracked in GitHub issues"]
+
+# Optional pytest-bug overrides
+bug_summary_stats = true
+bug_skip_letter = "b"
+bug_fail_letter = "f"
+bug_pass_letter = "p"
+bug_skip_word = "BUG-SKIP"
+bug_fail_word = "BUG-FAIL"
+bug_pass_word = "BUG-PASS"
+```
 
 ## Benefits
 
