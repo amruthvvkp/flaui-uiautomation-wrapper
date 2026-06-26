@@ -71,7 +71,7 @@ jobs:
         run: uv run python scripts/extract_versions.py
 
       - name: Build docs
-        run: uv run mkdocs build --strict
+        run: uv run zensical build --strict -f zensical.toml
 
   publish:
     name: Publish to Test PyPI
