@@ -8,13 +8,20 @@ from enum import Enum
 from FlaUI.Core.Definitions import (  # pyright: ignore
     AutomationElementMode as CSAutomationElementMode,
     ControlType as CSControlType,
+    DockPosition as CSDockPosition,
     ExpandCollapseState as CSExpandCollapseState,
     PropertyConditionFlags as CSPropertyConditionFlags,
     RowOrColumnMajor as CSRowOrColumnMajor,
     ScrollAmount as CSScrollAmount,
+    SupportedTextSelection as CSSupportedTextSelection,
+    TextPatternRangeEndpoint as CSTextPatternRangeEndpoint,
+    TextUnit as CSTextUnit,
     ToggleState as CSToggleState,
     TreeScope as CSTreeScope,
     TreeTraversalOptions as CSTreeTraversalOptions,
+    WindowInteractionState as CSWindowInteractionState,
+    WindowVisualState as CSWindowVisualState,
+    ZoomUnit as CSZoomUnit,
 )
 
 
@@ -157,3 +164,69 @@ class TreeTraversalOptions(Enum):
     Default = CSTreeTraversalOptions.Default
     PostOrder = CSTreeTraversalOptions.PostOrder
     LastToFirstOrder = CSTreeTraversalOptions.LastToFirstOrder
+
+
+class WindowVisualState(Enum):
+    """Contains values that specify the visual state of a window."""
+
+    Normal = CSWindowVisualState.Normal
+    Maximized = CSWindowVisualState.Maximized
+    Minimized = CSWindowVisualState.Minimized
+
+
+class WindowInteractionState(Enum):
+    """Contains values that specify the current state of a window for user interaction."""
+
+    Running = CSWindowInteractionState.Running
+    Closing = CSWindowInteractionState.Closing
+    ReadyForUserInteraction = CSWindowInteractionState.ReadyForUserInteraction
+    BlockedByModalWindow = CSWindowInteractionState.BlockedByModalWindow
+    NotResponding = CSWindowInteractionState.NotResponding
+
+
+class DockPosition(Enum):
+    """Contains values that specify the dock position of an element within a docking container."""
+
+    Top = CSDockPosition.Top
+    Left = CSDockPosition.Left
+    Bottom = CSDockPosition.Bottom
+    Right = CSDockPosition.Right
+    Fill = CSDockPosition.Fill
+    None_ = getattr(CSDockPosition, "None")
+
+
+class ZoomUnit(Enum):
+    """Contains values that specify the amount to zoom on a control."""
+
+    NoAmount = CSZoomUnit.NoAmount
+    LargeDecrement = CSZoomUnit.LargeDecrement
+    SmallDecrement = CSZoomUnit.SmallDecrement
+    LargeIncrement = CSZoomUnit.LargeIncrement
+    SmallIncrement = CSZoomUnit.SmallIncrement
+
+
+class SupportedTextSelection(Enum):
+    """Contains values that specify the supported text selection attribute of a text control."""
+
+    None_ = getattr(CSSupportedTextSelection, "None")
+    Single = CSSupportedTextSelection.Single
+    Multiple = CSSupportedTextSelection.Multiple
+
+
+class TextPatternRangeEndpoint(Enum):
+    """Contains values that specify the endpoints of a text range."""
+
+    Start = CSTextPatternRangeEndpoint.Start
+    End = CSTextPatternRangeEndpoint.End
+
+
+class TextUnit(Enum):
+    """Contains values that specify units of text for the purposes of navigation."""
+
+    Character = CSTextUnit.Character
+    Format = CSTextUnit.Format
+    Word = CSTextUnit.Word
+    Line = CSTextUnit.Line
+    Paragraph = CSTextUnit.Paragraph
+    Page = CSTextUnit.Page
+    Document = CSTextUnit.Document

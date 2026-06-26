@@ -9,6 +9,7 @@ Patterns are ported incrementally by family; this module re-exports the ones ava
 """
 
 from flaui.core.patterns.automation_pattern import AutomationPattern
+from flaui.core.patterns.dock_pattern import DockPattern
 from flaui.core.patterns.expand_collapse_pattern import ExpandCollapsePattern
 from flaui.core.patterns.grid_item_pattern import GridItemPattern
 from flaui.core.patterns.grid_pattern import GridPattern
@@ -23,11 +24,19 @@ from flaui.core.patterns.selection_item_pattern import SelectionItemPattern
 from flaui.core.patterns.selection_pattern import SelectionPattern
 from flaui.core.patterns.table_item_pattern import TableItemPattern
 from flaui.core.patterns.table_pattern import TablePattern
+from flaui.core.patterns.text2_pattern import Text2Pattern
+from flaui.core.patterns.text_child_pattern import TextChildPattern
+from flaui.core.patterns.text_edit_pattern import TextEditPattern
+from flaui.core.patterns.text_pattern import TextPattern
 from flaui.core.patterns.toggle_pattern import TogglePattern
+from flaui.core.patterns.transform2_pattern import Transform2Pattern
+from flaui.core.patterns.transform_pattern import TransformPattern
 from flaui.core.patterns.value_pattern import ValuePattern
+from flaui.core.patterns.window_pattern import WindowPattern
 
 __all__ = [
     "AutomationPattern",
+    "DockPattern",
     "ExpandCollapsePattern",
     "GridItemPattern",
     "GridPattern",
@@ -42,6 +51,13 @@ __all__ = [
     "SelectionPattern",
     "TableItemPattern",
     "TablePattern",
+    "Text2Pattern",
+    "TextChildPattern",
+    "TextEditPattern",
+    "TextPattern",
     "TogglePattern",
+    "Transform2Pattern",
+    "TransformPattern",
     "ValuePattern",
+    "WindowPattern",
 ]

@@ -48,9 +48,8 @@ class TestTextbox:
         if test_application_type == "WinForms":
             pytest.skip("WinForms currently does not report the color on text boxes")
 
-        # Text pattern is not yet wrapped; reach the native pattern via the raw escape hatch.
-        text_range = textbox.patterns.raw_patterns.Text.Pattern
-        color_int = text_range.DocumentRange.GetAttributeValue(
+        text_pattern = textbox.patterns.text.pattern
+        color_int = text_pattern.document_range.get_attribute_value(
             test_application.main_window.automation.text_attribute_library.ForegroundColor
         )
         color = Color.from_argb(color_int)

@@ -18,6 +18,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 
 from flaui.core.patterns.automation_pattern import AutomationPattern
+from flaui.core.patterns.dock_pattern import DockPattern
 from flaui.core.patterns.expand_collapse_pattern import ExpandCollapsePattern
 from flaui.core.patterns.grid_item_pattern import GridItemPattern
 from flaui.core.patterns.grid_pattern import GridPattern
@@ -30,8 +31,15 @@ from flaui.core.patterns.selection_item_pattern import SelectionItemPattern
 from flaui.core.patterns.selection_pattern import SelectionPattern
 from flaui.core.patterns.table_item_pattern import TableItemPattern
 from flaui.core.patterns.table_pattern import TablePattern
+from flaui.core.patterns.text2_pattern import Text2Pattern
+from flaui.core.patterns.text_child_pattern import TextChildPattern
+from flaui.core.patterns.text_edit_pattern import TextEditPattern
+from flaui.core.patterns.text_pattern import TextPattern
 from flaui.core.patterns.toggle_pattern import TogglePattern
+from flaui.core.patterns.transform2_pattern import Transform2Pattern
+from flaui.core.patterns.transform_pattern import TransformPattern
 from flaui.core.patterns.value_pattern import ValuePattern
+from flaui.core.patterns.window_pattern import WindowPattern
 
 
 class Patterns(BaseModel):
@@ -178,3 +186,79 @@ class Patterns(BaseModel):
         return AutomationPattern[SelectionItemPattern](
             raw_automation_pattern=self.raw_patterns.SelectionItem, pattern_type=SelectionItemPattern
         )
+
+    @property
+    def text(self) -> AutomationPattern[TextPattern]:
+        """Access the Text pattern.
+
+        :return: The Text pattern accessor.
+        """
+        return AutomationPattern[TextPattern](raw_automation_pattern=self.raw_patterns.Text, pattern_type=TextPattern)
+
+    @property
+    def text2(self) -> AutomationPattern[Text2Pattern]:
+        """Access the Text2 pattern.
+
+        :return: The Text2 pattern accessor.
+        """
+        return AutomationPattern[Text2Pattern](
+            raw_automation_pattern=self.raw_patterns.Text2, pattern_type=Text2Pattern
+        )
+
+    @property
+    def text_edit(self) -> AutomationPattern[TextEditPattern]:
+        """Access the TextEdit pattern.
+
+        :return: The TextEdit pattern accessor.
+        """
+        return AutomationPattern[TextEditPattern](
+            raw_automation_pattern=self.raw_patterns.TextEdit, pattern_type=TextEditPattern
+        )
+
+    @property
+    def text_child(self) -> AutomationPattern[TextChildPattern]:
+        """Access the TextChild pattern.
+
+        :return: The TextChild pattern accessor.
+        """
+        return AutomationPattern[TextChildPattern](
+            raw_automation_pattern=self.raw_patterns.TextChild, pattern_type=TextChildPattern
+        )
+
+    @property
+    def window(self) -> AutomationPattern[WindowPattern]:
+        """Access the Window pattern.
+
+        :return: The Window pattern accessor.
+        """
+        return AutomationPattern[WindowPattern](
+            raw_automation_pattern=self.raw_patterns.Window, pattern_type=WindowPattern
+        )
+
+    @property
+    def transform(self) -> AutomationPattern[TransformPattern]:
+        """Access the Transform pattern.
+
+        :return: The Transform pattern accessor.
+        """
+        return AutomationPattern[TransformPattern](
+            raw_automation_pattern=self.raw_patterns.Transform, pattern_type=TransformPattern
+        )
+
+    @property
+    def transform2(self) -> AutomationPattern[Transform2Pattern]:
+        """Access the Transform2 pattern.
+
+        :return: The Transform2 pattern accessor.
+        """
+        return AutomationPattern[Transform2Pattern](
+            raw_automation_pattern=self.raw_patterns.Transform2, pattern_type=Transform2Pattern
+        )
+
+    @property
+    def dock(self) -> AutomationPattern[DockPattern]:
+        """Access the Dock pattern.
+
+        :return: The Dock pattern accessor.
+        """
+        return AutomationPattern[DockPattern](raw_automation_pattern=self.raw_patterns.Dock, pattern_type=DockPattern)
