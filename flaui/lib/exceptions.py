@@ -1,7 +1,32 @@
-"""This module contains the set of custom FlaUi's exceptions."""
+"""This module contains the set of custom FlaUI's exceptions.
+
+The Python exceptions mirror the C# ``FlaUI.Core.Exceptions`` inheritance tree so that
+``except`` clauses behave the same way they do in FlaUI:
+
+.. code-block:: text
+
+    Exception
+    └── FlaUIException
+        ├── ElementNotAvailableException
+        ├── ElementNotEnabledException
+        ├── ElementNotFound                 (Python-only convenience)
+        ├── MethodNotSupportedException
+        ├── NoClickablePointException
+        ├── NotSupportedByFrameworkException
+        ├── ProxyAssemblyNotLoadedException
+        ├── NotCachedException
+        │   ├── PatternNotCachedException    (carries ``pattern_id``)
+        │   └── PropertyNotCachedException   (carries ``property_id``)
+        └── NotSupportedException
+            ├── PatternNotSupportedException  (carries ``pattern_id``)
+            └── PropertyNotSupportedException (carries ``property_id``)
+
+``SystemException`` is intentionally kept outside the ``FlaUIException`` tree: it wraps a raw
+``System.Exception`` that is not a FlaUI error, so ``except FlaUIException`` should not catch it.
+"""
 
 from functools import wraps
-from typing import Any
+from typing import Any, Optional
 
 from FlaUI.Core.Exceptions import (  # type: ignore
     ElementNotAvailableException as CSharpElementNotAvailableException,
@@ -21,188 +46,282 @@ from FlaUI.Core.Exceptions import (  # type: ignore
 import System  # type: ignore
 
 
-def handle_csharp_exceptions(
-    func,
-):
-    """Wraps the function to handle C# FlaUI exceptions and raise the equivalent Python exceptions.
+# ---------------------------------------------------------------------------
+# Exception hierarchy (mirrors FlaUI.Core.Exceptions)
+# ---------------------------------------------------------------------------
+class FlaUIException(Exception):
+    """Base exception for all FlaUI errors (mirrors C# ``FlaUI.Core.Exceptions.FlaUIException``)."""
+
+    def __init__(self, message: str = "FlaUI exception") -> None:
+        """Store the message and initialise the base ``Exception``.
+
+        :param message: Human-readable error description.
+        """
+        self.message = message
+        super().__init__(self.message)
+
+
+class ElementNotAvailableException(FlaUIException):
+    """Python equivalent of C# ``ElementNotAvailableException`` (the element is no longer available)."""
+
+    def __init__(self, message: str = "Element not available") -> None:
+        """Initialise the exception.
+
+        :param message: Human-readable error description.
+        """
+        super().__init__(message)
+
+
+class ElementNotEnabledException(FlaUIException):
+    """Python equivalent of C# ``ElementNotEnabledException`` (the element is disabled)."""
+
+    def __init__(self, message: str = "Element not enabled") -> None:
+        """Initialise the exception.
+
+        :param message: Human-readable error description.
+        """
+        super().__init__(message)
+
+
+class MethodNotSupportedException(FlaUIException):
+    """Python equivalent of C# ``MethodNotSupportedException`` (the method is not supported)."""
+
+    def __init__(self, message: str = "Method not supported") -> None:
+        """Initialise the exception.
+
+        :param message: Human-readable error description.
+        """
+        super().__init__(message)
+
+
+class NoClickablePointException(FlaUIException):
+    """Python equivalent of C# ``NoClickablePointException`` (no clickable point was found)."""
+
+    def __init__(self, message: str = "No clickable point") -> None:
+        """Initialise the exception.
+
+        :param message: Human-readable error description.
+        """
+        super().__init__(message)
+
+
+class NotSupportedByFrameworkException(FlaUIException):
+    """Python equivalent of C# ``NotSupportedByFrameworkException`` (unsupported by the chosen UIA framework)."""
+
+    def __init__(self, message: str = "Not supported by framework") -> None:
+        """Initialise the exception.
+
+        :param message: Human-readable error description.
+        """
+        super().__init__(message)
+
+
+class ProxyAssemblyNotLoadedException(FlaUIException):
+    """Python equivalent of C# ``ProxyAssemblyNotLoadedException`` (the UIA proxy assembly is missing)."""
+
+    def __init__(self, message: str = "Proxy assembly not loaded") -> None:
+        """Initialise the exception.
+
+        :param message: Human-readable error description.
+        """
+        super().__init__(message)
+
+
+class NotCachedException(FlaUIException):
+    """Python equivalent of C# ``NotCachedException`` (requested data was not in the cache)."""
+
+    def __init__(self, message: str = "Not cached") -> None:
+        """Initialise the exception.
+
+        :param message: Human-readable error description.
+        """
+        super().__init__(message)
+
+
+class NotSupportedException(FlaUIException):
+    """Python equivalent of C# ``NotSupportedException`` (the requested feature is not supported)."""
+
+    def __init__(self, message: str = "Not supported") -> None:
+        """Initialise the exception.
+
+        :param message: Human-readable error description.
+        """
+        super().__init__(message)
+
+
+class PropertyNotSupportedException(NotSupportedException):
+    """Python equivalent of C# ``PropertyNotSupportedException``; carries the offending ``property_id``."""
+
+    def __init__(
+        self, message: str = "The requested property is not supported", property_id: Optional[Any] = None
+    ) -> None:
+        """Initialise the exception.
+
+        :param message: Human-readable error description.
+        :param property_id: The C# ``PropertyId`` that is not supported, when known.
+        """
+        self.property_id = property_id
+        super().__init__(message)
+
+
+class PatternNotSupportedException(NotSupportedException):
+    """Python equivalent of C# ``PatternNotSupportedException``; carries the offending ``pattern_id``."""
+
+    def __init__(
+        self, message: str = "The requested pattern is not supported", pattern_id: Optional[Any] = None
+    ) -> None:
+        """Initialise the exception.
+
+        :param message: Human-readable error description.
+        :param pattern_id: The C# ``PatternId`` that is not supported, when known.
+        """
+        self.pattern_id = pattern_id
+        super().__init__(message)
+
+
+class PropertyNotCachedException(NotCachedException):
+    """Python equivalent of C# ``PropertyNotCachedException``; carries the offending ``property_id``."""
+
+    def __init__(
+        self, message: str = "The requested property is not cached", property_id: Optional[Any] = None
+    ) -> None:
+        """Initialise the exception.
+
+        :param message: Human-readable error description.
+        :param property_id: The C# ``PropertyId`` that is not cached, when known.
+        """
+        self.property_id = property_id
+        super().__init__(message)
+
+
+class PatternNotCachedException(NotCachedException):
+    """Python equivalent of C# ``PatternNotCachedException``; carries the offending ``pattern_id``."""
+
+    def __init__(self, message: str = "The requested pattern is not cached", pattern_id: Optional[Any] = None) -> None:
+        """Initialise the exception.
+
+        :param message: Human-readable error description.
+        :param pattern_id: The C# ``PatternId`` that is not cached, when known.
+        """
+        self.pattern_id = pattern_id
+        super().__init__(message)
+
+
+class ElementNotFound(FlaUIException):
+    """Raised when an automation element cannot be found (Python-only convenience, no C# equivalent)."""
+
+    def __init__(self, message: str = "Element not found") -> None:
+        """Initialise the exception.
+
+        :param message: Human-readable error description.
+        """
+        super().__init__(message)
+
+
+class SystemException(Exception):
+    """Wraps a raw C# ``System.Exception`` that is not a FlaUI error (kept outside the ``FlaUIException`` tree)."""
+
+    def __init__(self, message: str = "System exception") -> None:
+        """Initialise the exception.
+
+        :param message: Human-readable error description.
+        """
+        self.message = message
+        super().__init__(self.message)
+
+
+# ---------------------------------------------------------------------------
+# C# -> Python translation decorator
+# ---------------------------------------------------------------------------
+def _identifier(csharp_exception: Any, attr: str) -> Optional[Any]:
+    """Return the ``PropertyId``/``PatternId`` carried by a C# exception, if present.
+
+    :param csharp_exception: The caught C# exception instance.
+    :param attr: The C# attribute name to read (``"Property"`` or ``"Pattern"``).
+    :return: The C# identifier object, or ``None`` when it is absent.
+    """
+    return getattr(csharp_exception, attr, None)
+
+
+def handle_csharp_exceptions(func):
+    """Wrap a function so C# FlaUI exceptions are re-raised as their Python equivalents.
+
+    The C# exception text is preserved in the re-raised message, and the offending
+    ``PropertyId``/``PatternId`` is forwarded to ``property_id``/``pattern_id`` where available.
+    ``except`` clauses are ordered most-derived first so subclasses are not swallowed by their base.
 
     :param func: The function to wrap.
-    :raises ProxyAssemblyNotLoadedException: Raises ProxyAssemblyNotLoadedException if the C# FlaUI exception is raised.
-    :raises PropertyNotSupportedException: Raises PropertyNotSupportedException if the C# FlaUI exception is raised.
-    :raises PropertyNotCachedException: Raises PropertyNotCachedException if the C# FlaUI exception is raised.
-    :raises NotSupportedException: Raises NotSupportedException if the C# FlaUI exception is raised.
-    :raises NotSupportedByFrameworkException: Raises NotSupportedByFrameworkException if the C# FlaUI exception is raised.
-    :raises NotCachedException: Raises NotCachedException if the C# FlaUI exception is raised.
-    :raises NoClickablePointException: Raises NoClickablePointException if the C# FlaUI exception is raised.
-    :raises MethodNotSupportedException: Raises MethodNotSupportedException if the C# FlaUI exception is raised.
-    :raises FlaUIException: Raises FlaUIException if the C# FlaUI exception is raised.
-    :raises ElementNotEnabledException: Raises ElementNotEnabledException if the C# FlaUI exception is raised.
-    :raises ElementNotAvailableException: Raises ElementNotAvailableException if the C# FlaUI exception is raised.
     :return: The wrapped function.
+    :raises PropertyNotSupportedException: When the C# call raises ``PropertyNotSupportedException``.
+    :raises PatternNotSupportedException: When the C# call raises ``PatternNotSupportedException``.
+    :raises NotSupportedException: When the C# call raises ``NotSupportedException``.
+    :raises PropertyNotCachedException: When the C# call raises ``PropertyNotCachedException``.
+    :raises PatternNotCachedException: When the C# call raises ``PatternNotCachedException``.
+    :raises NotCachedException: When the C# call raises ``NotCachedException``.
+    :raises NotSupportedByFrameworkException: When the C# call raises ``NotSupportedByFrameworkException``.
+    :raises ProxyAssemblyNotLoadedException: When the C# call raises ``ProxyAssemblyNotLoadedException``.
+    :raises NoClickablePointException: When the C# call raises ``NoClickablePointException``.
+    :raises MethodNotSupportedException: When the C# call raises ``MethodNotSupportedException``.
+    :raises ElementNotEnabledException: When the C# call raises ``ElementNotEnabledException``.
+    :raises ElementNotAvailableException: When the C# call raises ``ElementNotAvailableException``.
+    :raises FlaUIException: When the C# call raises any other ``FlaUIException``.
+    :raises SystemException: When the C# call raises a non-FlaUI ``System.Exception``.
     """
 
     @wraps(func)
     def wrapper(*args, **kwargs) -> Any:
-        """Wrapper function to handle C# FlaUI exceptions."""
+        """Invoke ``func`` and translate any C# exception into its Python equivalent."""
         try:
             return func(*args, **kwargs)
-        except CSharpProxyAssemblyNotLoadedException as e:
-            raise ProxyAssemblyNotLoadedException(
-                f"The property or method '{func.__name__}' caused a ProxyAssemblyNotLoadedException: {e}"
-            )
         except CSharpPropertyNotSupportedException as e:
-            raise PropertyNotSupportedException(f"The property or method '{func.__name__}' is not supported: {e}")
-        except CSharpPropertyNotCachedException as e:
-            raise PropertyNotCachedException(f"The property or method '{func.__name__}' is not cached: {e}")
+            raise PropertyNotSupportedException(
+                f"The property or method '{func.__name__}' is not supported: {e}",
+                property_id=_identifier(e, "Property"),
+            ) from e
+        except CSharpPatternNotSupportedException as e:
+            raise PatternNotSupportedException(
+                f"The pattern for '{func.__name__}' is not supported: {e}",
+                pattern_id=_identifier(e, "Pattern"),
+            ) from e
         except CSharpNotSupportedException as e:
-            raise NotSupportedException(f"The property or method '{func.__name__}' is not supported: {e}")
+            raise NotSupportedException(f"The property or method '{func.__name__}' is not supported: {e}") from e
+        except CSharpPropertyNotCachedException as e:
+            raise PropertyNotCachedException(
+                f"The property or method '{func.__name__}' is not cached: {e}",
+                property_id=_identifier(e, "Property"),
+            ) from e
+        except CSharpPatternNotCachedException as e:
+            raise PatternNotCachedException(
+                f"The pattern for '{func.__name__}' is not cached: {e}",
+                pattern_id=_identifier(e, "Pattern"),
+            ) from e
+        except CSharpNotCachedException as e:
+            raise NotCachedException(f"The property or method '{func.__name__}' is not cached: {e}") from e
         except CSharpNotSupportedByFrameworkException as e:
             raise NotSupportedByFrameworkException(
                 f"The property or method '{func.__name__}' is not supported by the framework: {e}"
-            )
-        except CSharpPatternNotCachedException as e:
-            raise PatternNotCachedException(f"The pattern for '{func.__name__}' is not cached: {e}")
-        except CSharpPatternNotSupportedException as e:
-            raise PatternNotSupportedException(f"The pattern for '{func.__name__}' is not supported: {e}")
-        except CSharpNotCachedException:
-            raise NotCachedException(f"The property or method '{func.__name__}' is not cached.")
+            ) from e
+        except CSharpProxyAssemblyNotLoadedException as e:
+            raise ProxyAssemblyNotLoadedException(
+                f"The property or method '{func.__name__}' caused a ProxyAssemblyNotLoadedException: {e}"
+            ) from e
         except CSharpNoClickablePointException as e:
             raise NoClickablePointException(
                 f"The property or method '{func.__name__}' caused a NoClickablePointException: {e}"
-            )
+            ) from e
         except CSharpMethodNotSupportedException as e:
-            raise MethodNotSupportedException(f"The property or method '{func.__name__}' is not supported.: {e}")
-        except CSharpFlaUIException as e:
-            raise FlaUIException(f"The property or method '{func.__name__}' caused a FlaUIException: {e}")
+            raise MethodNotSupportedException(f"The property or method '{func.__name__}' is not supported: {e}") from e
         except CSharpElementNotEnabledException as e:
             raise ElementNotEnabledException(
                 f"The property or method '{func.__name__}' caused an ElementNotEnabledException: {e}"
-            )
+            ) from e
         except CSharpElementNotAvailableException as e:
             raise ElementNotAvailableException(
                 f"The property or method '{func.__name__}' caused an ElementNotAvailableException: {e}"
-            )
+            ) from e
+        except CSharpFlaUIException as e:
+            raise FlaUIException(f"The property or method '{func.__name__}' caused a FlaUIException: {e}") from e
         except System.Exception as e:
-            raise SystemException(f"The property or method '{func.__name__}' caused an exception: {e}")
+            raise SystemException(f"The property or method '{func.__name__}' caused an exception: {e}") from e
 
     return wrapper
-
-
-class ProxyAssemblyNotLoadedException(Exception):
-    """Raises a Python equivalent exception for ProxyAssemblyNotLoadedException from C# FlaUI."""
-
-    def __init__(self, message="Proxy assembly not loaded") -> None:
-        self.message = message
-        super().__init__(self.message)
-
-
-class PropertyNotSupportedException(Exception):
-    """Raises a Python equivalent exception for PropertyNotSupportedException from C# FlaUI."""
-
-    def __init__(self, message="Property not supported") -> None:
-        self.message = message
-        super().__init__(self.message)
-
-
-class PropertyNotCachedException(Exception):
-    """Raises a Python equivalent exception for PropertyNotCachedException from C# FlaUI."""
-
-    def __init__(self, message="Property not cached") -> None:
-        self.message = message
-        super().__init__(self.message)
-
-
-class PatternNotCachedException(Exception):
-    """Raises a Python equivalent exception for PatternNotCachedException from C# FlaUI."""
-
-    def __init__(self, message="Pattern not cached") -> None:
-        self.message = message
-        super().__init__(self.message)
-
-
-class PatternNotSupportedException(Exception):
-    """Raises a Python equivalent exception for PatternNotSupportedException from C# FlaUI."""
-
-    def __init__(self, message="Pattern not supported") -> None:
-        self.message = message
-        super().__init__(self.message)
-
-
-class NotSupportedException(Exception):
-    """Raises a Python equivalent exception for NotSupportedException from C# FlaUI."""
-
-    def __init__(self, message="Not supported") -> None:
-        self.message = message
-        super().__init__(self.message)
-
-
-class NotSupportedByFrameworkException(Exception):
-    """Raises a Python equivalent exception for NotSupportedByFrameworkException from C# FlaUI."""
-
-    def __init__(self, message="Not supported by framework") -> None:
-        self.message = message
-        super().__init__(self.message)
-
-
-class NotCachedException(Exception):
-    """Raises a Python equivalent exception for NotCachedException from C# FlaUI."""
-
-    def __init__(self, message="Not cached") -> None:
-        self.message = message
-        super().__init__(self.message)
-
-
-class NoClickablePointException(Exception):
-    """Raises a Python equivalent exception for NoClickablePointException from C# FlaUI."""
-
-    def __init__(self, message="No clickable point") -> None:
-        self.message = message
-        super().__init__(self.message)
-
-
-class MethodNotSupportedException(Exception):
-    """Raises a Python equivalent exception for MethodNotSupportedException from C# FlaUI."""
-
-    def __init__(self, message="Method not supported") -> None:
-        self.message = message
-        super().__init__(self.message)
-
-
-class FlaUIException(Exception):
-    """Raises a Python equivalent exception for FlaUIException from C# FlaUI."""
-
-    def __init__(self, message="FlaUI exception") -> None:
-        self.message = message
-        super().__init__(self.message)
-
-
-class ElementNotEnabledException(Exception):
-    """Raises a Python equivalent exception for ElementNotEnabledException from C# FlaUI."""
-
-    def __init__(self, message="Element not enabled") -> None:
-        self.message = message
-        super().__init__(self.message)
-
-
-class ElementNotAvailableException(Exception):
-    """Raises a Python equivalent exception for ElementNotAvailableException from C# FlaUI."""
-
-    def __init__(self, message="Element not available") -> None:
-        self.message = message
-        super().__init__(self.message)
-
-
-class ElementNotFound(Exception):
-    """Exception raised when an automation element is not found."""
-
-    def __init__(self, message="Element not found") -> None:
-        self.message = message
-        super().__init__(self.message)
-
-
-class SystemException(Exception):
-    """Exception raised when an C# system exception is raised."""
-
-    def __init__(self, message="System exception") -> None:
-        self.message = message
-        super().__init__(self.message)
