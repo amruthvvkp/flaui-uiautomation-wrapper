@@ -13,7 +13,7 @@ applyTo: "tests/**/*.py"
   - When using the `test_application` fixture, always provide type hints (e.g., `test_application: WinFormsApplicationElements | WPFApplicationElements`) and import these types at the top of your test file for clarity and IDE support.
   - **Parametrization for UIA/WinForms/WPF should be handled at the fixture level (see calendar and automation_elements tests), not with `@pytest.mark.parametrize` at the test function.**
 - When using `ControlType` or any mapped Enum, always use the Enum type (e.g., `ControlType.Tab`) instead of string literals (e.g., `"Tab"`). This ensures type safety and parity with the C# API.
-- All type hints must be compatible with Python 3.8 and above. Use types from the `typing` module (e.g., `List`, `Optional`, `Union`) wherever possible for maximum compatibility and clarity.
+- Target Python 3.10–3.14. Modern syntax (`|` unions, `match`, built-in generics like `list[str]`) is allowed; existing `typing` imports (`List`, `Optional`, `Union`) remain valid and need not be rewritten.
 - Validate both Python and C# behaviors through PythonNet interop.
 - Ensure tests cover all major behaviors, edge cases, and error handling.
 - Add clear docstrings and assertions for each test.
