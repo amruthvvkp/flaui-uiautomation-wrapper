@@ -17,18 +17,29 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from flaui.core.patterns.annotation_pattern import AnnotationPattern
 from flaui.core.patterns.automation_pattern import AutomationPattern
 from flaui.core.patterns.dock_pattern import DockPattern
+from flaui.core.patterns.drag_pattern import DragPattern
+from flaui.core.patterns.drop_target_pattern import DropTargetPattern
 from flaui.core.patterns.expand_collapse_pattern import ExpandCollapsePattern
 from flaui.core.patterns.grid_item_pattern import GridItemPattern
 from flaui.core.patterns.grid_pattern import GridPattern
 from flaui.core.patterns.invoke_pattern import InvokePattern
+from flaui.core.patterns.item_container_pattern import ItemContainerPattern
+from flaui.core.patterns.legacy_i_accessible_pattern import LegacyIAccessiblePattern
+from flaui.core.patterns.multiple_view_pattern import MultipleViewPattern
+from flaui.core.patterns.object_model_pattern import ObjectModelPattern
 from flaui.core.patterns.range_value_pattern import RangeValuePattern
 from flaui.core.patterns.scroll_item_pattern import ScrollItemPattern
 from flaui.core.patterns.scroll_pattern import ScrollPattern
 from flaui.core.patterns.selection2_pattern import Selection2Pattern
 from flaui.core.patterns.selection_item_pattern import SelectionItemPattern
 from flaui.core.patterns.selection_pattern import SelectionPattern
+from flaui.core.patterns.spreadsheet_item_pattern import SpreadsheetItemPattern
+from flaui.core.patterns.spreadsheet_pattern import SpreadsheetPattern
+from flaui.core.patterns.styles_pattern import StylesPattern
+from flaui.core.patterns.synchronized_input_pattern import SynchronizedInputPattern
 from flaui.core.patterns.table_item_pattern import TableItemPattern
 from flaui.core.patterns.table_pattern import TablePattern
 from flaui.core.patterns.text2_pattern import Text2Pattern
@@ -39,6 +50,7 @@ from flaui.core.patterns.toggle_pattern import TogglePattern
 from flaui.core.patterns.transform2_pattern import Transform2Pattern
 from flaui.core.patterns.transform_pattern import TransformPattern
 from flaui.core.patterns.value_pattern import ValuePattern
+from flaui.core.patterns.virtualized_item_pattern import VirtualizedItemPattern
 from flaui.core.patterns.window_pattern import WindowPattern
 
 
@@ -262,3 +274,121 @@ class Patterns(BaseModel):
         :return: The Dock pattern accessor.
         """
         return AutomationPattern[DockPattern](raw_automation_pattern=self.raw_patterns.Dock, pattern_type=DockPattern)
+
+    @property
+    def annotation(self) -> AutomationPattern[AnnotationPattern]:
+        """Access the Annotation pattern.
+
+        :return: The Annotation pattern accessor.
+        """
+        return AutomationPattern[AnnotationPattern](
+            raw_automation_pattern=self.raw_patterns.Annotation, pattern_type=AnnotationPattern
+        )
+
+    @property
+    def styles(self) -> AutomationPattern[StylesPattern]:
+        """Access the Styles pattern.
+
+        :return: The Styles pattern accessor.
+        """
+        return AutomationPattern[StylesPattern](
+            raw_automation_pattern=self.raw_patterns.Styles, pattern_type=StylesPattern
+        )
+
+    @property
+    def multiple_view(self) -> AutomationPattern[MultipleViewPattern]:
+        """Access the MultipleView pattern.
+
+        :return: The MultipleView pattern accessor.
+        """
+        return AutomationPattern[MultipleViewPattern](
+            raw_automation_pattern=self.raw_patterns.MultipleView, pattern_type=MultipleViewPattern
+        )
+
+    @property
+    def item_container(self) -> AutomationPattern[ItemContainerPattern]:
+        """Access the ItemContainer pattern.
+
+        :return: The ItemContainer pattern accessor.
+        """
+        return AutomationPattern[ItemContainerPattern](
+            raw_automation_pattern=self.raw_patterns.ItemContainer, pattern_type=ItemContainerPattern
+        )
+
+    @property
+    def virtualized_item(self) -> AutomationPattern[VirtualizedItemPattern]:
+        """Access the VirtualizedItem pattern.
+
+        :return: The VirtualizedItem pattern accessor.
+        """
+        return AutomationPattern[VirtualizedItemPattern](
+            raw_automation_pattern=self.raw_patterns.VirtualizedItem, pattern_type=VirtualizedItemPattern
+        )
+
+    @property
+    def object_model(self) -> AutomationPattern[ObjectModelPattern]:
+        """Access the ObjectModel pattern.
+
+        :return: The ObjectModel pattern accessor.
+        """
+        return AutomationPattern[ObjectModelPattern](
+            raw_automation_pattern=self.raw_patterns.ObjectModel, pattern_type=ObjectModelPattern
+        )
+
+    @property
+    def spreadsheet(self) -> AutomationPattern[SpreadsheetPattern]:
+        """Access the Spreadsheet pattern.
+
+        :return: The Spreadsheet pattern accessor.
+        """
+        return AutomationPattern[SpreadsheetPattern](
+            raw_automation_pattern=self.raw_patterns.Spreadsheet, pattern_type=SpreadsheetPattern
+        )
+
+    @property
+    def spreadsheet_item(self) -> AutomationPattern[SpreadsheetItemPattern]:
+        """Access the SpreadsheetItem pattern.
+
+        :return: The SpreadsheetItem pattern accessor.
+        """
+        return AutomationPattern[SpreadsheetItemPattern](
+            raw_automation_pattern=self.raw_patterns.SpreadsheetItem, pattern_type=SpreadsheetItemPattern
+        )
+
+    @property
+    def legacy_i_accessible(self) -> AutomationPattern[LegacyIAccessiblePattern]:
+        """Access the LegacyIAccessible pattern.
+
+        :return: The LegacyIAccessible pattern accessor.
+        """
+        return AutomationPattern[LegacyIAccessiblePattern](
+            raw_automation_pattern=self.raw_patterns.LegacyIAccessible, pattern_type=LegacyIAccessiblePattern
+        )
+
+    @property
+    def drag(self) -> AutomationPattern[DragPattern]:
+        """Access the Drag pattern.
+
+        :return: The Drag pattern accessor.
+        """
+        return AutomationPattern[DragPattern](raw_automation_pattern=self.raw_patterns.Drag, pattern_type=DragPattern)
+
+    @property
+    def drop_target(self) -> AutomationPattern[DropTargetPattern]:
+        """Access the DropTarget pattern.
+
+        :return: The DropTarget pattern accessor.
+        """
+        return AutomationPattern[DropTargetPattern](
+            raw_automation_pattern=self.raw_patterns.DropTarget, pattern_type=DropTargetPattern
+        )
+
+    @property
+    def synchronized_input(self) -> AutomationPattern[SynchronizedInputPattern]:
+        """Access the SynchronizedInput pattern.
+
+        :return: The SynchronizedInput pattern accessor.
+        """
+        return AutomationPattern[SynchronizedInputPattern](
+            raw_automation_pattern=self.raw_patterns.SynchronizedInput, pattern_type=SynchronizedInputPattern
+        )
