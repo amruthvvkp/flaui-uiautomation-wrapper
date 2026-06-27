@@ -87,9 +87,15 @@ Python equivalents of the C# FlaUI exceptions (in `flaui/lib/exceptions.py`) inc
 
 ## CI/CD (Azure Pipelines)
 
-The project runs Windows UI test continuous integration on Azure Pipelines. Configuration lives in
-`azure-pipelines.yml`. The previous AppVeyor configuration is retained as a commented backup in
-`.appveyor.yml` while the Azure migration is validated.
+The project runs continuous integration on Azure Pipelines. Configuration lives in
+`azure-pipelines.yml`. The previous AppVeyor configuration and GitHub Actions workflows are retained
+as inactive backups while the Azure migration is validated.
+
+Azure currently runs three PR validation jobs in parallel:
+
+- Ruff and Interrogate checks
+- Strict documentation build
+- Windows FlaUI UI tests on Microsoft-hosted `windows-2022`
 
 ### Test script
 
@@ -142,9 +148,16 @@ cache in the initial Azure job.
 
 ### Future deployment options
 
-Keep release publishing on GitHub Actions until Azure UI testing is stable. A future Azure release
-pipeline can add stages for docs, `uv build`, TestPyPI publishing on manual or PR validation runs,
-and PyPI publishing on tags behind Azure Environment approvals.
+Azure also builds package distributions and contains gated deployment stages:
+
+- `deploy_testpypi` runs only when `PUBLISH_TEST_PYPI=true` on a non-PR run and requires
+  `TEST_PYPI_API_TOKEN`.
+- `deploy_pypi` runs only on `v*` tags when `PUBLISH_PYPI=true` and requires `PYPI_API_TOKEN`.
+- `deploy_docs` runs only when `PUBLISH_DOCS=true` on a non-PR run and requires
+  `GITHUB_PAGES_TOKEN`.
+
+Use Azure Environments named `test-pypi`, `pypi`, and `github-pages` for approvals before enabling
+these deployment variables.
 
 ## Documentation
 

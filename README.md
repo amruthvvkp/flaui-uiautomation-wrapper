@@ -15,6 +15,7 @@
 
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 ![Interrogate](badges/interrogate_badge.svg)
+[![Azure Pipelines](https://dev.azure.com/amruthvvkp/amruthvvkp/_apis/build/status/flaui-uiautomation-wrapper-ci?branchName=master)](https://dev.azure.com/amruthvvkp/amruthvvkp/_build/latest?definitionId=1&branchName=master)
 ![GitHub branch checks state](https://img.shields.io/github/checks-status/amruthvvkp/flaui-uiautomation-wrapper/master)
 
 [![GitHub contributors](https://img.shields.io/github/contributors/amruthvvkp/flaui-uiautomation-wrapper)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/graphs/contributors)
