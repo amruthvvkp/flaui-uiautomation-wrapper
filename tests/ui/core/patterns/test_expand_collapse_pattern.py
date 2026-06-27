@@ -51,14 +51,16 @@ class TestExpandCollapsePattern:
     def test_expander_pattern(self, expander: AutomationElement) -> None:
         """Test expand/collapse pattern on Expander control."""
         assert_that(expander, not_none())
-        ecp = expander.patterns.ExpandCollapse.Pattern  # TODO: Move Patterns to Py-wrapper once it is created
+        ecp = expander.patterns.expand_collapse.pattern
         assert_that(ecp, not_none())
-        assert ecp.ExpandCollapseState.Value == ExpandCollapseState.Collapsed.value, "Initial state should be collapsed"
-        ecp.Expand()
-        assert ecp.ExpandCollapseState.Value == ExpandCollapseState.Expanded.value, (
+        assert ecp.expand_collapse_state.value == ExpandCollapseState.Collapsed.value, (
+            "Initial state should be collapsed"
+        )
+        ecp.expand()
+        assert ecp.expand_collapse_state.value == ExpandCollapseState.Expanded.value, (
             "State should be expanded after expand()"
         )
-        ecp.Collapse()
-        assert ecp.ExpandCollapseState.Value == ExpandCollapseState.Collapsed.value, (
+        ecp.collapse()
+        assert ecp.expand_collapse_state.value == ExpandCollapseState.Collapsed.value, (
             "State should be collapsed after collapse()"
         )

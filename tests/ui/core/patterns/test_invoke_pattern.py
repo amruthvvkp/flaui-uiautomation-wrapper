@@ -59,14 +59,12 @@ class TestInvokePattern:
         """
         assert_that(invokable_button, not_none())
         orig_button_text = invokable_button.properties.name  # noqa: F841
-        invoke_pattern = (
-            invokable_button.patterns.Invoke.Pattern
-        )  # TODO: Move Patterns to Py-wrapper once it is created
+        invoke_pattern = invokable_button.patterns.invoke.pattern
         assert_that(invoke_pattern, not_none())
 
         # TODO: Add event registration when RegisterAutomationEvent is ported
         # For now, just test basic invoke without event verification
-        invoke_pattern.Invoke()
+        invoke_pattern.invoke()
         # Button text should change after invoke (verification without event handler)
         # This may need refinement based on actual behavior
 
