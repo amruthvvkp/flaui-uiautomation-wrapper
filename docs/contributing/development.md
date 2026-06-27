@@ -96,7 +96,7 @@ Azure currently runs three PR validation jobs in parallel:
 
 - Ruff and Interrogate checks
 - Strict documentation build
-- Windows FlaUI UI tests on Microsoft-hosted `windows-2022`
+- Windows FlaUI UI tests on Microsoft-hosted `windows-2025-vs2026`
 
 ### Test script
 
@@ -137,10 +137,10 @@ The raw `test-report.jsonl` file is also uploaded as an artifact for detailed py
 
 ### Python compatibility matrix
 
-The Azure proof of concept starts with a single hosted Windows job on Python 3.12 x64 to avoid
-slowing development while we validate FlaUI UI automation on Microsoft-hosted agents. The supported
-Python 3.10 through 3.14 x64 matrix is kept commented in `azure-pipelines.yml` and can be enabled
-after the hosted-agent behavior is stable.
+The Azure proof of concept starts with a single hosted Windows job on Python 3.12 x64 and the
+`windows-2025-vs2026` public preview image to avoid slowing development while we validate FlaUI UI
+automation on Microsoft-hosted agents. The supported Python 3.10 through 3.14 x64 matrix is kept
+commented in `azure-pipelines.yml` and can be enabled after the hosted-agent behavior is stable.
 
 The pipeline caches both the UV runtime/download cache and the project virtualenv with `Cache@2`,
 keyed by OS, Python version, `uv.lock`, and `pyproject.toml`. The bundled FlaUI DLLs and test

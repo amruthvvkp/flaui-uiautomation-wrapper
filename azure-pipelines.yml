@@ -19,6 +19,7 @@ variables:
   UV_FROZEN: "1"
   UV_CACHE_DIR: "$(Pipeline.Workspace)/.uv-cache"
   UV_PROJECT_ENVIRONMENT: "$(Pipeline.Workspace)/.venv"
+  WINDOWS_VM_IMAGE: "windows-2025-vs2026"
   ACTIVE_PYTHON_VERSION: "3.12"
   DOCS_PYTHON_VERSION: "3.12"
   PACKAGE_PYTHON_VERSION: "3.12"
@@ -118,22 +119,27 @@ stages:
             artifact: docs-site
 
       - job: windows_ui_tests
-        displayName: Windows UI tests - Python $(ACTIVE_PYTHON_VERSION) x64
+        displayName: Windows UI tests - $(WINDOWS_VM_IMAGE) - Python $(ACTIVE_PYTHON_VERSION) x64
         pool:
-          vmImage: windows-2022
+          vmImage: $(WINDOWS_VM_IMAGE)
 
         # Enable this matrix after the hosted-agent proof of concept is stable.
         # strategy:
         #   matrix:
-        #     Python310:
+        #     Python310_Windows2025VS2026:
+        #       WINDOWS_VM_IMAGE: "windows-2025-vs2026"
         #       ACTIVE_PYTHON_VERSION: "3.10"
-        #     Python311:
+        #     Python311_Windows2025VS2026:
+        #       WINDOWS_VM_IMAGE: "windows-2025-vs2026"
         #       ACTIVE_PYTHON_VERSION: "3.11"
-        #     Python312:
+        #     Python312_Windows2025VS2026:
+        #       WINDOWS_VM_IMAGE: "windows-2025-vs2026"
         #       ACTIVE_PYTHON_VERSION: "3.12"
-        #     Python313:
+        #     Python313_Windows2025VS2026:
+        #       WINDOWS_VM_IMAGE: "windows-2025-vs2026"
         #       ACTIVE_PYTHON_VERSION: "3.13"
-        #     Python314:
+        #     Python314_Windows2025VS2026:
+        #       WINDOWS_VM_IMAGE: "windows-2025-vs2026"
         #       ACTIVE_PYTHON_VERSION: "3.14"
 
         steps:
