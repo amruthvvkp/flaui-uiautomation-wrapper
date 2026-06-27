@@ -14,6 +14,7 @@ from FlaUI.Core.Definitions import (  # pyright: ignore
     RowOrColumnMajor as CSRowOrColumnMajor,
     ScrollAmount as CSScrollAmount,
     SupportedTextSelection as CSSupportedTextSelection,
+    SynchronizedInputType as CSSynchronizedInputType,
     TextPatternRangeEndpoint as CSTextPatternRangeEndpoint,
     TextUnit as CSTextUnit,
     ToggleState as CSToggleState,
@@ -230,3 +231,14 @@ class TextUnit(Enum):
     Paragraph = CSTextUnit.Paragraph
     Page = CSTextUnit.Page
     Document = CSTextUnit.Document
+
+
+class SynchronizedInputType(Enum):
+    """Contains values that specify the type of synchronized input to listen for."""
+
+    KeyUp = CSSynchronizedInputType.KeyUp
+    KeyDown = CSSynchronizedInputType.KeyDown
+    LeftMouseUp = CSSynchronizedInputType.LeftMouseUp
+    LeftMouseDown = CSSynchronizedInputType.LeftMouseDown
+    RightMouseUp = CSSynchronizedInputType.RightMouseUp
+    RightMouseDown = CSSynchronizedInputType.RightMouseDown
