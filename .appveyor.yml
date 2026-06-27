@@ -1,70 +1,97 @@
+# AppVeyor remains the hosted Windows desktop UI gate for the full FlaUI suite.
+# Azure Pipelines owns linting, docs, packaging, deployment plumbing, and a
+# smaller hosted Windows smoke job.
+# Enable AppVeyor "Rolling builds" in project settings for pull requests so
+# stale PR builds are cancelled when newer commits arrive. AppVeyor documents
+# that setting as UI/API-level configuration, not an appveyor.yml key.
 version: 1.0.{build}
-build: off
-branches:
-  except:
-    - master
 image: Visual Studio 2022
+build: off
+skip_branch_with_pr: true
+
 environment:
   UV_FROZEN: "1"
+  UV_NO_PROGRESS: "1"
   matrix:
-    # Supported range: Python 3.10 - 3.14 (x86 jobs kept commented for opt-in).
-    # - job_name: Python 3.10 x86
-    #   PYTHON: "C:\\Python310"
-    #   PYTHON_VERSION: 3.10
-    #   PYTHON_ARCH: 32
-
-    # - job_name: Python 3.11 x86
-    #   PYTHON: "C:\\Python311"
-    #   PYTHON_VERSION: 3.11
-    #   PYTHON_ARCH: 32
-
-    # - job_name: Python 3.12 x86
-    #   PYTHON: "C:\\Python312"
-    #   PYTHON_VERSION: 3.12
-    #   PYTHON_ARCH: 32
-
+    # Keep the full UI suite on one Python version while the Azure migration
+    # stabilizes. Enable the remaining supported versions when ready.
     # - job_name: Python 3.10 x64
-    #   PYTHON: "C:\\Python310-x64"
-    #   PYTHON_VERSION: 3.10
-    #   PYTHON_ARCH: 64
-
+    #   PYTHON_VERSION: "3.10"
+    #   PYTHON_ARCH: "64"
+    #
     # - job_name: Python 3.11 x64
-    #   PYTHON: "C:\\Python311"
-    #   PYTHON_VERSION: 3.11
-    #   PYTHON_ARCH: 64
-
+    #   PYTHON_VERSION: "3.11"
+    #   PYTHON_ARCH: "64"
+    #
     - job_name: Python 3.12 x64
-      PYTHON: "C:\\Python312"
-      PYTHON_VERSION: 3.12
-      PYTHON_ARCH: 64
+      PYTHON_VERSION: "3.12"
+      PYTHON_ARCH: "64"
+    #
+    # - job_name: Python 3.13 x64
+    #   PYTHON_VERSION: "3.13"
+    #   PYTHON_ARCH: "64"
+    #
+    # - job_name: Python 3.14 x64
+    #   PYTHON_VERSION: "3.14"
+    #   PYTHON_ARCH: "64"
+
+cache:
+  - "%USERPROFILE%\\.cache\\uv -> uv.lock, pyproject.toml"
+  - ".venv -> uv.lock, pyproject.toml"
 
 init:
-  - SET PATH=%PYTHON%;%PYTHON%\Scripts;%USERPROFILE%\AppData\Roaming\Python\Python%PYTHON_VERSION:.=%\Scripts;%PATH%
-  - SET UV_PYTHON=%PYTHON_VERSION%
-  - ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%
+  - ps: |
+      $env:UV_PYTHON = $env:PYTHON_VERSION
+      $env:UV_PROJECT_ENVIRONMENT = "$env:APPVEYOR_BUILD_FOLDER\.venv"
+      $env:UV_CACHE_DIR = "$env:USERPROFILE\.cache\uv"
+      $env:UV_NO_PROGRESS = "1"
+      Write-Host "AppVeyor full UI suite: Python $env:PYTHON_VERSION x$env:PYTHON_ARCH"
 
 install:
-  - python --version
-  - powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-  - set PATH=C:\Users\appveyor\.local\bin;%PATH%
-  - uv --version || echo "uv is not installed!"
+  - ps: |
+      function Invoke-Checked {
+        param([scriptblock] $Command)
+        & $Command
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      }
+
+      irm https://astral.sh/uv/install.ps1 | iex
+      $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
+      $env:UV_NO_PROGRESS = "1"
+      Invoke-Checked { uv --version }
+      Invoke-Checked { uv --no-progress python install $env:PYTHON_VERSION }
+      Invoke-Checked { uv --no-progress run --group unit-test --no-dev --package flaui-uiautomation-wrapper python --version }
 
 test_script:
   - ps: |
+      function Invoke-Checked {
+        param([scriptblock] $Command)
+        & $Command
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      }
+
       $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
-      Write-Host "Running tests with pytest..."
-      uv run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage coverage run -m pytest --junit-xml=test-results.xml --timeout=45 --timeout-method=thread --alluredir allure-results
-      if ($LASTEXITCODE -ne 0) { Write-Host "Tests failed."; exit 1 }
-      Write-Host "Tests completed."
+      $env:UV_PYTHON = $env:PYTHON_VERSION
+      $env:UV_PROJECT_ENVIRONMENT = "$env:APPVEYOR_BUILD_FOLDER\.venv"
+      $env:UV_CACHE_DIR = "$env:USERPROFILE\.cache\uv"
+      $env:UV_NO_PROGRESS = "1"
+      Write-Host "Running full Windows desktop UI test suite with pytest..."
+      Invoke-Checked { uv --no-progress run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage coverage run -m pytest --junit-xml=test-results.xml --timeout=45 --timeout-method=thread --alluredir allure-results }
 
 after_test:
   - ps: |
       $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
-      Write-Host "Generating test coverage report..."
-      uv run --with coverage coverage combine
-      uv run --with coverage coverage xml
-      uv run --with coverage coverage html
-      Write-Host "Coverage report generated."
+      $env:UV_PYTHON = $env:PYTHON_VERSION
+      $env:UV_PROJECT_ENVIRONMENT = "$env:APPVEYOR_BUILD_FOLDER\.venv"
+      $env:UV_CACHE_DIR = "$env:USERPROFILE\.cache\uv"
+      $env:UV_NO_PROGRESS = "1"
+      Write-Host "Generating coverage reports..."
+      if (Test-Path ".coverage") {
+        uv --no-progress run --with coverage coverage xml
+        uv --no-progress run --with coverage coverage html
+      } else {
+        Write-Host "No coverage data found; skipping coverage report generation."
+      }
 
 artifacts:
   - path: test-results.xml
@@ -81,16 +108,19 @@ artifacts:
     name: allure-results
     type: directory
 
+  - path: test-report.jsonl
+    name: pytest-report-log
+
 on_success:
-  - ps: Write-Host "Unit Tests Succeeded!"
+  - ps: Write-Host "AppVeyor full UI suite succeeded."
 
 on_failure:
-  - ps: Write-Host "Unit Tests Failed!"
+  - ps: Write-Host "AppVeyor full UI suite failed."
 
 on_finish:
-  - ps: >-
-      $wc = New-Object 'System.Net.WebClient'
+  - ps: |
+      $wc = New-Object "System.Net.WebClient"
 
-      if (Test-Path .\test-results.xml) {
-        $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\test-results.xml))
+      if (Test-Path ".\test-results.xml") {
+        $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path ".\test-results.xml"))
       }
