@@ -9,6 +9,11 @@ one-to-one::
 
 The underlying C# ``IFrameworkPatterns`` object remains reachable via :attr:`Patterns.raw_patterns`
 as an escape hatch for patterns that are not yet wrapped.
+
+This facade exposes all 34 patterns that FlaUI surfaces through ``IFrameworkPatterns`` (full parity
+with the FlaUI C# API). The Microsoft UIA ``CustomNavigation`` pattern is intentionally excluded:
+FlaUI does not expose it (it exists only in the ``Interop.UIAutomationClient`` COM layer), so adding
+it would break the 1:1-with-FlaUI mapping. It is tracked as a post-v1 wishlist item (GH-121).
 """
 
 from __future__ import annotations
