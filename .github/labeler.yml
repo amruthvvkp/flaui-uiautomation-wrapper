@@ -59,6 +59,7 @@ ci-cd:
   - any:
       [
         ".appveyor.yml",
+        "azure-pipelines.yml",
         ".github/workflows/**",
       ]
 

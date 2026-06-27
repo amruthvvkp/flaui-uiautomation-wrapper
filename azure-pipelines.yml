@@ -1,0 +1,433 @@
+# Azure Pipelines for the FlaUI Python wrapper.
+# Azure owns fast validation, packaging, deployment plumbing, and a hosted
+# Windows smoke job. AppVeyor remains the hosted full Windows desktop UI gate.
+
+trigger:
+  batch: true
+  branches:
+    include:
+      - master
+  tags:
+    include:
+      - v*
+
+pr:
+  autoCancel: true
+  branches:
+    include:
+      - master
+
+variables:
+  UV_FROZEN: "1"
+  UV_CACHE_DIR: "$(Pipeline.Workspace)/.uv-cache"
+  UV_PROJECT_ENVIRONMENT: "$(Pipeline.Workspace)/.venv"
+  WINDOWS_VM_IMAGE: "windows-2022"
+  ACTIVE_PYTHON_VERSION: "3.12"
+  DOCS_PYTHON_VERSION: "3.12"
+  PACKAGE_PYTHON_VERSION: "3.12"
+  PUBLISH_TEST_PYPI: "false"
+  PUBLISH_PYPI: "false"
+  PUBLISH_DOCS: "false"
+
+stages:
+  - stage: ci
+    displayName: CI
+    jobs:
+      - job: linting_checks
+        displayName: Validations with Ruff and Interrogate
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+            fetchDepth: 0
+
+          - task: UsePythonVersion@0
+            displayName: Use Python $(PACKAGE_PYTHON_VERSION)
+            inputs:
+              versionSpec: "$(PACKAGE_PYTHON_VERSION)"
+
+          - bash: |
+              curl -LsSf https://astral.sh/uv/install.sh | sh
+              echo "##vso[task.prependpath]$HOME/.local/bin"
+              "$HOME/.local/bin/uv" --version
+            displayName: Install uv
+
+          - task: Cache@2
+            displayName: Restore uv cache
+            inputs:
+              key: 'uv | "$(Agent.OS)" | "$(PACKAGE_PYTHON_VERSION)" | uv.lock | pyproject.toml'
+              restoreKeys: |
+                uv | "$(Agent.OS)" | "$(PACKAGE_PYTHON_VERSION)"
+                uv | "$(Agent.OS)"
+              path: "$(UV_CACHE_DIR)"
+
+          - bash: |
+              uv run --group dev ruff check --no-fix --output-format=github flaui
+            displayName: Run Ruff
+            env:
+              UV_FROZEN: "$(UV_FROZEN)"
+              UV_CACHE_DIR: "$(UV_CACHE_DIR)"
+
+          - bash: |
+              uv run --group dev interrogate flaui --fail-under=95 --generate-badge badges/interrogate_badge.svg
+            displayName: Run Interrogate
+            env:
+              UV_FROZEN: "$(UV_FROZEN)"
+              UV_CACHE_DIR: "$(UV_CACHE_DIR)"
+
+          - publish: badges/interrogate_badge.svg
+            displayName: Publish Interrogate badge artifact
+            artifact: interrogate-badge
+
+      - job: docs_strict
+        displayName: Build documentation strict
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+            fetchDepth: 0
+
+          - task: UsePythonVersion@0
+            displayName: Use Python $(DOCS_PYTHON_VERSION)
+            inputs:
+              versionSpec: "$(DOCS_PYTHON_VERSION)"
+
+          - bash: |
+              curl -LsSf https://astral.sh/uv/install.sh | sh
+              echo "##vso[task.prependpath]$HOME/.local/bin"
+              "$HOME/.local/bin/uv" --version
+            displayName: Install uv
+
+          - task: Cache@2
+            displayName: Restore uv cache
+            inputs:
+              key: 'uv-docs | "$(Agent.OS)" | "$(DOCS_PYTHON_VERSION)" | uv.lock | pyproject.toml'
+              restoreKeys: |
+                uv-docs | "$(Agent.OS)" | "$(DOCS_PYTHON_VERSION)"
+                uv-docs | "$(Agent.OS)"
+              path: "$(UV_CACHE_DIR)"
+
+          - bash: |
+              uv sync --group docs
+              uv run python scripts/extract_versions.py
+              uv run zensical build --strict -f zensical.toml
+            displayName: Build docs
+            env:
+              UV_FROZEN: "$(UV_FROZEN)"
+              UV_CACHE_DIR: "$(UV_CACHE_DIR)"
+
+          - publish: site
+            displayName: Publish docs site artifact
+            artifact: docs-site
+
+      - job: windows_smoke_tests
+        displayName: Windows hosted smoke - windows-2022 - Python 3.12 x64
+        pool:
+          vmImage: $(WINDOWS_VM_IMAGE)
+
+        # Enable this matrix after the hosted-agent smoke job is stable.
+        # strategy:
+        #   matrix:
+        #     Python310_Windows2022:
+        #       WINDOWS_VM_IMAGE: "windows-2022"
+        #       ACTIVE_PYTHON_VERSION: "3.10"
+        #     Python311_Windows2022:
+        #       WINDOWS_VM_IMAGE: "windows-2022"
+        #       ACTIVE_PYTHON_VERSION: "3.11"
+        #     Python312_Windows2022:
+        #       WINDOWS_VM_IMAGE: "windows-2022"
+        #       ACTIVE_PYTHON_VERSION: "3.12"
+        #     Python313_Windows2022:
+        #       WINDOWS_VM_IMAGE: "windows-2022"
+        #       ACTIVE_PYTHON_VERSION: "3.13"
+        #     Python314_Windows2022:
+        #       WINDOWS_VM_IMAGE: "windows-2022"
+        #       ACTIVE_PYTHON_VERSION: "3.14"
+
+        steps:
+          - checkout: self
+            fetchDepth: 0
+
+          - task: UsePythonVersion@0
+            displayName: Use Python $(ACTIVE_PYTHON_VERSION) x64
+            inputs:
+              versionSpec: "$(ACTIVE_PYTHON_VERSION)"
+              architecture: x64
+
+          - pwsh: |
+              python --version
+              python -c "import struct; print('Python architecture: {}-bit'.format(struct.calcsize('P') * 8))"
+            displayName: Show Python runtime
+
+          - pwsh: |
+              irm https://astral.sh/uv/install.ps1 | iex
+              $uvPath = "$env:USERPROFILE\.local\bin"
+              Write-Host "##vso[task.prependpath]$uvPath"
+              & "$uvPath\uv.exe" --version
+            displayName: Install uv
+
+          - task: Cache@2
+            displayName: Restore uv cache
+            inputs:
+              key: 'uv | "$(Agent.OS)" | "$(ACTIVE_PYTHON_VERSION)" | uv.lock | pyproject.toml'
+              restoreKeys: |
+                uv | "$(Agent.OS)" | "$(ACTIVE_PYTHON_VERSION)"
+                uv | "$(Agent.OS)"
+              path: "$(UV_CACHE_DIR)"
+
+          - task: Cache@2
+            displayName: Restore project virtualenv cache
+            inputs:
+              key: 'uv-venv | "$(Agent.OS)" | "$(ACTIVE_PYTHON_VERSION)" | uv.lock | pyproject.toml'
+              restoreKeys: |
+                uv-venv | "$(Agent.OS)" | "$(ACTIVE_PYTHON_VERSION)"
+              path: "$(UV_PROJECT_ENVIRONMENT)"
+
+          - pwsh: |
+              uv run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage coverage run -m pytest tests/unit/lib tests/unit/core/test_identifiers.py --junit-xml=test-results.xml --timeout=45 --timeout-method=thread --alluredir allure-results
+            displayName: Run pytest hosted smoke suite
+            env:
+              UV_PYTHON: "$(ACTIVE_PYTHON_VERSION)"
+              UV_FROZEN: "$(UV_FROZEN)"
+              UV_CACHE_DIR: "$(UV_CACHE_DIR)"
+              UV_PROJECT_ENVIRONMENT: "$(UV_PROJECT_ENVIRONMENT)"
+
+          - pwsh: |
+              $parallelCoverage = @(Get-ChildItem -Path . -Force -Filter ".coverage.*" -ErrorAction SilentlyContinue)
+              $baseCoverage = Test-Path ".coverage"
+              if ($parallelCoverage.Count -gt 0) {
+                uv run --with coverage coverage combine
+                $baseCoverage = Test-Path ".coverage"
+              }
+
+              if ($baseCoverage) {
+                uv run --with coverage coverage xml
+                uv run --with coverage coverage html
+              } else {
+                Write-Host "No coverage data found; writing placeholder coverage artifacts."
+                $coverageXml = '<?xml version="1.0" ?><coverage version="0" timestamp="0" lines-valid="0" lines-covered="0" line-rate="0" branches-covered="0" branches-valid="0" branch-rate="0" complexity="0"><sources /><packages /></coverage>'
+                Set-Content -Path coverage.xml -Value $coverageXml -Encoding UTF8
+                New-Item -ItemType Directory -Force -Path htmlcov | Out-Null
+                Set-Content -Path htmlcov\index.html -Value "<html><body>No coverage data generated.</body></html>" -Encoding UTF8
+              }
+            displayName: Generate coverage reports
+            condition: succeededOrFailed()
+            env:
+              UV_PYTHON: "$(ACTIVE_PYTHON_VERSION)"
+              UV_FROZEN: "$(UV_FROZEN)"
+              UV_CACHE_DIR: "$(UV_CACHE_DIR)"
+              UV_PROJECT_ENVIRONMENT: "$(UV_PROJECT_ENVIRONMENT)"
+
+          - pwsh: |
+              New-Item -ItemType Directory -Force -Path htmlcov | Out-Null
+              New-Item -ItemType Directory -Force -Path allure-results | Out-Null
+              if (!(Test-Path htmlcov\index.html)) {
+                Set-Content -Path htmlcov\index.html -Value "<html><body>No HTML coverage generated.</body></html>" -Encoding UTF8
+              }
+              if (!(Test-Path test-report.jsonl)) {
+                New-Item -ItemType File -Path test-report.jsonl | Out-Null
+              }
+              if (!(Test-Path test-results.xml)) {
+                Set-Content -Path test-results.xml -Value "<testsuites />" -Encoding UTF8
+              }
+              if (!(Test-Path coverage.xml)) {
+                $coverageXml = '<?xml version="1.0" ?><coverage version="0" timestamp="0" lines-valid="0" lines-covered="0" line-rate="0" branches-covered="0" branches-valid="0" branch-rate="0" complexity="0"><sources /><packages /></coverage>'
+                Set-Content -Path coverage.xml -Value $coverageXml -Encoding UTF8
+              }
+            displayName: Prepare publishable test artifacts
+            condition: succeededOrFailed()
+
+          - task: PublishTestResults@2
+            displayName: Publish pytest results
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: JUnit
+              testResultsFiles: test-results.xml
+              failTaskOnFailedTests: true
+              failTaskOnMissingTestResultsFile: false
+              testRunTitle: Python $(ACTIVE_PYTHON_VERSION) x64 hosted smoke tests
+
+          - task: PublishCodeCoverageResults@2
+            displayName: Publish coverage
+            condition: succeededOrFailed()
+            inputs:
+              summaryFileLocation: "$(System.DefaultWorkingDirectory)/coverage.xml"
+              pathToSources: "$(System.DefaultWorkingDirectory)"
+
+          - publish: htmlcov
+            displayName: Publish HTML coverage artifact
+            condition: succeededOrFailed()
+            artifact: coverage-html
+
+          - publish: allure-results
+            displayName: Publish Allure results artifact
+            condition: succeededOrFailed()
+            artifact: allure-results
+
+          - publish: test-report.jsonl
+            displayName: Publish pytest report log artifact
+            condition: succeededOrFailed()
+            artifact: pytest-report-log
+
+          - publish: test-results.xml
+            displayName: Publish raw JUnit artifact
+            condition: succeededOrFailed()
+            artifact: test-results
+
+  - stage: package
+    displayName: Package
+    dependsOn: ci
+    condition: succeeded()
+    jobs:
+      - job: build_distribution
+        displayName: Build Python distributions
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+            fetchDepth: 0
+
+          - task: UsePythonVersion@0
+            displayName: Use Python $(PACKAGE_PYTHON_VERSION)
+            inputs:
+              versionSpec: "$(PACKAGE_PYTHON_VERSION)"
+
+          - bash: |
+              curl -LsSf https://astral.sh/uv/install.sh | sh
+              echo "##vso[task.prependpath]$HOME/.local/bin"
+              "$HOME/.local/bin/uv" --version
+            displayName: Install uv
+
+          - bash: |
+              set -euo pipefail
+              SHORT_SHA="$(Build.SourceVersion)"
+              SHORT_SHA="${SHORT_SHA:0:7}"
+              BASE_VERSION="$(uv version --short)"
+              if [[ "$(Build.SourceBranch)" == refs/tags/v* ]]; then
+                PACKAGE_VERSION="$(Build.SourceBranchName)"
+                PACKAGE_VERSION="${PACKAGE_VERSION#v}"
+              else
+                PACKAGE_VERSION="${BASE_VERSION}+g${SHORT_SHA}"
+              fi
+              uv version --frozen "$PACKAGE_VERSION"
+              echo "Building package version ${PACKAGE_VERSION}"
+              uv build
+              echo "##vso[task.setvariable variable=PACKAGE_VERSION]${PACKAGE_VERSION}"
+            displayName: Set package version and build
+            env:
+              UV_FROZEN: "$(UV_FROZEN)"
+              UV_CACHE_DIR: "$(UV_CACHE_DIR)"
+
+          - publish: dist
+            displayName: Publish distribution artifact
+            artifact: python-dist
+
+  - stage: deploy_testpypi
+    displayName: Deploy to TestPyPI
+    dependsOn: package
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['PUBLISH_TEST_PYPI'], 'true'))
+    jobs:
+      - deployment: publish_testpypi
+        displayName: Publish to TestPyPI
+        environment: test-pypi
+        pool:
+          vmImage: ubuntu-latest
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: python-dist
+
+                - task: UsePythonVersion@0
+                  displayName: Use Python $(PACKAGE_PYTHON_VERSION)
+                  inputs:
+                    versionSpec: "$(PACKAGE_PYTHON_VERSION)"
+
+                - bash: |
+                    python -m pip install --upgrade twine
+                    python -m twine upload --repository-url https://test.pypi.org/legacy/ --username __token__ --password "$TEST_PYPI_API_TOKEN" "$(Pipeline.Workspace)"/python-dist/*
+                  displayName: Upload to TestPyPI
+                  env:
+                    TEST_PYPI_API_TOKEN: "$(TEST_PYPI_API_TOKEN)"
+
+  - stage: deploy_pypi
+    displayName: Deploy to PyPI
+    dependsOn: package
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'), eq(variables['PUBLISH_PYPI'], 'true'))
+    jobs:
+      - deployment: publish_pypi
+        displayName: Publish to PyPI
+        environment: pypi
+        pool:
+          vmImage: ubuntu-latest
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: python-dist
+
+                - task: UsePythonVersion@0
+                  displayName: Use Python $(PACKAGE_PYTHON_VERSION)
+                  inputs:
+                    versionSpec: "$(PACKAGE_PYTHON_VERSION)"
+
+                - bash: |
+                    python -m pip install --upgrade twine
+                    python -m twine upload --username __token__ --password "$PYPI_API_TOKEN" "$(Pipeline.Workspace)"/python-dist/*
+                  displayName: Upload to PyPI
+                  env:
+                    PYPI_API_TOKEN: "$(PYPI_API_TOKEN)"
+
+  - stage: deploy_docs
+    displayName: Deploy docs to GitHub Pages
+    dependsOn: ci
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['PUBLISH_DOCS'], 'true'))
+    jobs:
+      - deployment: publish_docs
+        displayName: Publish docs
+        environment: github-pages
+        pool:
+          vmImage: ubuntu-latest
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: docs-site
+
+                - bash: |
+                    set -euo pipefail
+                    if [ -z "${GITHUB_PAGES_TOKEN:-}" ]; then
+                      echo "GITHUB_PAGES_TOKEN must be configured as a secret pipeline variable."
+                      exit 1
+                    fi
+
+                    git config --global user.email "azure-pipelines@users.noreply.github.com"
+                    git config --global user.name "Azure Pipelines"
+                    REMOTE="https://x-access-token:${GITHUB_PAGES_TOKEN}@github.com/amruthvvkp/flaui-uiautomation-wrapper.git"
+
+                    if git ls-remote --exit-code --heads "$REMOTE" gh-pages >/dev/null 2>&1; then
+                      git clone --depth 1 --branch gh-pages "$REMOTE" gh-pages
+                    else
+                      git clone --depth 1 "$REMOTE" gh-pages
+                      cd gh-pages
+                      git checkout --orphan gh-pages
+                      git rm -rf . >/dev/null 2>&1 || true
+                      cd ..
+                    fi
+
+                    rsync -a --delete "$(Pipeline.Workspace)/docs-site/" gh-pages/
+                    touch gh-pages/.nojekyll
+                    cd gh-pages
+                    git add .
+                    if git diff --cached --quiet; then
+                      echo "No docs changes to publish."
+                    else
+                      git commit -m "Deploy docs from Azure Pipelines"
+                      git push origin gh-pages
+                    fi
+                  displayName: Publish site to gh-pages
+                  env:
+                    GITHUB_PAGES_TOKEN: "$(GITHUB_PAGES_TOKEN)"
