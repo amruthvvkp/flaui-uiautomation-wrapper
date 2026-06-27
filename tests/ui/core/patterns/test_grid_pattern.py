@@ -44,9 +44,9 @@ class TestGridPattern:
     def test_grid_pattern(self, data_grid: AutomationElement) -> None:
         """Test grid pattern on DataGrid control."""
         assert_that(data_grid, not_none())
-        grid_pattern = data_grid.patterns.Grid.Pattern  # TODO: Move Patterns to Py-wrapper once it is created
+        grid_pattern = data_grid.patterns.grid.pattern
         assert_that(grid_pattern, not_none())
-        assert grid_pattern.ColumnCount.Value == 3, "Column count should be 3"
-        assert grid_pattern.RowCount.Value == 3, "Row count should be 3"
-        item = grid_pattern.GetItem(1, 1)
-        assert item.Properties.Name.Value == "24", "Grid cell (1,1) should have value '24'"
+        assert grid_pattern.column_count.value == 3, "Column count should be 3"
+        assert grid_pattern.row_count.value == 3, "Row count should be 3"
+        item = grid_pattern.get_item(1, 1)
+        assert item.properties.name.value == "24", "Grid cell (1,1) should have value '24'"

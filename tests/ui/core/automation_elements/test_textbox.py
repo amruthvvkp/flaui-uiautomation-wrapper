@@ -48,7 +48,8 @@ class TestTextbox:
         if test_application_type == "WinForms":
             pytest.skip("WinForms currently does not report the color on text boxes")
 
-        text_range = textbox.patterns.Text.Pattern  # TODO: Check if we can add a C# wrapper to Python
+        # Text pattern is not yet wrapped; reach the native pattern via the raw escape hatch.
+        text_range = textbox.patterns.raw_patterns.Text.Pattern
         color_int = text_range.DocumentRange.GetAttributeValue(
             test_application.main_window.automation.text_attribute_library.ForegroundColor
         )
