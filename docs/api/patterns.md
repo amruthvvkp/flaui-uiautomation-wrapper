@@ -16,3 +16,10 @@ Each pattern wraps a native C# pattern object, always reachable via `raw_pattern
 hatch for members that are not yet wrapped. Patterns are ported incrementally by family.
 
 ::: flaui.core.patterns
+
+## Text ranges
+
+The Text patterns (`TextPattern`, `Text2Pattern`, `TextEditPattern`, `TextChildPattern`) return
+`TextRange` objects, the Python wrapper around C# `ITextRange`.
+
+::: flaui.core.text_range
