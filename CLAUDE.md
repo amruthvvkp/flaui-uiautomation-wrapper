@@ -15,6 +15,7 @@ guides live in `docs/` (see [Where to find the tutorials](#where-to-find-the-tut
 - [Python Compatibility & Library Preferences](#python-compatibility--library-preferences)
 - [Coding Standards](#coding-standards)
 - [Key Files Reference](#key-files-reference)
+- [Continuous Integration](#continuous-integration)
 - [Documentation Standards](#documentation-standards)
 - [Where to find the tutorials](#where-to-find-the-tutorials)
 
@@ -480,6 +481,30 @@ assert element.toggle_state == ToggleState.On
 
 ---
 
+## Continuous Integration
+
+CI/CD runs on a **hybrid Azure Pipelines + AppVeyor** setup. The two systems split responsibilities:
+
+- **Azure Pipelines** ([`azure-pipelines.yml`](azure-pipelines.yml), GitHub check
+  `flaui-uiautomation-wrapper-ci`) owns the fast gates and release plumbing: Ruff + Interrogate
+  linting, the strict Zensical docs build, a hosted `windows-2022` smoke suite (unit + identifier
+  tests), package builds, and gated `deploy_testpypi` / `deploy_pypi` / `deploy_docs` stages.
+- **AppVeyor** ([`.appveyor.yml`](.appveyor.yml), checks `continuous-integration/appveyor/pr`
+  and `/branch`) is the hosted Windows desktop UI gate that runs the **full** FlaUI test suite on
+  `Visual Studio 2022`.
+- **GitHub Actions** is kept for CodeQL/labeling only; other workflows are manual-only stubs.
+
+Both runners drive tests with `uv run … pytest` and currently pin Python 3.12 x64 while the hybrid
+setup stabilizes (the 3.10–3.14 matrix is commented in both files). Azure cancels stale PR runs via
+`pr.autoCancel: true`; AppVeyor relies on the project-level **Rolling builds** setting (not a yaml
+key). A conflicting/non-mergeable PR makes AppVeyor report "unable to build non-mergeable pull
+request" — rebase or merge the base branch to clear it.
+
+Full procedural detail (scripts, artifacts, caching, deployment variables) lives in
+[docs/contributing/development.md](docs/contributing/development.md#cicd-azure-pipelines--appveyor).
+
+---
+
 ## Documentation Standards
 
 - Use Sphinx-style docstrings (one-line summary, then `:param:`, `:return:`, `:raises:`).
@@ -509,7 +534,7 @@ Procedural and step-by-step content has been relocated to the docs site:
 |-------|----------|
 | Pytest matrix configuration, writing matrix tests, `post_wait`, assertions | [docs/contributing/testing.md](docs/contributing/testing.md) |
 | Porting C# tests step by step, element maps | [docs/contributing/porting-tests.md](docs/contributing/porting-tests.md) |
-| UV commands, code quality, pre-commit, exception handling, CI/CD, docs build | [docs/contributing/development.md](docs/contributing/development.md) |
+| UV commands, code quality, pre-commit, exception handling, CI/CD (Azure Pipelines + AppVeyor), docs build | [docs/contributing/development.md](docs/contributing/development.md) |
 | pytest-bug usage and current bug markers | [docs/bug-tracking.md](docs/bug-tracking.md) |
 | Common issues, fixes, known skips/xfails | [docs/troubleshooting.md](docs/troubleshooting.md) |
 | Contributor overview | [docs/contributing.md](docs/contributing.md) |

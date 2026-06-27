@@ -19,7 +19,7 @@ Step-by-step / procedural guides live in `docs/` and are linked from CLAUDE.md's
 
 - Pytest matrix configuration & writing matrix tests — [docs/contributing/testing.md](docs/contributing/testing.md)
 - Test porting methodology from FlaUI C# — [docs/contributing/porting-tests.md](docs/contributing/porting-tests.md)
-- Development workflow (UV), code quality, CI/CD — [docs/contributing/development.md](docs/contributing/development.md)
+- Development workflow (UV), code quality, CI/CD (hybrid Azure Pipelines + AppVeyor) — [docs/contributing/development.md](docs/contributing/development.md)
 - Bug tracking with pytest-bug — [docs/bug-tracking.md](docs/bug-tracking.md)
 - Troubleshooting and known skips/xfails — [docs/troubleshooting.md](docs/troubleshooting.md)
 
@@ -96,6 +96,9 @@ When working on this project:
 - ⚠️ **Always** add type hints to test fixtures
 - ⚠️ **Always** use fixture parametrization for matrix, not `@pytest.parametrize`
 - ⚠️ **Always** convert C# exceptions with `@handle_csharp_exceptions`
+- ⚠️ **CI is hybrid**: Azure Pipelines (`azure-pipelines.yml`, check `flaui-uiautomation-wrapper-ci`)
+  gates linting/docs/smoke/packaging; AppVeyor (`.appveyor.yml`) runs the full Windows UI suite. A
+  PR with merge conflicts fails AppVeyor as "non-mergeable" — rebase/merge the base to clear it.
 
 ## Quick Links
 
