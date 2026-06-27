@@ -91,9 +91,11 @@ The project uses a hybrid CI setup:
 
 - Azure Pipelines (`azure-pipelines.yml`) owns linting, documentation, packaging, deployment
   plumbing, and a hosted Windows smoke suite.
-- AppVeyor (`.appveyor.yml`) remains the hosted Windows desktop UI gate for the full FlaUI test
-  suite. Paint-specific XPath cases that can abort native UIA/COM on hosted CI are skipped there
-  and remain runnable locally.
+- AppVeyor (`.appveyor.yml`) is the hosted Windows desktop UI gate. The gate is **trimmed**: the
+  slow full FlaUI UI suite only runs where it gates a merge — pull requests and pushes to `master`
+  (`APPVEYOR_PULL_REQUEST_NUMBER` set, or `APPVEYOR_REPO_BRANCH == master`). Routine feature-branch
+  pushes run the fast `tests/unit` subset only. Paint-specific XPath cases that can abort native
+  UIA/COM on hosted CI are skipped there and remain runnable locally.
 - GitHub Actions workflows are retained as manual-only stubs while CI/CD ownership moves to Azure
   and AppVeyor.
 
@@ -103,7 +105,9 @@ Azure currently runs three PR validation jobs in parallel:
 - Strict documentation build
 - Windows hosted smoke tests on Microsoft-hosted `windows-2022`
 
-AppVeyor runs the full Windows desktop UI suite on `Visual Studio 2022`.
+AppVeyor runs on `Visual Studio 2022`. It runs the full Windows desktop UI suite on pull requests
+and on `master`, and the fast `tests/unit` subset on routine feature-branch pushes (the gate is
+selected in `test_script` from `APPVEYOR_PULL_REQUEST_NUMBER` / `APPVEYOR_REPO_BRANCH`).
 
 ### Stale build cancellation
 
@@ -125,13 +129,21 @@ when a newer commit is pushed.
       --junit-xml=test-results.xml --alluredir allure-results
 ```
 
-### AppVeyor full UI script
+### AppVeyor test script (trimmed gate)
 
 ```yaml
 - ps: |
-    uv run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage \
-      coverage run -m pytest --timeout=45 --timeout-method=thread \
-      --junit-xml=test-results.xml --alluredir allure-results
+    # Full UI suite only where it gates a merge; fast unit subset otherwise.
+    $runFull = ($env:APPVEYOR_REPO_BRANCH -eq 'master') -or [bool]$env:APPVEYOR_PULL_REQUEST_NUMBER
+    if ($runFull) {
+      uv run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage \
+        coverage run -m pytest --timeout=45 --timeout-method=thread \
+        --junit-xml=test-results.xml --alluredir allure-results
+    } else {
+      uv run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage \
+        coverage run -m pytest tests/unit --timeout=45 --timeout-method=thread \
+        --junit-xml=test-results.xml --alluredir allure-results
+    }
 ```
 
 Key parameters:

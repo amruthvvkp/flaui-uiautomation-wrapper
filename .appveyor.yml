@@ -1,4 +1,6 @@
-# AppVeyor remains the hosted Windows desktop UI gate for the full FlaUI suite.
+# AppVeyor is the hosted Windows desktop UI gate for the FlaUI suite. The gate is
+# trimmed (see test_script): the full UI suite runs only on pull requests and on
+# master; routine feature-branch pushes run the fast tests/unit subset instead.
 # Azure Pipelines owns linting, docs, packaging, deployment plumbing, and a
 # smaller hosted Windows smoke job.
 # Enable AppVeyor "Rolling builds" in project settings for pull requests so
@@ -75,8 +77,18 @@ test_script:
       $env:UV_PROJECT_ENVIRONMENT = "$env:APPVEYOR_BUILD_FOLDER\.venv"
       $env:UV_CACHE_DIR = "$env:USERPROFILE\.cache\uv"
       $env:UV_NO_PROGRESS = "1"
-      Write-Host "Running full Windows desktop UI test suite with pytest..."
-      Invoke-Checked { uv --no-progress run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage coverage run -m pytest --junit-xml=test-results.xml --timeout=45 --timeout-method=thread --alluredir allure-results }
+
+      # Trim the gate: the slow full desktop UI suite only runs where it gates a merge
+      # (pull requests, and pushes to master). Routine feature-branch pushes run the fast
+      # unit subset only, so day-to-day turnaround does not pay for the full serial run.
+      $runFull = ($env:APPVEYOR_REPO_BRANCH -eq 'master') -or [bool]$env:APPVEYOR_PULL_REQUEST_NUMBER
+      if ($runFull) {
+        Write-Host "Full gate: running the complete Windows desktop UI test suite with pytest..."
+        Invoke-Checked { uv --no-progress run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage coverage run -m pytest --junit-xml=test-results.xml --timeout=45 --timeout-method=thread --alluredir allure-results }
+      } else {
+        Write-Host "Fast gate: running the unit subset only (the full UI suite runs on pull requests and on master)..."
+        Invoke-Checked { uv --no-progress run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage coverage run -m pytest tests/unit --junit-xml=test-results.xml --timeout=45 --timeout-method=thread --alluredir allure-results }
+      }
 
 after_test:
   - ps: |
