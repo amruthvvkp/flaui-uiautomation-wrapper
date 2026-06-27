@@ -97,8 +97,10 @@ When working on this project:
 - ⚠️ **Always** use fixture parametrization for matrix, not `@pytest.parametrize`
 - ⚠️ **Always** convert C# exceptions with `@handle_csharp_exceptions`
 - ⚠️ **CI is hybrid**: Azure Pipelines (`azure-pipelines.yml`, check `flaui-uiautomation-wrapper-ci`)
-  gates linting/docs/smoke/packaging; AppVeyor (`.appveyor.yml`) runs the full Windows UI suite. A
-  PR with merge conflicts fails AppVeyor as "non-mergeable" — rebase/merge the base to clear it.
+  gates linting/docs/smoke/packaging; AppVeyor (`.appveyor.yml`) is the Windows UI gate. AppVeyor is
+  **trimmed**: the full UI suite runs only on pull requests and on `master`; routine feature-branch
+  pushes run the fast `tests/unit` subset. A PR with merge conflicts fails AppVeyor as
+  "non-mergeable" — rebase/merge the base to clear it.
 
 ## Quick Links
 
