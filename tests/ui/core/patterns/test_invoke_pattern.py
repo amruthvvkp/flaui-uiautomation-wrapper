@@ -9,10 +9,11 @@ TODO: Update this test once RegisterAutomationEvent is ported to Python wrapper.
 Currently simplified without event handling.
 """
 
+import threading
 from typing import Any, Generator
 
 from flaui.core.automation_elements import AutomationElement
-from flaui.core.definitions import ControlType
+from flaui.core.definitions import ControlType, TreeScope
 from hamcrest import assert_that, not_none
 import pytest
 
@@ -43,53 +44,29 @@ class TestInvokePattern:
         button = tab_item.find_first_descendant(condition=test_application._cf.by_automation_id("InvokableButton"))
         yield button
 
-    @pytest.mark.bug(
-        id="GH-77",
-        url="https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/77",
-        reason="RegisterAutomationEvent not yet ported to Python wrapper",
-    )
-    @pytest.mark.skip(reason="TODO: Implement once RegisterAutomationEvent is ported to Python wrapper")
     def test_invoke_with_event(
         self,
         invokable_button: AutomationElement,
     ) -> None:
-        """Test invoke pattern and event on InvokableButton control.
-
-        This is a simplified version that will be enhanced once event handling is available.
-        """
+        """Invoke the button and verify the registered automation event fires (GH-77)."""
         assert_that(invokable_button, not_none())
-        orig_button_text = invokable_button.properties.name  # noqa: F841
         invoke_pattern = invokable_button.patterns.invoke.pattern
         assert_that(invoke_pattern, not_none())
 
-        # TODO: Add event registration when RegisterAutomationEvent is ported
-        # For now, just test basic invoke without event verification
-        invoke_pattern.invoke()
-        # Button text should change after invoke (verification without event handler)
-        # This may need refinement based on actual behavior
+        invoke_fired = threading.Event()
 
+        def on_invoked(element: AutomationElement, event_id: Any) -> None:
+            """Set the threading event when the Invoked event fires."""
+            invoke_fired.set()
 
-#         orig_button_text = invokable_button.properties.name
-#         invoke_pattern = (
-#             invokable_button.patterns.Invoke.Pattern
-#         )  # TODO: Move Patterns to Py-wrapper once it is created
-#         assert_that(invoke_pattern, not_none())
-#         invoke_fired = threading.Event()
-
-#         # Register event handler (PythonNet interop, may need adjustment for your wrapper)
-#         def on_invoked(element, event_id):
-#             invoke_fired.set()
-
-#         # This assumes RegisterAutomationEvent is exposed and works as in C#
-#         registered_event = invokable_button.register_automation_event(
-#             invoke_pattern.EventIds.InvokedEvent,
-#             0,
-#             on_invoked,  # 0 = TreeScope.Element
-#         )
-#         invoke_pattern.Invoke()
-#         event_received = invoke_fired.wait(timeout=1.0)
-#         assert event_received, "Invoke event was not received within timeout"
-#         assert invokable_button.properties.name != orig_button_text, "Button text should change after invoke"
-#         # Clean up event handler if needed
-#         if hasattr(registered_event, "dispose"):
-#             registered_event.dispose()
+        # EventIds is exposed on the raw C# pattern (Automation.EventLibrary.Invoke).
+        invoked_event_id = invoke_pattern.raw_pattern.EventIds.InvokedEvent
+        registration = invokable_button.register_automation_event(
+            invoked_event_id, TreeScope.Element, on_invoked
+        )
+        try:
+            invoke_pattern.invoke()
+            assert invoke_fired.wait(timeout=5.0), "Invoke event was not received within timeout"
+        finally:
+            registration.unregister()
+        assert registration.is_active is False
