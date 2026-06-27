@@ -8,6 +8,7 @@ skip_branch_with_pr: true
 
 environment:
   UV_FROZEN: "1"
+  UV_NO_PROGRESS: "1"
   matrix:
     # Keep the full UI suite on one Python version while the Azure migration
     # stabilizes. Enable the remaining supported versions when ready.
@@ -37,30 +38,42 @@ cache:
 
 init:
   - ps: |
-      $ErrorActionPreference = "Stop"
       $env:UV_PYTHON = $env:PYTHON_VERSION
       $env:UV_PROJECT_ENVIRONMENT = "$env:APPVEYOR_BUILD_FOLDER\.venv"
       $env:UV_CACHE_DIR = "$env:USERPROFILE\.cache\uv"
+      $env:UV_NO_PROGRESS = "1"
       Write-Host "AppVeyor full UI suite: Python $env:PYTHON_VERSION x$env:PYTHON_ARCH"
 
 install:
   - ps: |
-      $ErrorActionPreference = "Stop"
+      function Invoke-Checked {
+        param([scriptblock] $Command)
+        & $Command
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      }
+
       irm https://astral.sh/uv/install.ps1 | iex
       $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
-      uv --version
-      uv python install $env:PYTHON_VERSION
-      uv run --group unit-test --no-dev --package flaui-uiautomation-wrapper python --version
+      $env:UV_NO_PROGRESS = "1"
+      Invoke-Checked { uv --version }
+      Invoke-Checked { uv --no-progress python install $env:PYTHON_VERSION }
+      Invoke-Checked { uv --no-progress run --group unit-test --no-dev --package flaui-uiautomation-wrapper python --version }
 
 test_script:
   - ps: |
-      $ErrorActionPreference = "Stop"
+      function Invoke-Checked {
+        param([scriptblock] $Command)
+        & $Command
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      }
+
       $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
       $env:UV_PYTHON = $env:PYTHON_VERSION
       $env:UV_PROJECT_ENVIRONMENT = "$env:APPVEYOR_BUILD_FOLDER\.venv"
       $env:UV_CACHE_DIR = "$env:USERPROFILE\.cache\uv"
+      $env:UV_NO_PROGRESS = "1"
       Write-Host "Running full Windows desktop UI test suite with pytest..."
-      uv run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage coverage run -m pytest --junit-xml=test-results.xml --timeout=45 --timeout-method=thread --alluredir allure-results
+      Invoke-Checked { uv --no-progress run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage coverage run -m pytest --junit-xml=test-results.xml --timeout=45 --timeout-method=thread --alluredir allure-results }
 
 after_test:
   - ps: |
@@ -68,10 +81,11 @@ after_test:
       $env:UV_PYTHON = $env:PYTHON_VERSION
       $env:UV_PROJECT_ENVIRONMENT = "$env:APPVEYOR_BUILD_FOLDER\.venv"
       $env:UV_CACHE_DIR = "$env:USERPROFILE\.cache\uv"
+      $env:UV_NO_PROGRESS = "1"
       Write-Host "Generating coverage reports..."
       if (Test-Path ".coverage") {
-        uv run --with coverage coverage xml
-        uv run --with coverage coverage html
+        uv --no-progress run --with coverage coverage xml
+        uv --no-progress run --with coverage coverage html
       } else {
         Write-Host "No coverage data found; skipping coverage report generation."
       }
