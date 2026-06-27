@@ -85,31 +85,71 @@ Python equivalents of the C# FlaUI exceptions (in `flaui/lib/exceptions.py`) inc
 `ElementNotFound`, `PropertyNotSupportedException`, `ElementNotEnabledException`, and
 `NoClickablePointException`.
 
-## CI/CD (AppVeyor)
+## CI/CD (Azure Pipelines + AppVeyor)
 
-The project runs continuous integration on AppVeyor (Windows, Visual Studio 2022). Configuration
-lives in `.appveyor.yml`.
+The project uses a hybrid CI setup:
 
-### Test script
+- Azure Pipelines (`azure-pipelines.yml`) owns linting, documentation, packaging, deployment
+  plumbing, and a hosted Windows smoke suite.
+- AppVeyor (`.appveyor.yml`) remains the hosted Windows desktop UI gate for the full FlaUI test
+  suite. Paint-specific XPath cases that can abort native UIA/COM on hosted CI are skipped there
+  and remain runnable locally.
+- GitHub Actions workflows are retained as manual-only stubs while CI/CD ownership moves to Azure
+  and AppVeyor.
+
+Azure currently runs three PR validation jobs in parallel:
+
+- Ruff and Interrogate checks
+- Strict documentation build
+- Windows hosted smoke tests on Microsoft-hosted `windows-2022`
+
+AppVeyor runs the full Windows desktop UI suite on `Visual Studio 2022`.
+
+### Stale build cancellation
+
+Azure Pipelines cancels stale pull-request validation runs through `pr.autoCancel: true` and batches
+stale branch pushes through `trigger.batch: true`.
+
+AppVeyor stale PR cancellation is handled by the project-level **Rolling builds** setting, not by
+`appveyor.yml`. Keep rolling builds enabled for pull requests and leave
+`rollingBuildsDoNotCancelRunningBuilds` disabled so queued and running stale PR builds are cancelled
+when a newer commit is pushed.
+
+### Azure hosted smoke script
 
 ```yaml
-test_script:
-  - ps: |
-      uv run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage \
-        coverage run -m pytest --timeout=15 --timeout-method=thread \
-        --junit-xml=test-results.xml --alluredir=allure-results
+- pwsh: |
+    uv run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage \
+      coverage run -m pytest tests/unit/lib tests/unit/core/test_identifiers.py \
+      --timeout=45 --timeout-method=thread \
+      --junit-xml=test-results.xml --alluredir allure-results
+```
+
+### AppVeyor full UI script
+
+```yaml
+- ps: |
+    uv run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage \
+      coverage run -m pytest --timeout=45 --timeout-method=thread \
+      --junit-xml=test-results.xml --alluredir allure-results
 ```
 
 Key parameters:
 
-- `--timeout=15` — maximum execution time per test (seconds)
+- `--timeout=45` — maximum execution time per test (seconds)
 - `--timeout-method=thread` — thread-based timeout (safe on Windows)
 - `--junit-xml=test-results.xml` — JUnit XML for CI parsing
 - `--alluredir=allure-results` — Allure JSON reports for analytics
 
+Azure publishes `test-results.xml` through `PublishTestResults@2`, so pytest smoke test cases are
+visible in the Azure Tests tab. AppVeyor uploads the full-suite JUnit XML with fixture matrix IDs
+such as `UIA2_WPF` and `UIA3_WinForms`. The raw `test-report.jsonl` file is uploaded as an artifact
+for detailed pytest diagnostics.
+
 ### Artifacts
 
 - `test-results.xml` — JUnit XML test results
+- `test-report.jsonl` — pytest report log
 - `coverage.xml` — XML coverage report
 - `htmlcov/` — HTML coverage report
 - `allure-results/` — Allure JSON reports (parameters, steps, timing, categorization)
@@ -117,17 +157,34 @@ Key parameters:
 ### Coverage reporting
 
 ```yaml
-after_test:
-  - ps: |
-      uv run --no-project --with coverage coverage combine
-      uv run --no-project --with coverage coverage xml
-      uv run --no-project --with coverage coverage html
+- pwsh: |
+    uv run --with coverage coverage xml
+    uv run --with coverage coverage html
 ```
 
 ### Python compatibility matrix
 
-CI can be configured to run across Python 3.10, 3.11, 3.12, and 3.13 (x86/x64). To keep CI fast,
-a single job (currently Python 3.12 x64) is enabled by default and others are commented out.
+Both CI systems start with Python 3.12 x64 only to avoid slowing development while the migration is
+validated. The supported Python 3.10 through 3.14 x64 matrix is kept commented in both
+`azure-pipelines.yml` and `.appveyor.yml` and can be enabled after the hybrid setup is stable.
+
+Azure caches both the UV runtime/download cache and the project virtualenv with `Cache@2`, keyed by
+OS, Python version, `uv.lock`, and `pyproject.toml`. AppVeyor caches the UV download cache and
+`.venv` with the same lockfile inputs. The bundled FlaUI DLLs and test application executables are
+already tracked in the repository, so there is no separate FlaUI build cache in the initial jobs.
+
+### Future deployment options
+
+Azure also builds package distributions and contains gated deployment stages:
+
+- `deploy_testpypi` runs only when `PUBLISH_TEST_PYPI=true` on a non-PR run and requires
+  `TEST_PYPI_API_TOKEN`.
+- `deploy_pypi` runs only on `v*` tags when `PUBLISH_PYPI=true` and requires `PYPI_API_TOKEN`.
+- `deploy_docs` runs only when `PUBLISH_DOCS=true` on a non-PR run and requires
+  `GITHUB_PAGES_TOKEN`.
+
+Use Azure Environments named `test-pypi`, `pypi`, and `github-pages` for approvals before enabling
+these deployment variables.
 
 ## Documentation
 

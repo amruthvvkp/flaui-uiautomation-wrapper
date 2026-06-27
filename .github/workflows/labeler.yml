@@ -1,19 +1,10 @@
-# Labels Pull Requests on changes to files
+name: Labeler (migrated to Azure Pipelines)
 
-name: Labeler
-
-on: [pull_request]
-
-permissions:
-  contents: read
+on:
+  workflow_dispatch:
 
 jobs:
-  label:
+  migrated:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
     steps:
-      - uses: actions/labeler@v4
-        with:
-          repo-token: "${{ github.token }}"
+      - run: echo "Automatic GitHub PR labeling has been disabled while CI/CD moves to Azure Pipelines."
