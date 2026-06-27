@@ -1,0 +1,141 @@
+# Azure Pipelines proof of concept for Windows FlaUI UI tests.
+# Keep the active matrix small while validating hosted-agent desktop automation.
+
+trigger:
+  branches:
+    include:
+      - master
+
+pr:
+  branches:
+    include:
+      - master
+
+variables:
+  UV_FROZEN: "1"
+  UV_CACHE_DIR: "$(Pipeline.Workspace)/.uv-cache"
+  UV_PROJECT_ENVIRONMENT: "$(Pipeline.Workspace)/.venv"
+  ACTIVE_PYTHON_VERSION: "3.12"
+
+stages:
+  - stage: test
+    displayName: Test
+    jobs:
+      - job: windows_ui_tests
+        displayName: Windows UI tests - Python $(ACTIVE_PYTHON_VERSION) x64
+        pool:
+          vmImage: windows-2022
+
+        # Enable this matrix after the hosted-agent proof of concept is stable.
+        # strategy:
+        #   matrix:
+        #     Python310:
+        #       ACTIVE_PYTHON_VERSION: "3.10"
+        #     Python311:
+        #       ACTIVE_PYTHON_VERSION: "3.11"
+        #     Python312:
+        #       ACTIVE_PYTHON_VERSION: "3.12"
+        #     Python313:
+        #       ACTIVE_PYTHON_VERSION: "3.13"
+        #     Python314:
+        #       ACTIVE_PYTHON_VERSION: "3.14"
+
+        steps:
+          - checkout: self
+            fetchDepth: 0
+
+          - task: UsePythonVersion@0
+            displayName: Use Python $(ACTIVE_PYTHON_VERSION) x64
+            inputs:
+              versionSpec: "$(ACTIVE_PYTHON_VERSION)"
+              architecture: x64
+
+          - pwsh: |
+              python --version
+              python -c "import struct; print(f'Python architecture: {struct.calcsize(\"P\") * 8}-bit')"
+            displayName: Show Python runtime
+
+          - pwsh: |
+              irm https://astral.sh/uv/install.ps1 | iex
+              $uvPath = "$env:USERPROFILE\.local\bin"
+              Write-Host "##vso[task.prependpath]$uvPath"
+              & "$uvPath\uv.exe" --version
+            displayName: Install uv
+
+          - task: Cache@2
+            displayName: Restore uv cache
+            inputs:
+              key: 'uv | "$(Agent.OS)" | "$(ACTIVE_PYTHON_VERSION)" | uv.lock | pyproject.toml'
+              restoreKeys: |
+                uv | "$(Agent.OS)" | "$(ACTIVE_PYTHON_VERSION)"
+                uv | "$(Agent.OS)"
+              path: "$(UV_CACHE_DIR)"
+
+          - task: Cache@2
+            displayName: Restore project virtualenv cache
+            inputs:
+              key: 'uv-venv | "$(Agent.OS)" | "$(ACTIVE_PYTHON_VERSION)" | uv.lock | pyproject.toml'
+              restoreKeys: |
+                uv-venv | "$(Agent.OS)" | "$(ACTIVE_PYTHON_VERSION)"
+              path: "$(UV_PROJECT_ENVIRONMENT)"
+
+          - pwsh: |
+              uv run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage coverage run -m pytest --junit-xml=test-results.xml --timeout=45 --timeout-method=thread --alluredir allure-results
+            displayName: Run pytest UI suite
+            env:
+              UV_PYTHON: "$(ACTIVE_PYTHON_VERSION)"
+              UV_FROZEN: "$(UV_FROZEN)"
+              UV_CACHE_DIR: "$(UV_CACHE_DIR)"
+              UV_PROJECT_ENVIRONMENT: "$(UV_PROJECT_ENVIRONMENT)"
+
+          - pwsh: |
+              $parallelCoverage = Get-ChildItem -Path . -Force -Filter ".coverage.*" -ErrorAction SilentlyContinue
+              if ($parallelCoverage) {
+                uv run --with coverage coverage combine
+              } else {
+                Write-Host "No parallel coverage data to combine."
+              }
+              uv run --with coverage coverage xml
+              uv run --with coverage coverage html
+            displayName: Generate coverage reports
+            condition: succeededOrFailed()
+            env:
+              UV_PYTHON: "$(ACTIVE_PYTHON_VERSION)"
+              UV_FROZEN: "$(UV_FROZEN)"
+              UV_CACHE_DIR: "$(UV_CACHE_DIR)"
+              UV_PROJECT_ENVIRONMENT: "$(UV_PROJECT_ENVIRONMENT)"
+
+          - task: PublishTestResults@2
+            displayName: Publish pytest results
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: JUnit
+              testResultsFiles: test-results.xml
+              failTaskOnFailedTests: true
+              testRunTitle: Python $(ACTIVE_PYTHON_VERSION) x64 UI tests
+
+          - task: PublishCodeCoverageResults@2
+            displayName: Publish coverage
+            condition: succeededOrFailed()
+            inputs:
+              summaryFileLocation: "$(System.DefaultWorkingDirectory)/coverage.xml"
+
+          - publish: htmlcov
+            displayName: Publish HTML coverage artifact
+            condition: succeededOrFailed()
+            artifact: coverage-html
+
+          - publish: allure-results
+            displayName: Publish Allure results artifact
+            condition: succeededOrFailed()
+            artifact: allure-results
+
+          - publish: test-report.jsonl
+            displayName: Publish pytest report log artifact
+            condition: succeededOrFailed()
+            artifact: pytest-report-log
+
+          - publish: test-results.xml
+            displayName: Publish raw JUnit artifact
+            condition: succeededOrFailed()
+            artifact: test-results

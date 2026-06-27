@@ -85,31 +85,36 @@ Python equivalents of the C# FlaUI exceptions (in `flaui/lib/exceptions.py`) inc
 `ElementNotFound`, `PropertyNotSupportedException`, `ElementNotEnabledException`, and
 `NoClickablePointException`.
 
-## CI/CD (AppVeyor)
+## CI/CD (Azure Pipelines)
 
-The project runs continuous integration on AppVeyor (Windows, Visual Studio 2022). Configuration
-lives in `.appveyor.yml`.
+The project runs Windows UI test continuous integration on Azure Pipelines. Configuration lives in
+`azure-pipelines.yml`. The previous AppVeyor configuration is retained as a commented backup in
+`.appveyor.yml` while the Azure migration is validated.
 
 ### Test script
 
 ```yaml
-test_script:
-  - ps: |
-      uv run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage \
-        coverage run -m pytest --timeout=15 --timeout-method=thread \
-        --junit-xml=test-results.xml --alluredir=allure-results
+- pwsh: |
+    uv run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage \
+      coverage run -m pytest --timeout=45 --timeout-method=thread \
+      --junit-xml=test-results.xml --alluredir allure-results
 ```
 
 Key parameters:
 
-- `--timeout=15` — maximum execution time per test (seconds)
+- `--timeout=45` — maximum execution time per test (seconds)
 - `--timeout-method=thread` — thread-based timeout (safe on Windows)
 - `--junit-xml=test-results.xml` — JUnit XML for CI parsing
 - `--alluredir=allure-results` — Allure JSON reports for analytics
 
+Azure publishes `test-results.xml` through `PublishTestResults@2`, so pytest test cases and
+fixture matrix IDs such as `UIA2_WPF` and `UIA3_WinForms` are visible in the Azure Tests tab.
+The raw `test-report.jsonl` file is also uploaded as an artifact for detailed pytest diagnostics.
+
 ### Artifacts
 
 - `test-results.xml` — JUnit XML test results
+- `test-report.jsonl` — pytest report log
 - `coverage.xml` — XML coverage report
 - `htmlcov/` — HTML coverage report
 - `allure-results/` — Allure JSON reports (parameters, steps, timing, categorization)
@@ -117,17 +122,29 @@ Key parameters:
 ### Coverage reporting
 
 ```yaml
-after_test:
-  - ps: |
-      uv run --no-project --with coverage coverage combine
-      uv run --no-project --with coverage coverage xml
-      uv run --no-project --with coverage coverage html
+- pwsh: |
+    uv run --with coverage coverage combine
+    uv run --with coverage coverage xml
+    uv run --with coverage coverage html
 ```
 
 ### Python compatibility matrix
 
-CI can be configured to run across Python 3.10, 3.11, 3.12, and 3.13 (x86/x64). To keep CI fast,
-a single job (currently Python 3.12 x64) is enabled by default and others are commented out.
+The Azure proof of concept starts with a single hosted Windows job on Python 3.12 x64 to avoid
+slowing development while we validate FlaUI UI automation on Microsoft-hosted agents. The supported
+Python 3.10 through 3.14 x64 matrix is kept commented in `azure-pipelines.yml` and can be enabled
+after the hosted-agent behavior is stable.
+
+The pipeline caches both the UV runtime/download cache and the project virtualenv with `Cache@2`,
+keyed by OS, Python version, `uv.lock`, and `pyproject.toml`. The bundled FlaUI DLLs and test
+application executables are already tracked in the repository, so there is no separate FlaUI build
+cache in the initial Azure job.
+
+### Future deployment options
+
+Keep release publishing on GitHub Actions until Azure UI testing is stable. A future Azure release
+pipeline can add stages for docs, `uv build`, TestPyPI publishing on manual or PR validation runs,
+and PyPI publishing on tags behind Azure Environment approvals.
 
 ## Documentation
 

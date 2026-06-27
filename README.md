@@ -15,7 +15,6 @@
 
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 ![Interrogate](badges/interrogate_badge.svg)
-[![Build status](https://ci.appveyor.com/api/projects/status/dnd20nw5wjqiigse?svg=true)](https://ci.appveyor.com/project/amruthvvkp/flaui-uiautomation-wrapper)
 ![GitHub branch checks state](https://img.shields.io/github/checks-status/amruthvvkp/flaui-uiautomation-wrapper/master)
 
 [![GitHub contributors](https://img.shields.io/github/contributors/amruthvvkp/flaui-uiautomation-wrapper)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/graphs/contributors)
