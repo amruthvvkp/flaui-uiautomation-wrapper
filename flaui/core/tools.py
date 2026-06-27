@@ -8,7 +8,12 @@ These can be actively used during test automation for reliability and improved p
 
 from collections.abc import Iterable
 import time
-from typing import Callable, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar
+
+import psutil
+
+if TYPE_CHECKING:
+    from flaui.core.automation_elements import AutomationElement
 
 T = TypeVar("T")
 
@@ -381,6 +386,201 @@ class Retry:
         :return: True if the timeout has been reached, False otherwise.
         """
         return (time.monotonic() - start_time) * 1000.0 > timeout
+
+
+class ItemRealizer:
+    """Realizes virtualized items in a container so they become full members of the automation tree.
+
+    Mirrors C# ``FlaUI.Core.Tools.ItemRealizer``; delegates to the native implementation, which uses
+    the Scroll and ItemContainer patterns to walk and realize each item.
+    """
+
+    @staticmethod
+    def realize_items(item_container_element: "AutomationElement") -> None:
+        """Realize all virtualized items in the given container element.
+
+        :param item_container_element: The container whose items should be realized.
+        """
+        from FlaUI.Core.Tools import ItemRealizer as CSItemRealizer  # pyright: ignore
+
+        CSItemRealizer.RealizeItems(item_container_element.raw_element)
+
+
+class AccessibilityTextResolver:
+    """Resolves human-readable text for MSAA accessibility roles and states.
+
+    Mirrors C# ``FlaUI.Core.Tools.AccessibilityTextResolver`` (a thin wrapper over ``oleacc``).
+    Roles/states are the C# ``AccessibilityRole`` / ``AccessibilityState`` values, e.g. those
+    returned by ``element.patterns.legacy_i_accessible.pattern.role.value``.
+    """
+
+    @staticmethod
+    def get_role_text(role: Any) -> str:
+        """Return the localized text for an accessibility role.
+
+        :param role: The C# ``AccessibilityRole`` value.
+        :return: Human-readable role text (e.g. ``"push button"``).
+        """
+        from FlaUI.Core.Tools import AccessibilityTextResolver as CSResolver  # pyright: ignore
+
+        return CSResolver.GetRoleText(role)
+
+    @staticmethod
+    def get_state_bit_text(state: Any) -> str:
+        """Return the localized text for a single accessibility state bit.
+
+        :param state: The C# ``AccessibilityState`` value (single bit).
+        :return: Human-readable state text (e.g. ``"focused"``).
+        """
+        from FlaUI.Core.Tools import AccessibilityTextResolver as CSResolver  # pyright: ignore
+
+        return CSResolver.GetStateBitText(state)
+
+    @staticmethod
+    def get_state_text(state: Any) -> str:
+        """Return the comma-separated localized text for all set accessibility state flags.
+
+        :param state: The C# ``AccessibilityState`` value (possibly multiple flags).
+        :return: Comma-separated human-readable state text.
+        """
+        from FlaUI.Core.Tools import AccessibilityTextResolver as CSResolver  # pyright: ignore
+
+        return CSResolver.GetStateText(state)
+
+
+class WindowsStoreAppLauncher:
+    """Launches Windows Store (UWP) apps by their Application User Model ID.
+
+    Mirrors C# ``FlaUI.Core.Tools.WindowsStoreAppLauncher``, which uses the COM
+    ``IApplicationActivationManager`` to activate the app.
+    """
+
+    @staticmethod
+    def launch(app_user_model_id: str, arguments: str = "") -> int:
+        """Launch a Windows Store app and return its process id.
+
+        :param app_user_model_id: The Application User Model ID of the app to launch.
+        :param arguments: Arguments to pass to the app, defaults to an empty string.
+        :return: The process id of the launched app.
+        """
+        from FlaUI.Core.Tools import WindowsStoreAppLauncher as CSLauncher  # pyright: ignore
+
+        return int(CSLauncher.Launch(app_user_model_id, arguments).Id)
+
+
+class LocalizedStrings:
+    """Culture-aware UI strings used by FlaUI (e.g. scroll-bar names per framework/locale).
+
+    Mirrors C# ``FlaUI.Core.Tools.LocalizedStrings``; values are read from the native class, which
+    selects strings based on the current OS culture.
+    """
+
+    @staticmethod
+    def _get(name: str) -> str:
+        """Return a named localized string from the C# ``LocalizedStrings`` class.
+
+        :param name: The C# property name (PascalCase).
+        :return: The localized string value.
+        """
+        from FlaUI.Core.Tools import LocalizedStrings as CSLocalizedStrings  # pyright: ignore
+
+        return getattr(CSLocalizedStrings, name)
+
+    @classmethod
+    def horizontal_scroll_bar(cls) -> str:
+        """Return the localized name of a horizontal scroll bar.
+
+        :return: Localized horizontal scroll-bar name.
+        """
+        return cls._get("HorizontalScrollBar")
+
+    @classmethod
+    def vertical_scroll_bar(cls) -> str:
+        """Return the localized name of a vertical scroll bar.
+
+        :return: Localized vertical scroll-bar name.
+        """
+        return cls._get("VerticalScrollBar")
+
+
+class SystemInfo:
+    """System CPU and memory metrics, implemented in pure Python via :mod:`psutil`.
+
+    Python-native equivalent of C# ``FlaUI.Core.Tools.SystemInfo`` (the C# version uses
+    ``PerformanceCounter`` / WMI). Memory values are bytes; percentages are 0-100 floats.
+    """
+
+    @staticmethod
+    def cpu_usage() -> float:
+        """Return the current system-wide CPU utilization as a percentage (0-100).
+
+        :return: CPU usage percentage.
+        """
+        return psutil.cpu_percent()
+
+    @staticmethod
+    def physical_memory_total() -> int:
+        """Return the total physical memory in bytes.
+
+        :return: Total physical memory (bytes).
+        """
+        return psutil.virtual_memory().total
+
+    @staticmethod
+    def physical_memory_free() -> int:
+        """Return the available physical memory in bytes.
+
+        :return: Available physical memory (bytes).
+        """
+        return psutil.virtual_memory().available
+
+    @staticmethod
+    def physical_memory_used() -> int:
+        """Return the used physical memory in bytes.
+
+        :return: Used physical memory (bytes).
+        """
+        return psutil.virtual_memory().used
+
+    @staticmethod
+    def physical_memory_used_percent() -> float:
+        """Return the used physical memory as a percentage (0-100).
+
+        :return: Used physical memory percentage.
+        """
+        return psutil.virtual_memory().percent
+
+    @staticmethod
+    def physical_memory_free_percent() -> float:
+        """Return the free physical memory as a percentage (0-100).
+
+        :return: Free physical memory percentage.
+        """
+        return 100.0 - psutil.virtual_memory().percent
+
+    @staticmethod
+    def virtual_memory_total() -> int:
+        """Return the total virtual (swap/page-file) memory in bytes.
+
+        :return: Total virtual memory (bytes).
+        """
+        return psutil.swap_memory().total
+
+    @staticmethod
+    def virtual_memory_free() -> int:
+        """Return the free virtual (swap/page-file) memory in bytes.
+
+        :return: Free virtual memory (bytes).
+        """
+        return psutil.swap_memory().free
+
+    @staticmethod
+    def virtual_memory_used() -> int:
+        """Return the used virtual (swap/page-file) memory in bytes.
+
+        :return: Used virtual memory (bytes).
+        """
+        return psutil.swap_memory().used
 
     # @staticmethod
     # def

@@ -28,6 +28,8 @@ nav = [
       { "Automation Element" = "api/automation_element.md" },
       { "Identifiers" = "api/identifiers.md" },
       { "Patterns" = "api/patterns.md" },
+      { "XPath Navigator" = "api/xpath_navigator.md" },
+      { "Event Handlers" = "api/event_handlers.md" },
     ] },
     { "Input" = [
       { "Mouse" = "api/mouse.md" },
@@ -36,6 +38,7 @@ nav = [
     ] },
     { "Tools" = [
       { "Retry" = "api/retry.md" },
+      { "Tools & Utilities" = "api/tools.md" },
       { "Cache Request" = "api/cache_request.md" },
       { "Drawing" = "api/drawing.md" },
       { "Collections" = "api/collections.md" },
@@ -57,6 +60,7 @@ nav = [
       { "MenuItem" = "api/elements/menu_item.md" },
       { "ProgressBar" = "api/elements/progressbar.md" },
       { "RadioButton" = "api/elements/radiobutton.md" },
+      { "ScrollBar" = "api/elements/scrollbar.md" },
       { "Slider" = "api/elements/slider.md" },
       { "Spinner" = "api/elements/spinner.md" },
       { "Tab" = "api/elements/tab.md" },
