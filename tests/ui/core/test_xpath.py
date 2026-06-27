@@ -1,5 +1,6 @@
 """Tests for XPath functionality, ported from C# XPathTests.cs and XPathTests2.cs."""
 
+import os
 import platform
 
 from flaui.core.application import Application
@@ -7,6 +8,8 @@ from flaui.core.definitions import ControlType
 from flaui.lib.enums import UIAutomationTypes
 from flaui.modules.automation import Automation
 import pytest
+
+IS_HOSTED_CI = bool(os.environ.get("APPVEYOR") or os.environ.get("TF_BUILD") or os.environ.get("GITHUB_ACTIONS"))
 
 
 class TestXPath:
@@ -76,6 +79,7 @@ class TestXPath:
     @pytest.mark.xfail(
         reason="Windows 11 Paint UI changed - element names/structure unreliable. Low priority - see issue #89"
     )
+    @pytest.mark.skipif(IS_HOSTED_CI, reason="MS Paint XPath search can abort native UIA/COM on hosted CI")
     @pytest.mark.skipif(platform.system() != "Windows", reason="MS Paint is Windows-specific")
     def test_paint_find_element_below_unknown(self, automation: Automation) -> None:
         """Test finding element below unknown element types in Paint.
@@ -106,6 +110,7 @@ class TestXPath:
     @pytest.mark.xfail(
         reason="Windows 11 Paint UI changed - element names/structure unreliable. Low priority - see issue #89"
     )
+    @pytest.mark.skipif(IS_HOSTED_CI, reason="MS Paint XPath search can abort native UIA/COM on hosted CI")
     @pytest.mark.skipif(platform.system() != "Windows", reason="MS Paint is Windows-specific")
     def test_paint_reference_element_with_unknown_type(self, automation: Automation) -> None:
         """Test finding reference element with unknown control type in Paint.

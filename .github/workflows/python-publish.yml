@@ -1,36 +1,10 @@
-# Upload distributions to PyPI when a GitHub release is published (PEP 621 + Hatchling + UV).
-
-name: Publish Python 🐍 distributions 📦 to PyPI and TestPyPI
+name: Publish Python distributions (migrated to Azure Pipelines)
 
 on:
-  release:
-    types: [published]
-
-permissions:
-  contents: read
-  id-token: write
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  migrated:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Install UV
-        uses: astral-sh/setup-uv@v5
-
-      - name: Set package version from release tag
-        run: |
-          TAG="${GITHUB_REF_NAME}"
-          VERSION="${TAG#v}"
-          uv version --frozen "${VERSION}"
-
-      - name: Build distributions
-        run: uv build
-
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}
+      - run: echo "Package build and PyPI deployment moved to azure-pipelines.yml."
