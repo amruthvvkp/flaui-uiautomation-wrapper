@@ -42,7 +42,9 @@ from flaui.lib.system.drawing import (
 )
 
 if TYPE_CHECKING:
+    from flaui.core.event_handlers import EventRegistration
     from flaui.core.patterns import Patterns
+    from flaui.core.xpath_navigator import AutomationElementXPathNavigator
 
 # ================================================================================
 #   Element base Pydantic abstract class
@@ -566,6 +568,19 @@ class AutomationElement(ElementBase):
         return AutomationElement(raw_element=self.raw_element.FindFirstByXPath(x_path))
 
     @handle_csharp_exceptions
+    def get_x_path_navigator(self) -> "AutomationElementXPathNavigator":
+        """Return an XPath navigator rooted at this element for manual UIA-tree navigation.
+
+        For most use cases prefer :meth:`find_first_by_x_path` / :meth:`find_all_by_x_path`; this
+        exposes the underlying navigator for advanced traversal.
+
+        :return: An :class:`~flaui.core.xpath_navigator.AutomationElementXPathNavigator`.
+        """
+        from flaui.core.xpath_navigator import AutomationElementXPathNavigator
+
+        return AutomationElementXPathNavigator.from_element(self)
+
+    @handle_csharp_exceptions
     def find_first_child(self, condition: Optional[PropertyCondition] = None) -> AutomationElement:
         """Finds the first child.
 
@@ -715,63 +730,204 @@ class AutomationElement(ElementBase):
         return self.raw_element.IsPropertySupportedDirect(property)
 
     @handle_csharp_exceptions
-    def register_active_text_position_changed_event(self, tree_scope: TreeScope, action: Any) -> Any:
-        """Registers a active text position changed event.
+    def register_active_text_position_changed_event(
+        self, tree_scope: TreeScope, action: Callable[["AutomationElement", Any], None]
+    ) -> "EventRegistration":
+        """Register an active-text-position-changed event handler.
 
-        :param tree_scope: Treescope object
-        :param action: Action object
-        :return: Registered event
+        :param tree_scope: The tree scope to listen on.
+        :param action: Callback ``(element, text_range) -> None`` invoked when the event fires.
+        :return: An :class:`~flaui.core.event_handlers.EventRegistration` handle.
         """
-        # return self.raw_element.RegisterActiveTextPositionChangedEvent(tree_scope.value, action)
-        pass
+        from flaui.core.event_handlers import (
+            EventRegistration,
+            coerce_tree_scope,
+            make_active_text_position_delegate,
+            safe_invoke,
+        )
+        from flaui.core.text_range import TextRange
+
+        def _handler(sender: Any, text_range: Any) -> None:
+            """Bridge the C# callback to the Python action."""
+            safe_invoke(action, AutomationElement(raw_element=sender), TextRange(raw_text_range=text_range))
+
+        handler = self.raw_element.RegisterActiveTextPositionChangedEvent(
+            coerce_tree_scope(tree_scope), make_active_text_position_delegate(_handler)
+        )
+        return EventRegistration(
+            cs_handler=handler,
+            callback=_handler,
+            unregister=lambda h: self.framework_automation_element.UnregisterActiveTextPositionChangedEventHandler(h),
+        )
 
     @handle_csharp_exceptions
-    def register_automation_event(self, event: Any, tree_scope: TreeScope, action: Any) -> Any:
-        """Registers the given automation event.
+    def register_automation_event(
+        self, event: Any, tree_scope: TreeScope, action: Callable[["AutomationElement", Any], None]
+    ) -> "EventRegistration":
+        """Register an automation event handler.
 
-        :param event: Event object
-        :param tree_scope: Treescope object
-        :param action: Action object
-        :return: Registered event
+        :param event: The event to listen for (an ``EventId`` wrapper or a raw C# ``EventId``).
+        :param tree_scope: The tree scope to listen on.
+        :param action: Callback ``(element, event_id) -> None`` invoked when the event fires.
+        :return: An :class:`~flaui.core.event_handlers.EventRegistration` handle.
         """
-        # return self.raw_element.RegisterAutomationEvent(event, tree_scope, action)
-        pass
+        from flaui.core.event_handlers import (
+            EventRegistration,
+            coerce_event_id,
+            coerce_tree_scope,
+            make_automation_event_delegate,
+            safe_invoke,
+        )
+
+        def _handler(sender: Any, event_id: Any) -> None:
+            """Bridge the C# callback to the Python action."""
+            safe_invoke(action, AutomationElement(raw_element=sender), event_id)
+
+        handler = self.raw_element.RegisterAutomationEvent(
+            coerce_event_id(event), coerce_tree_scope(tree_scope), make_automation_event_delegate(_handler)
+        )
+        return EventRegistration(
+            cs_handler=handler,
+            callback=_handler,
+            unregister=lambda h: self.framework_automation_element.UnregisterAutomationEventHandler(h),
+        )
 
     @handle_csharp_exceptions
-    def register_notification_event(self) -> Any:
-        """Registers a notification event.
+    def register_notification_event(
+        self, tree_scope: TreeScope, action: Callable[["AutomationElement", Any, Any, str, str], None]
+    ) -> "EventRegistration":
+        """Register a notification event handler.
 
-        :return: None
+        :param tree_scope: The tree scope to listen on.
+        :param action: Callback ``(element, notification_kind, notification_processing, display_string,
+            activity_id) -> None`` invoked when the event fires.
+        :return: An :class:`~flaui.core.event_handlers.EventRegistration` handle.
         """
-        # self.raw_element.RegisterNotificationEvent
-        pass
+        from flaui.core.event_handlers import (
+            EventRegistration,
+            coerce_tree_scope,
+            make_notification_delegate,
+            safe_invoke,
+        )
+
+        def _handler(sender: Any, kind: Any, processing: Any, display_string: str, activity_id: str) -> None:
+            """Bridge the C# callback to the Python action."""
+            safe_invoke(action, AutomationElement(raw_element=sender), kind, processing, display_string, activity_id)
+
+        handler = self.raw_element.RegisterNotificationEvent(
+            coerce_tree_scope(tree_scope), make_notification_delegate(_handler)
+        )
+        return EventRegistration(
+            cs_handler=handler,
+            callback=_handler,
+            unregister=lambda h: self.framework_automation_element.UnregisterNotificationEventHandler(h),
+        )
 
     @handle_csharp_exceptions
-    def register_property_changed_event(self) -> Any:
-        """Registers a property changed event with the given property.
+    def register_property_changed_event(
+        self,
+        tree_scope: TreeScope,
+        action: Callable[["AutomationElement", Any, Any], None],
+        properties: List[Any],
+    ) -> "EventRegistration":
+        """Register a property-changed event handler for the given properties.
 
-        :return: None
+        :param tree_scope: The tree scope to listen on.
+        :param action: Callback ``(element, property_id, new_value) -> None`` invoked on change.
+        :param properties: Properties to watch (``PropertyId`` wrappers or raw C# ``PropertyId``).
+        :return: An :class:`~flaui.core.event_handlers.EventRegistration` handle.
         """
-        # self.raw_element.RegisterPropertyChangedEvent
-        pass
+        from System import Array  # pyright: ignore
+
+        from FlaUI.Core.Identifiers import PropertyId as CSPropertyId  # pyright: ignore
+
+        from flaui.core.event_handlers import (
+            EventRegistration,
+            coerce_property_id,
+            coerce_tree_scope,
+            make_property_changed_delegate,
+            safe_invoke,
+        )
+
+        def _handler(sender: Any, property_id: Any, new_value: Any) -> None:
+            """Bridge the C# callback to the Python action."""
+            safe_invoke(action, AutomationElement(raw_element=sender), property_id, new_value)
+
+        raw_properties = Array[CSPropertyId]([coerce_property_id(_) for _ in properties])
+        handler = self.raw_element.RegisterPropertyChangedEvent(
+            coerce_tree_scope(tree_scope), make_property_changed_delegate(_handler), raw_properties
+        )
+        return EventRegistration(
+            cs_handler=handler,
+            callback=_handler,
+            unregister=lambda h: self.framework_automation_element.UnregisterPropertyChangedEventHandler(h),
+        )
 
     @handle_csharp_exceptions
-    def register_structure_changed_event(self) -> Any:
-        """Registers a structure changed event.
+    def register_structure_changed_event(
+        self, tree_scope: TreeScope, action: Callable[["AutomationElement", Any, List[int]], None]
+    ) -> "EventRegistration":
+        """Register a structure-changed event handler.
 
-        :return: None
+        :param tree_scope: The tree scope to listen on.
+        :param action: Callback ``(element, change_type, runtime_id) -> None`` invoked on change.
+        :return: An :class:`~flaui.core.event_handlers.EventRegistration` handle.
         """
-        # self.raw_element.RegisterStructureChangedEvent
-        pass
+        from flaui.core.event_handlers import (
+            EventRegistration,
+            coerce_tree_scope,
+            make_structure_changed_delegate,
+            safe_invoke,
+        )
+
+        def _handler(sender: Any, change_type: Any, runtime_id: Any) -> None:
+            """Bridge the C# callback to the Python action."""
+            safe_invoke(action, AutomationElement(raw_element=sender), change_type, runtime_id)
+
+        handler = self.raw_element.RegisterStructureChangedEvent(
+            coerce_tree_scope(tree_scope), make_structure_changed_delegate(_handler)
+        )
+        return EventRegistration(
+            cs_handler=handler,
+            callback=_handler,
+            unregister=lambda h: self.framework_automation_element.UnregisterStructureChangedEventHandler(h),
+        )
 
     @handle_csharp_exceptions
-    def register_text_edit_text_changed_event_handler(self) -> Any:
-        """Registers a text edit text changed event.
+    def register_text_edit_text_changed_event_handler(
+        self,
+        tree_scope: TreeScope,
+        text_edit_change_type: Any,
+        action: Callable[["AutomationElement", Any, List[str]], None],
+    ) -> "EventRegistration":
+        """Register a text-edit text-changed event handler.
 
-        :return: None
+        :param tree_scope: The tree scope to listen on.
+        :param text_edit_change_type: The C# ``TextEditChangeType`` to listen for.
+        :param action: Callback ``(element, change_type, event_strings) -> None`` invoked on change.
+        :return: An :class:`~flaui.core.event_handlers.EventRegistration` handle.
         """
-        # self.raw_element.RegisterTextEditTextChangedEventHandler
-        pass
+        from flaui.core.event_handlers import (
+            EventRegistration,
+            coerce_tree_scope,
+            make_text_edit_delegate,
+            safe_invoke,
+        )
+
+        def _handler(sender: Any, change_type: Any, event_strings: Any) -> None:
+            """Bridge the C# callback to the Python action."""
+            safe_invoke(action, AutomationElement(raw_element=sender), change_type, event_strings)
+
+        handler = self.raw_element.RegisterTextEditTextChangedEventHandler(
+            coerce_tree_scope(tree_scope),
+            getattr(text_edit_change_type, "value", text_edit_change_type),
+            make_text_edit_delegate(_handler),
+        )
+        return EventRegistration(
+            cs_handler=handler,
+            callback=_handler,
+            unregister=lambda h: self.framework_automation_element.UnregisterTextEditTextChangedEventHandler(h),
+        )
 
     @handle_csharp_exceptions
     def right_click(self, move_mouse: bool = False) -> None:
@@ -927,14 +1083,14 @@ class AutomationElement(ElementBase):
         return GridHeaderItem(raw_element=CSGridHeaderItem(self.framework_automation_element))
 
     @handle_csharp_exceptions
-    # def as_horizontal_scroll_bar(self) -> HorizontalScrollBar:
-    #     """Converts the element to a HorizontalScrollBar.
+    def as_horizontal_scroll_bar(self) -> HorizontalScrollBar:
+        """Converts the element to a HorizontalScrollBar.
 
-    #     :return: HorizontalScrollBar element
-    #     """
-    #     # TODO: Put in HorizontalScrollBar element and update this line
-    #     from FlaUI.Core.AutomationElements import HorizontalScrollBar as CSHorizontalScrollBar  # pyright: ignore
-    #     return HorizontalScrollBar(raw_element=CSHorizontalScrollBar(self.framework_automation_element))
+        :return: HorizontalScrollBar element
+        """
+        from FlaUI.Core.AutomationElements.Scrolling import HorizontalScrollBar as CSHorizontalScrollBar  # pyright: ignore
+
+        return HorizontalScrollBar(raw_element=CSHorizontalScrollBar(self.framework_automation_element))
 
     @handle_csharp_exceptions
     def as_list_box(self) -> ListBox:
@@ -1097,13 +1253,14 @@ class AutomationElement(ElementBase):
         return TreeItem(raw_element=CSTreeItem(self.framework_automation_element))
 
     @handle_csharp_exceptions
-    # def as_vertical_scroll_bar(self) -> VerticalScrollBar:
-    #     """Converts the element to a VerticalScrollBar.
+    def as_vertical_scroll_bar(self) -> VerticalScrollBar:
+        """Converts the element to a VerticalScrollBar.
 
-    #     :return: VerticalScrollBar element
-    #     """
-    #     # TODO: Build VerticalScrollBar class and update this line
-    #     return VerticalScrollBar(raw_element=self.raw_element.AsVerticalScrollBar())
+        :return: VerticalScrollBar element
+        """
+        from FlaUI.Core.AutomationElements.Scrolling import VerticalScrollBar as CSVerticalScrollBar  # pyright: ignore
+
+        return VerticalScrollBar(raw_element=CSVerticalScrollBar(self.framework_automation_element))
 
     @handle_csharp_exceptions
     def as_window(self) -> Window:
@@ -2370,6 +2527,112 @@ class Spinner(AutomationElement):
     def decrement(self):
         """Performs a decrement."""
         self.raw_element.Decrement()
+
+
+class ScrollBarBase(AutomationElement):
+    """Base class for scroll bar elements, exposing the shared RangeValue properties."""
+
+    @property
+    @handle_csharp_exceptions
+    def value(self) -> float:
+        """The current scroll value.
+
+        :return: Current value.
+        """
+        return self.raw_element.Value
+
+    @property
+    @handle_csharp_exceptions
+    def minimum_value(self) -> float:
+        """The minimum scroll value.
+
+        :return: Minimum value.
+        """
+        return self.raw_element.MinimumValue
+
+    @property
+    @handle_csharp_exceptions
+    def maximum_value(self) -> float:
+        """The maximum scroll value.
+
+        :return: Maximum value.
+        """
+        return self.raw_element.MaximumValue
+
+    @property
+    @handle_csharp_exceptions
+    def small_change(self) -> float:
+        """The value of a small change (line scroll).
+
+        :return: Small change value.
+        """
+        return self.raw_element.SmallChange
+
+    @property
+    @handle_csharp_exceptions
+    def large_change(self) -> float:
+        """The value of a large change (page scroll).
+
+        :return: Large change value.
+        """
+        return self.raw_element.LargeChange
+
+    @property
+    @handle_csharp_exceptions
+    def is_read_only(self) -> bool:
+        """Whether the scroll bar value is read-only.
+
+        :return: ``True`` if read-only, else ``False``.
+        """
+        return self.raw_element.IsReadOnly
+
+
+class HorizontalScrollBar(ScrollBarBase):
+    """Class to interact with a horizontal scroll bar element."""
+
+    @handle_csharp_exceptions
+    def scroll_left(self) -> None:
+        """Scroll left by a small amount (line)."""
+        self.raw_element.ScrollLeft()
+
+    @handle_csharp_exceptions
+    def scroll_right(self) -> None:
+        """Scroll right by a small amount (line)."""
+        self.raw_element.ScrollRight()
+
+    @handle_csharp_exceptions
+    def scroll_left_large(self) -> None:
+        """Scroll left by a large amount (page)."""
+        self.raw_element.ScrollLeftLarge()
+
+    @handle_csharp_exceptions
+    def scroll_right_large(self) -> None:
+        """Scroll right by a large amount (page)."""
+        self.raw_element.ScrollRightLarge()
+
+
+class VerticalScrollBar(ScrollBarBase):
+    """Class to interact with a vertical scroll bar element."""
+
+    @handle_csharp_exceptions
+    def scroll_up(self) -> None:
+        """Scroll up by a small amount (line)."""
+        self.raw_element.ScrollUp()
+
+    @handle_csharp_exceptions
+    def scroll_down(self) -> None:
+        """Scroll down by a small amount (line)."""
+        self.raw_element.ScrollDown()
+
+    @handle_csharp_exceptions
+    def scroll_up_large(self) -> None:
+        """Scroll up by a large amount (page)."""
+        self.raw_element.ScrollUpLarge()
+
+    @handle_csharp_exceptions
+    def scroll_down_large(self) -> None:
+        """Scroll down by a large amount (page)."""
+        self.raw_element.ScrollDownLarge()
 
 
 class Tab(AutomationElement):

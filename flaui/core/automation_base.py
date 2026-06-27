@@ -180,13 +180,39 @@ class AutomationBase(BaseModel):
 
     @handle_csharp_exceptions
     def register_focus_changed_event(self, action: Any) -> Any:
-        """Register a focus-changed handler; passes through to C# (Action<AutomationElement>)."""
-        return self.raw_automation.RegisterFocusChangedEvent(action)
+        """Register a focus-changed handler.
+
+        :param action: Callback ``(element) -> None`` invoked when focus changes.
+        :return: An :class:`~flaui.core.event_handlers.EventRegistration` handle that keeps the
+            callback alive and can unregister it.
+        """
+        from flaui.core.automation_elements import AutomationElement as PyAutomationElement
+        from flaui.core.event_handlers import EventRegistration, make_focus_changed_delegate, safe_invoke
+
+        def _handler(sender: Any) -> None:
+            """Bridge the C# callback to the Python action."""
+            safe_invoke(action, PyAutomationElement(raw_element=sender))
+
+        handler = self.raw_automation.RegisterFocusChangedEvent(make_focus_changed_delegate(_handler))
+        return EventRegistration(
+            cs_handler=handler,
+            callback=_handler,
+            unregister=lambda h: self.raw_automation.UnregisterFocusChangedEvent(h),
+        )
 
     @handle_csharp_exceptions
     def unregister_focus_changed_event(self, event_handler: Any) -> None:
-        """Unregister a focus-changed handler returned by register_focus_changed_event."""
-        self.raw_automation.UnregisterFocusChangedEvent(event_handler)
+        """Unregister a focus-changed handler returned by :meth:`register_focus_changed_event`.
+
+        :param event_handler: The :class:`~flaui.core.event_handlers.EventRegistration` returned by
+            :meth:`register_focus_changed_event`, or a raw C# handler.
+        """
+        from flaui.core.event_handlers import EventRegistration
+
+        if isinstance(event_handler, EventRegistration):
+            event_handler.unregister()
+        else:
+            self.raw_automation.UnregisterFocusChangedEvent(event_handler)
 
     @handle_csharp_exceptions
     def unregister_all_events(self) -> None:
