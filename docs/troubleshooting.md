@@ -28,12 +28,15 @@ Common issues, fixes, and known test skips/xfails.
 
 ## Windows/OS specifics
 - Windows 11 Notepad is a Store app; Notepad-based tests are skipped there.
-- MS Paint UI varies by Windows version; some Paint XPath tests are xfailed.
+- MS Paint UI varies by Windows version; some Paint XPath tests are xfailed locally and skipped on
+  hosted CI because native UIA/COM failures can abort the Python process before pytest records an
+  xfail.
 
 ## Known pytest skips/xfails (manual list)
 - `skip_notepad_on_win11`: Notepad tests (XPath, getter/search) skipped on Windows 11 Store app.
 - `skip_if_matrix` UIA2_WinForms: XPath IsPassword property unavailable in UIA2+WinForms.
-- `xfail` Paint XPath tests: Windows 11 Paint structure changed (issue #89).
+- `xfail` / hosted-CI skip Paint XPath tests: Windows 11 Paint structure changed and hosted CI can
+  abort in native UIA/COM before pytest records an xfail (issue #89).
 - `skipif` Paint mouse drag: Paint UI varies significantly.
 - `bug` GH-91 Mouse movement/drag flakiness under runners (mouse position reads may lag).
 - `bug` GH-75/others: ListBox instability on WinForms (see ListBox tests) — keep an eye on CI.

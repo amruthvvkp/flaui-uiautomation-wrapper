@@ -92,8 +92,8 @@ The project uses a hybrid CI setup:
 - Azure Pipelines (`azure-pipelines.yml`) owns linting, documentation, packaging, deployment
   plumbing, and a hosted Windows smoke suite.
 - AppVeyor (`.appveyor.yml`) remains the hosted Windows desktop UI gate for the full FlaUI test
-  suite because the Paint/XPath UIA tests are more stable there than on Microsoft-hosted Azure
-  agents.
+  suite. Paint-specific XPath cases that can abort native UIA/COM on hosted CI are skipped there
+  and remain runnable locally.
 - GitHub Actions workflows are retained as manual-only stubs while CI/CD ownership moves to Azure
   and AppVeyor.
 
