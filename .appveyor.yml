@@ -1,3 +1,12 @@
+# AppVeyor is no longer the project's CI system. Keep this active no-op job so
+# the legacy AppVeyor integration does not fail while Azure Pipelines takes over.
+version: 1.0.{build}
+image: Visual Studio 2022
+build: off
+test: off
+init:
+  - ps: Write-Host "AppVeyor CI has moved to Azure Pipelines. See azure-pipelines.yml."
+
 # AppVeyor backup only.
 # CI has moved to Azure Pipelines. Keep this commented copy temporarily as a
 # reference while validating hosted Windows UI automation in azure-pipelines.yml.

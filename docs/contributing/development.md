@@ -88,8 +88,9 @@ Python equivalents of the C# FlaUI exceptions (in `flaui/lib/exceptions.py`) inc
 ## CI/CD (Azure Pipelines)
 
 The project runs continuous integration on Azure Pipelines. Configuration lives in
-`azure-pipelines.yml`. The previous AppVeyor configuration and GitHub Actions workflows are retained
-as inactive backups while the Azure migration is validated.
+`azure-pipelines.yml`. The previous AppVeyor configuration is retained as a commented backup below a
+no-op AppVeyor job, and GitHub Actions workflows are retained as manual-only stubs while the Azure
+migration is validated.
 
 Azure currently runs three PR validation jobs in parallel:
 
