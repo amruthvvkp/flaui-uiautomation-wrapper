@@ -105,6 +105,16 @@ Azure currently runs three PR validation jobs in parallel:
 
 AppVeyor runs the full Windows desktop UI suite on `Visual Studio 2022`.
 
+### Stale build cancellation
+
+Azure Pipelines cancels stale pull-request validation runs through `pr.autoCancel: true` and batches
+stale branch pushes through `trigger.batch: true`.
+
+AppVeyor stale PR cancellation is handled by the project-level **Rolling builds** setting, not by
+`appveyor.yml`. Keep rolling builds enabled for pull requests and leave
+`rollingBuildsDoNotCancelRunningBuilds` disabled so queued and running stale PR builds are cancelled
+when a newer commit is pushed.
+
 ### Azure hosted smoke script
 
 ```yaml

@@ -1,6 +1,9 @@
 # AppVeyor remains the hosted Windows desktop UI gate for the full FlaUI suite.
 # Azure Pipelines owns linting, docs, packaging, deployment plumbing, and a
 # smaller hosted Windows smoke job.
+# Enable AppVeyor "Rolling builds" in project settings for pull requests so
+# stale PR builds are cancelled when newer commits arrive. AppVeyor documents
+# that setting as UI/API-level configuration, not an appveyor.yml key.
 version: 1.0.{build}
 image: Visual Studio 2022
 build: off

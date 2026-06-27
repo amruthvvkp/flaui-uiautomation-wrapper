@@ -3,6 +3,7 @@
 # Windows smoke job. AppVeyor remains the hosted full Windows desktop UI gate.
 
 trigger:
+  batch: true
   branches:
     include:
       - master
@@ -11,6 +12,7 @@ trigger:
       - v*
 
 pr:
+  autoCancel: true
   branches:
     include:
       - master
