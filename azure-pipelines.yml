@@ -119,7 +119,7 @@ stages:
             artifact: docs-site
 
       - job: windows_ui_tests
-        displayName: Windows UI tests - $(WINDOWS_VM_IMAGE) - Python $(ACTIVE_PYTHON_VERSION) x64
+        displayName: Windows UI tests - windows-2025-vs2026 - Python 3.12 x64
         pool:
           vmImage: $(WINDOWS_VM_IMAGE)
 
