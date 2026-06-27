@@ -1,96 +1,100 @@
-version: 1.0.{build}
-build: off
-branches:
-  except:
-    - master
-image: Visual Studio 2022
-environment:
-  UV_FROZEN: "1"
-  matrix:
-    # Supported range: Python 3.10 - 3.14 (x86 jobs kept commented for opt-in).
-    # - job_name: Python 3.10 x86
-    #   PYTHON: "C:\\Python310"
-    #   PYTHON_VERSION: 3.10
-    #   PYTHON_ARCH: 32
-
-    # - job_name: Python 3.11 x86
-    #   PYTHON: "C:\\Python311"
-    #   PYTHON_VERSION: 3.11
-    #   PYTHON_ARCH: 32
-
-    # - job_name: Python 3.12 x86
-    #   PYTHON: "C:\\Python312"
-    #   PYTHON_VERSION: 3.12
-    #   PYTHON_ARCH: 32
-
-    # - job_name: Python 3.10 x64
-    #   PYTHON: "C:\\Python310-x64"
-    #   PYTHON_VERSION: 3.10
-    #   PYTHON_ARCH: 64
-
-    # - job_name: Python 3.11 x64
-    #   PYTHON: "C:\\Python311"
-    #   PYTHON_VERSION: 3.11
-    #   PYTHON_ARCH: 64
-
-    - job_name: Python 3.12 x64
-      PYTHON: "C:\\Python312"
-      PYTHON_VERSION: 3.12
-      PYTHON_ARCH: 64
-
-init:
-  - SET PATH=%PYTHON%;%PYTHON%\Scripts;%USERPROFILE%\AppData\Roaming\Python\Python%PYTHON_VERSION:.=%\Scripts;%PATH%
-  - SET UV_PYTHON=%PYTHON_VERSION%
-  - ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%
-
-install:
-  - python --version
-  - powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-  - set PATH=C:\Users\appveyor\.local\bin;%PATH%
-  - uv --version || echo "uv is not installed!"
-
-test_script:
-  - ps: |
-      $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
-      Write-Host "Running tests with pytest..."
-      uv run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage coverage run -m pytest --junit-xml=test-results.xml --timeout=45 --timeout-method=thread --alluredir allure-results
-      if ($LASTEXITCODE -ne 0) { Write-Host "Tests failed."; exit 1 }
-      Write-Host "Tests completed."
-
-after_test:
-  - ps: |
-      $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
-      Write-Host "Generating test coverage report..."
-      uv run --with coverage coverage combine
-      uv run --with coverage coverage xml
-      uv run --with coverage coverage html
-      Write-Host "Coverage report generated."
-
-artifacts:
-  - path: test-results.xml
-    name: test-results
-
-  - path: coverage.xml
-    name: coverage
-
-  - path: htmlcov
-    name: coverage-html
-    type: directory
-
-  - path: allure-results
-    name: allure-results
-    type: directory
-
-on_success:
-  - ps: Write-Host "Unit Tests Succeeded!"
-
-on_failure:
-  - ps: Write-Host "Unit Tests Failed!"
-
-on_finish:
-  - ps: >-
-      $wc = New-Object 'System.Net.WebClient'
-
-      if (Test-Path .\test-results.xml) {
-        $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\test-results.xml))
-      }
+# AppVeyor backup only.
+# CI has moved to Azure Pipelines. Keep this commented copy temporarily as a
+# reference while validating hosted Windows UI automation in azure-pipelines.yml.
+#
+# version: 1.0.{build}
+# build: off
+# branches:
+#   except:
+#     - master
+# image: Visual Studio 2022
+# environment:
+#   UV_FROZEN: "1"
+#   matrix:
+#     # Supported range: Python 3.10 - 3.14 (x86 jobs kept commented for opt-in).
+#     # - job_name: Python 3.10 x86
+#     #   PYTHON: "C:\\Python310"
+#     #   PYTHON_VERSION: 3.10
+#     #   PYTHON_ARCH: 32
+#
+#     # - job_name: Python 3.11 x86
+#     #   PYTHON: "C:\\Python311"
+#     #   PYTHON_VERSION: 3.11
+#     #   PYTHON_ARCH: 32
+#
+#     # - job_name: Python 3.12 x86
+#     #   PYTHON: "C:\\Python312"
+#     #   PYTHON_VERSION: 3.12
+#     #   PYTHON_ARCH: 32
+#
+#     # - job_name: Python 3.10 x64
+#     #   PYTHON: "C:\\Python310-x64"
+#     #   PYTHON_VERSION: 3.10
+#     #   PYTHON_ARCH: 64
+#
+#     # - job_name: Python 3.11 x64
+#     #   PYTHON: "C:\\Python311"
+#     #   PYTHON_VERSION: 3.11
+#     #   PYTHON_ARCH: 64
+#
+#     - job_name: Python 3.12 x64
+#       PYTHON: "C:\\Python312"
+#       PYTHON_VERSION: 3.12
+#       PYTHON_ARCH: 64
+#
+# init:
+#   - SET PATH=%PYTHON%;%PYTHON%\Scripts;%USERPROFILE%\AppData\Roaming\Python\Python%PYTHON_VERSION:.=%\Scripts;%PATH%
+#   - SET UV_PYTHON=%PYTHON_VERSION%
+#   - ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%
+#
+# install:
+#   - python --version
+#   - powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+#   - set PATH=C:\Users\appveyor\.local\bin;%PATH%
+#   - uv --version || echo "uv is not installed!"
+#
+# test_script:
+#   - ps: |
+#       $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
+#       Write-Host "Running tests with pytest..."
+#       uv run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage coverage run -m pytest --junit-xml=test-results.xml --timeout=45 --timeout-method=thread --alluredir allure-results
+#       if ($LASTEXITCODE -ne 0) { Write-Host "Tests failed."; exit 1 }
+#       Write-Host "Tests completed."
+#
+# after_test:
+#   - ps: |
+#       $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
+#       Write-Host "Generating test coverage report..."
+#       uv run --with coverage coverage combine
+#       uv run --with coverage coverage xml
+#       uv run --with coverage coverage html
+#       Write-Host "Coverage report generated."
+#
+# artifacts:
+#   - path: test-results.xml
+#     name: test-results
+#
+#   - path: coverage.xml
+#     name: coverage
+#
+#   - path: htmlcov
+#     name: coverage-html
+#     type: directory
+#
+#   - path: allure-results
+#     name: allure-results
+#     type: directory
+#
+# on_success:
+#   - ps: Write-Host "Unit Tests Succeeded!"
+#
+# on_failure:
+#   - ps: Write-Host "Unit Tests Failed!"
+#
+# on_finish:
+#   - ps: >-
+#       $wc = New-Object 'System.Net.WebClient'
+#
+#       if (Test-Path .\test-results.xml) {
+#         $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\test-results.xml))
+#       }
