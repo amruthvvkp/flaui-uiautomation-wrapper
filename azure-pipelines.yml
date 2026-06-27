@@ -1,6 +1,6 @@
 # Azure Pipelines for the FlaUI Python wrapper.
-# The Windows UI test job starts with Python 3.12 x64 only. Enable the commented
-# matrix after the hosted Windows proof of concept is stable.
+# Azure owns fast validation, packaging, deployment plumbing, and a hosted
+# Windows smoke job. AppVeyor remains the hosted full Windows desktop UI gate.
 
 trigger:
   branches:
@@ -118,12 +118,12 @@ stages:
             displayName: Publish docs site artifact
             artifact: docs-site
 
-      - job: windows_ui_tests
-        displayName: Windows UI tests - windows-2022 - Python 3.12 x64
+      - job: windows_smoke_tests
+        displayName: Windows hosted smoke - windows-2022 - Python 3.12 x64
         pool:
           vmImage: $(WINDOWS_VM_IMAGE)
 
-        # Enable this matrix after the hosted-agent proof of concept is stable.
+        # Enable this matrix after the hosted-agent smoke job is stable.
         # strategy:
         #   matrix:
         #     Python310_Windows2022:
@@ -182,8 +182,8 @@ stages:
               path: "$(UV_PROJECT_ENVIRONMENT)"
 
           - pwsh: |
-              uv run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage coverage run -m pytest --junit-xml=test-results.xml --timeout=45 --timeout-method=thread --alluredir allure-results
-            displayName: Run pytest UI suite
+              uv run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage coverage run -m pytest tests/unit/lib tests/unit/core/test_identifiers.py --junit-xml=test-results.xml --timeout=45 --timeout-method=thread --alluredir allure-results
+            displayName: Run pytest hosted smoke suite
             env:
               UV_PYTHON: "$(ACTIVE_PYTHON_VERSION)"
               UV_FROZEN: "$(UV_FROZEN)"
@@ -243,7 +243,7 @@ stages:
               testResultsFiles: test-results.xml
               failTaskOnFailedTests: true
               failTaskOnMissingTestResultsFile: false
-              testRunTitle: Python $(ACTIVE_PYTHON_VERSION) x64 UI tests
+              testRunTitle: Python $(ACTIVE_PYTHON_VERSION) x64 hosted smoke tests
 
           - task: PublishCodeCoverageResults@2
             displayName: Publish coverage
