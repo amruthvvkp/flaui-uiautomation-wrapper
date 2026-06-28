@@ -17,7 +17,7 @@ import logging
 import time
 
 from flaui.lib.enums import UIAutomationTypes
-from flaui.lib.exceptions import ElementNotFound
+from flaui.lib.exceptions import ElementNotFound, NoClickablePointException
 
 from tests.test_utilities.base import FlaUITestBase
 from tests.test_utilities.elements.winforms_application import (
@@ -186,12 +186,23 @@ def get_ui_test_application(
         if test_application_type == "WinForms"
         else get_wpf_application_elements(application.get_main_window(automation))
     )
-    try:
-        elements.main_window.find_first_descendant(
-            condition=elements._cf.by_name("Simple Controls")
-        ).as_tab_item().click()
-    except ElementNotFound as e:
-        logger.error(f"Error: {e}")
+    # Navigate to the "Simple Controls" tab. The click is flaky on some matrix combos
+    # (notably UIA2_WinForms), where GetClickablePoint can momentarily raise
+    # NoClickablePointException, so retry a few times before giving up (best-effort, like the
+    # ElementNotFound case below). Mirrors the flaky-click handling tracked in Phase 0.
+    last_error: Exception | None = None
+    for _ in range(5):
+        try:
+            elements.main_window.find_first_descendant(
+                condition=elements._cf.by_name("Simple Controls")
+            ).as_tab_item().click()
+            last_error = None
+            break
+        except (ElementNotFound, NoClickablePointException) as e:
+            last_error = e
+            time.sleep(0.5)
+    if last_error is not None:
+        logger.error(f"Could not navigate to 'Simple Controls' tab after retries: {last_error}")
     yield elements
 
 
