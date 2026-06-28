@@ -265,7 +265,7 @@ class Mouse:
         if not post_wait:
             return
         if callable(post_wait):
-            post_wait()
+            post_wait()  # ty: ignore[call-top-callable]
             return
         if isinstance(post_wait, (int, float)):
             Wait.until_input_is_processed(float(post_wait))

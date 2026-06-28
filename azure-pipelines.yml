@@ -69,6 +69,13 @@ stages:
               UV_CACHE_DIR: "$(UV_CACHE_DIR)"
 
           - bash: |
+              uv run --group dev ty check flaui
+            displayName: Run ty (type check)
+            env:
+              UV_FROZEN: "$(UV_FROZEN)"
+              UV_CACHE_DIR: "$(UV_CACHE_DIR)"
+
+          - bash: |
               uv run --group dev interrogate flaui --fail-under=95 --generate-badge badges/interrogate_badge.svg
             displayName: Run Interrogate
             env:
@@ -381,12 +388,12 @@ stages:
                     PYPI_API_TOKEN: "$(PYPI_API_TOKEN)"
 
   - stage: deploy_docs
-    displayName: Deploy docs to GitHub Pages
+    displayName: Deploy versioned docs to GitHub Pages
     dependsOn: ci
     condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['PUBLISH_DOCS'], 'true'))
     jobs:
       - deployment: publish_docs
-        displayName: Publish docs
+        displayName: Publish versioned docs (mike)
         environment: github-pages
         pool:
           vmImage: ubuntu-latest
@@ -394,8 +401,41 @@ stages:
           runOnce:
             deploy:
               steps:
-                - download: current
-                  artifact: docs-site
+                # Need the full repo (not just the built artifact): mike commits the
+                # generated site onto the gh-pages branch, so it builds from source here.
+                - checkout: self
+                  fetchDepth: 0
+                  persistCredentials: true
+
+                - task: UsePythonVersion@0
+                  displayName: Use Python $(DOCS_PYTHON_VERSION)
+                  inputs:
+                    versionSpec: "$(DOCS_PYTHON_VERSION)"
+
+                - bash: |
+                    curl -LsSf https://astral.sh/uv/install.sh | sh
+                    echo "##vso[task.prependpath]$HOME/.local/bin"
+                    "$HOME/.local/bin/uv" --version
+                  displayName: Install uv
+
+                - bash: |
+                    set -euo pipefail
+                    # Tag build (refs/tags/vX.Y.Z) -> release version, alias `stable` (becomes default).
+                    # master build               -> rolling `dev` version, alias `latest`.
+                    if [[ "$(Build.SourceBranch)" == refs/tags/v* ]]; then
+                      VERSION="${BUILD_SOURCEBRANCHNAME#v}"
+                      ALIAS="stable"
+                      SET_DEFAULT="true"
+                    else
+                      VERSION="dev"
+                      ALIAS="latest"
+                      SET_DEFAULT="false"
+                    fi
+                    echo "Publishing docs version='${VERSION}' alias='${ALIAS}' set_default=${SET_DEFAULT}"
+                    echo "##vso[task.setvariable variable=DOCS_VERSION]${VERSION}"
+                    echo "##vso[task.setvariable variable=DOCS_ALIAS]${ALIAS}"
+                    echo "##vso[task.setvariable variable=DOCS_SET_DEFAULT]${SET_DEFAULT}"
+                  displayName: Resolve docs version and alias
 
                 - bash: |
                     set -euo pipefail
@@ -406,28 +446,24 @@ stages:
 
                     git config --global user.email "azure-pipelines@users.noreply.github.com"
                     git config --global user.name "Azure Pipelines"
-                    REMOTE="https://x-access-token:${GITHUB_PAGES_TOKEN}@github.com/amruthvvkp/flaui-uiautomation-wrapper.git"
+                    # Tokenised origin so mike can push the gh-pages branch.
+                    git remote set-url origin "https://x-access-token:${GITHUB_PAGES_TOKEN}@github.com/amruthvvkp/flaui-uiautomation-wrapper.git"
 
-                    if git ls-remote --exit-code --heads "$REMOTE" gh-pages >/dev/null 2>&1; then
-                      git clone --depth 1 --branch gh-pages "$REMOTE" gh-pages
-                    else
-                      git clone --depth 1 "$REMOTE" gh-pages
-                      cd gh-pages
-                      git checkout --orphan gh-pages
-                      git rm -rf . >/dev/null 2>&1 || true
-                      cd ..
-                    fi
+                    # Regenerate the bundled-versions include the docs build depends on.
+                    uv sync --group docs
+                    uv run python scripts/extract_versions.py
 
-                    rsync -a --delete "$(Pipeline.Workspace)/docs-site/" gh-pages/
-                    touch gh-pages/.nojekyll
-                    cd gh-pages
-                    git add .
-                    if git diff --cached --quiet; then
-                      echo "No docs changes to publish."
-                    else
-                      git commit -m "Deploy docs from Azure Pipelines"
-                      git push origin gh-pages
+                    # mike (Zensical's fork) builds the docs and commits them to gh-pages, keeping
+                    # each version under its own subdir and updating the moving alias. It is installed
+                    # on the fly from GitHub (intentionally not published to PyPI).
+                    MIKE_SPEC="mike @ git+https://github.com/squidfunk/mike.git"
+                    uv run --group docs --with "$MIKE_SPEC" \
+                      mike deploy --push --update-aliases "$DOCS_VERSION" "$DOCS_ALIAS"
+
+                    if [ "$DOCS_SET_DEFAULT" = "true" ]; then
+                      uv run --with "$MIKE_SPEC" mike set-default --push "$DOCS_ALIAS"
                     fi
-                  displayName: Publish site to gh-pages
+                  displayName: Publish versioned docs with mike
                   env:
                     GITHUB_PAGES_TOKEN: "$(GITHUB_PAGES_TOKEN)"
+                    UV_CACHE_DIR: "$(UV_CACHE_DIR)"

@@ -88,7 +88,7 @@ class PropertyCondition(BaseModel):
         return self.cs_condition.Property
 
     @property
-    def PropertyConditionFlags(self) -> PropertyConditionFlags:
+    def PropertyConditionFlags(self) -> "PropertyConditionFlags":  # ty: ignore[invalid-type-form]
         """Optional flags that are used when checking the property.
 
         :return: Property Condition Flags
