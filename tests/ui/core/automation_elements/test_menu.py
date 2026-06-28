@@ -4,7 +4,9 @@ from typing import Any, Dict, Generator, List
 
 from dirty_equals import DirtyEquals, HasAttributes, IsFalseLike, IsTrueLike
 from flaui.core.automation_elements import ConditionFactory, Menu
-from loguru import logger
+import logging
+
+logger = logging.getLogger(__name__)
 import pytest
 
 from tests.test_utilities.elements.winforms_application import WinFormsApplicationElements

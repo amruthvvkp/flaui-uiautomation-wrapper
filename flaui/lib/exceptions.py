@@ -25,8 +25,9 @@ The Python exceptions mirror the C# ``FlaUI.Core.Exceptions`` inheritance tree s
 ``System.Exception`` that is not a FlaUI error, so ``except FlaUIException`` should not catch it.
 """
 
+from contextlib import contextmanager
 from functools import wraps
-from typing import Any, Optional
+from typing import Any, Callable, Iterator, Optional, Union
 
 from FlaUI.Core.Exceptions import (  # type: ignore
     ElementNotAvailableException as CSharpElementNotAvailableException,
@@ -243,6 +244,127 @@ def _identifier(csharp_exception: Any, attr: str) -> Optional[Any]:
     return getattr(csharp_exception, attr, None)
 
 
+def _raise_translated(exception: Any, context: str) -> None:
+    """Re-raise a caught C# exception as its Python equivalent from the FlaUI hierarchy.
+
+    Checks are ordered most-derived first so a subclass is never swallowed by its base. The C#
+    exception text is preserved and the offending ``PropertyId``/``PatternId`` is forwarded where
+    available. This is the shared translation core used by both :func:`handle_csharp_exceptions`
+    and :func:`translate_exceptions`.
+
+    :param exception: The caught C# (``System.Exception``-derived) exception instance.
+    :param context: Human-readable description of the failing operation (e.g. a method name).
+    :raises PropertyNotSupportedException: When the C# call raises ``PropertyNotSupportedException``.
+    :raises PatternNotSupportedException: When the C# call raises ``PatternNotSupportedException``.
+    :raises NotSupportedException: When the C# call raises ``NotSupportedException``.
+    :raises PropertyNotCachedException: When the C# call raises ``PropertyNotCachedException``.
+    :raises PatternNotCachedException: When the C# call raises ``PatternNotCachedException``.
+    :raises NotCachedException: When the C# call raises ``NotCachedException``.
+    :raises NotSupportedByFrameworkException: When the C# call raises ``NotSupportedByFrameworkException``.
+    :raises ProxyAssemblyNotLoadedException: When the C# call raises ``ProxyAssemblyNotLoadedException``.
+    :raises NoClickablePointException: When the C# call raises ``NoClickablePointException``.
+    :raises MethodNotSupportedException: When the C# call raises ``MethodNotSupportedException``.
+    :raises ElementNotEnabledException: When the C# call raises ``ElementNotEnabledException``.
+    :raises ElementNotAvailableException: When the C# call raises ``ElementNotAvailableException``.
+    :raises FlaUIException: When the C# call raises any other ``FlaUIException``.
+    :raises SystemException: When the C# call raises a non-FlaUI ``System.Exception``.
+    """
+    e = exception
+    if isinstance(e, CSharpPropertyNotSupportedException):
+        raise PropertyNotSupportedException(
+            f"The property or method '{context}' is not supported: {e}",
+            property_id=_identifier(e, "Property"),
+        ) from e
+    if isinstance(e, CSharpPatternNotSupportedException):
+        raise PatternNotSupportedException(
+            f"The pattern for '{context}' is not supported: {e}",
+            pattern_id=_identifier(e, "Pattern"),
+        ) from e
+    if isinstance(e, CSharpNotSupportedException):
+        raise NotSupportedException(f"The property or method '{context}' is not supported: {e}") from e
+    if isinstance(e, CSharpPropertyNotCachedException):
+        raise PropertyNotCachedException(
+            f"The property or method '{context}' is not cached: {e}",
+            property_id=_identifier(e, "Property"),
+        ) from e
+    if isinstance(e, CSharpPatternNotCachedException):
+        raise PatternNotCachedException(
+            f"The pattern for '{context}' is not cached: {e}",
+            pattern_id=_identifier(e, "Pattern"),
+        ) from e
+    if isinstance(e, CSharpNotCachedException):
+        raise NotCachedException(f"The property or method '{context}' is not cached: {e}") from e
+    if isinstance(e, CSharpNotSupportedByFrameworkException):
+        raise NotSupportedByFrameworkException(
+            f"The property or method '{context}' is not supported by the framework: {e}"
+        ) from e
+    if isinstance(e, CSharpProxyAssemblyNotLoadedException):
+        raise ProxyAssemblyNotLoadedException(
+            f"The property or method '{context}' caused a ProxyAssemblyNotLoadedException: {e}"
+        ) from e
+    if isinstance(e, CSharpNoClickablePointException):
+        raise NoClickablePointException(
+            f"The property or method '{context}' caused a NoClickablePointException: {e}"
+        ) from e
+    if isinstance(e, CSharpMethodNotSupportedException):
+        raise MethodNotSupportedException(f"The property or method '{context}' is not supported: {e}") from e
+    if isinstance(e, CSharpElementNotEnabledException):
+        raise ElementNotEnabledException(
+            f"The property or method '{context}' caused an ElementNotEnabledException: {e}"
+        ) from e
+    if isinstance(e, CSharpElementNotAvailableException):
+        raise ElementNotAvailableException(
+            f"The property or method '{context}' caused an ElementNotAvailableException: {e}"
+        ) from e
+    if isinstance(e, CSharpFlaUIException):
+        raise FlaUIException(f"The property or method '{context}' caused a FlaUIException: {e}") from e
+    raise SystemException(f"The property or method '{context}' caused an exception: {e}") from e
+
+
+@contextmanager
+def _translate_exceptions_block(context: str) -> Iterator[None]:
+    """Context manager body that translates C# exceptions raised inside the block.
+
+    :param context: Human-readable description used in the raised exception message.
+    :yield: None.
+    """
+    try:
+        yield
+    except System.Exception as e:  # noqa: F821 - C# base exception type
+        _raise_translated(e, context)
+
+
+def translate_exceptions(arg: Union[Callable[..., Any], str, None] = None) -> Any:
+    """Translate C# FlaUI exceptions into their Python equivalents (decorator or context manager).
+
+    This is the Pythonic, user-facing entry point. It supports three forms:
+
+    .. code-block:: python
+
+        # 1. Bare decorator
+        @translate_exceptions
+        def do_thing(): ...
+
+        # 2. Decorator with a context label
+        @translate_exceptions("clicking the button")
+        def click(): ...
+
+        # 3. Context manager around an arbitrary block of interop code
+        with translate_exceptions("reading the value"):
+            value = element.raw_element.Value
+
+    :param arg: When used as a bare decorator this is the wrapped function; when used as a context
+        manager (or parametrized decorator) this is an optional human-readable context label.
+    :return: The wrapped function (bare-decorator form) or a context manager that doubles as a
+        parametrized decorator.
+    """
+    if callable(arg):
+        # Form 1: used directly as @translate_exceptions
+        return handle_csharp_exceptions(arg)
+    # Forms 2 & 3: the contextmanager result is also usable as a decorator (ContextDecorator).
+    return _translate_exceptions_block(arg or "operation")
+
+
 def handle_csharp_exceptions(func):
     """Wrap a function so C# FlaUI exceptions are re-raised as their Python equivalents.
 
@@ -273,55 +395,7 @@ def handle_csharp_exceptions(func):
         """Invoke ``func`` and translate any C# exception into its Python equivalent."""
         try:
             return func(*args, **kwargs)
-        except CSharpPropertyNotSupportedException as e:
-            raise PropertyNotSupportedException(
-                f"The property or method '{func.__name__}' is not supported: {e}",
-                property_id=_identifier(e, "Property"),
-            ) from e
-        except CSharpPatternNotSupportedException as e:
-            raise PatternNotSupportedException(
-                f"The pattern for '{func.__name__}' is not supported: {e}",
-                pattern_id=_identifier(e, "Pattern"),
-            ) from e
-        except CSharpNotSupportedException as e:
-            raise NotSupportedException(f"The property or method '{func.__name__}' is not supported: {e}") from e
-        except CSharpPropertyNotCachedException as e:
-            raise PropertyNotCachedException(
-                f"The property or method '{func.__name__}' is not cached: {e}",
-                property_id=_identifier(e, "Property"),
-            ) from e
-        except CSharpPatternNotCachedException as e:
-            raise PatternNotCachedException(
-                f"The pattern for '{func.__name__}' is not cached: {e}",
-                pattern_id=_identifier(e, "Pattern"),
-            ) from e
-        except CSharpNotCachedException as e:
-            raise NotCachedException(f"The property or method '{func.__name__}' is not cached: {e}") from e
-        except CSharpNotSupportedByFrameworkException as e:
-            raise NotSupportedByFrameworkException(
-                f"The property or method '{func.__name__}' is not supported by the framework: {e}"
-            ) from e
-        except CSharpProxyAssemblyNotLoadedException as e:
-            raise ProxyAssemblyNotLoadedException(
-                f"The property or method '{func.__name__}' caused a ProxyAssemblyNotLoadedException: {e}"
-            ) from e
-        except CSharpNoClickablePointException as e:
-            raise NoClickablePointException(
-                f"The property or method '{func.__name__}' caused a NoClickablePointException: {e}"
-            ) from e
-        except CSharpMethodNotSupportedException as e:
-            raise MethodNotSupportedException(f"The property or method '{func.__name__}' is not supported: {e}") from e
-        except CSharpElementNotEnabledException as e:
-            raise ElementNotEnabledException(
-                f"The property or method '{func.__name__}' caused an ElementNotEnabledException: {e}"
-            ) from e
-        except CSharpElementNotAvailableException as e:
-            raise ElementNotAvailableException(
-                f"The property or method '{func.__name__}' caused an ElementNotAvailableException: {e}"
-            ) from e
-        except CSharpFlaUIException as e:
-            raise FlaUIException(f"The property or method '{func.__name__}' caused a FlaUIException: {e}") from e
         except System.Exception as e:
-            raise SystemException(f"The property or method '{func.__name__}' caused an exception: {e}") from e
+            _raise_translated(e, func.__name__)
 
     return wrapper

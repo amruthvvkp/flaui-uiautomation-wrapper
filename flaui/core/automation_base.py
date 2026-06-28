@@ -13,6 +13,7 @@ from flaui.lib.system.drawing import Point
 
 if TYPE_CHECKING:
     from flaui.core.automation_elements import AutomationElement
+    from flaui.core.overlay import OverlayManager
 
 
 class AutomationBase(BaseModel):
@@ -62,9 +63,11 @@ class AutomationBase(BaseModel):
 
     @property
     @handle_csharp_exceptions
-    def overlay_manager(self) -> Any:
-        """Return the C# overlay manager."""
-        return self.raw_automation.OverlayManager
+    def overlay_manager(self) -> "OverlayManager":
+        """Return a Python wrapper around the C# overlay manager (visual-debugging overlays)."""
+        from flaui.core.overlay import OverlayManager
+
+        return OverlayManager(raw_overlay_manager=self.raw_automation.OverlayManager)
 
     @property
     @handle_csharp_exceptions

@@ -53,7 +53,9 @@ from flaui.lib.enums import UIAutomationTypes
 from flaui.lib.exceptions import ElementNotFound
 from flaui.lib.system.drawing import Point, Rectangle
 from hamcrest import assert_that, calling, instance_of, raises
-from loguru import logger
+import logging
+
+logger = logging.getLogger(__name__)
 import pytest
 
 from tests.test_utilities.elements.winforms_application import WinFormsApplicationElements

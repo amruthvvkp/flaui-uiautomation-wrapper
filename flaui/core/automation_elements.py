@@ -73,6 +73,34 @@ class ElementModel(BaseModel, abc.ABC):  # pragma: no cover
 class ElementBase(ElementModel, abc.ABC):  # pragma: no cover
     """Automation Element base abstract class"""
 
+    def __repr__(self) -> str:
+        """Return a concise, safe debug representation of the element.
+
+        Shows the control type, automation id, and name when readable. Never raises — any C# access
+        error is swallowed so ``repr()`` stays safe to call while debugging.
+
+        :return: A string like ``<Button control_type='Button' automation_id='ok' name='OK'>``.
+        """
+
+        def _safe(attr: str) -> Any:
+            """Read an element attribute without raising; return None on failure/empty."""
+            try:
+                value = getattr(self, attr)
+            except Exception:
+                return None
+            return getattr(value, "name", value) or None
+
+        fields = [
+            f"{key}={val!r}"
+            for key, val in (
+                ("control_type", _safe("control_type")),
+                ("automation_id", _safe("automation_id")),
+                ("name", _safe("name")),
+            )
+            if val is not None
+        ]
+        return f"<{type(self).__name__} {' '.join(fields)}>" if fields else f"<{type(self).__name__}>"
+
     @property
     @handle_csharp_exceptions
     def actual_height(self) -> int:

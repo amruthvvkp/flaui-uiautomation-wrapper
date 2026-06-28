@@ -30,6 +30,9 @@ nav = [
       { "Patterns" = "api/patterns.md" },
       { "XPath Navigator" = "api/xpath_navigator.md" },
       { "Event Handlers" = "api/event_handlers.md" },
+      { "Capturing & Video" = "api/capturing.md" },
+      { "Overlay" = "api/overlay.md" },
+      { "Logging" = "api/logging.md" },
     ] },
     { "Input" = [
       { "Mouse" = "api/mouse.md" },
