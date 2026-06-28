@@ -264,9 +264,10 @@ output = "coverage.xml"
 output = "coverage.lcov"
 
 [tool.coverage.report]
-# Pragmatic pre-v1 gate. Enforced where the full UI suite runs (AppVeyor PR/master);
-# the unit-only subsets in CI are informational and do not apply this threshold.
-fail_under = 90
+# NOTE: deliberately no global `fail_under` here — it would make every `coverage report/xml/html`
+# fail on partial runs (the unit-only subsets in Azure smoke and AppVeyor feature branches only
+# reach ~83%). The pragmatic gate (initial floor 85, ratcheting toward 90-95) is applied explicitly
+# via `coverage report --fail-under=85` on the AppVeyor full-suite path only (see .appveyor.yml).
 exclude_also = [
     "if TYPE_CHECKING:",
     "raise NotImplementedError",

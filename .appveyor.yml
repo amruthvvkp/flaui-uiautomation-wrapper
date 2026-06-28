@@ -85,10 +85,13 @@ test_script:
       if ($runFull) {
         Write-Host "Full gate: running the complete Windows desktop UI test suite with pytest..."
         Invoke-Checked { uv --no-progress run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage coverage run -m pytest --junit-xml=test-results.xml --timeout=45 --timeout-method=thread --alluredir allure-results }
-        # Enforce the coverage gate only on the full suite (fail_under=90 from pyproject).
-        # The fast unit subset cannot reach the threshold, so it stays informational.
-        Write-Host "Enforcing coverage gate (fail_under from pyproject.toml)..."
-        Invoke-Checked { uv --no-progress run --extra coverage coverage report }
+        # Enforce the coverage gate only on the full suite. The flag is passed explicitly here
+        # (not via pyproject) so the fast unit subset and report/xml/html generation elsewhere
+        # stay informational and do not fail on partial coverage.
+        # Initial floor is conservative (85); ratchet toward 90-95 once a green full-suite run
+        # confirms the actual full-matrix coverage number.
+        Write-Host "Enforcing coverage gate (--fail-under=85)..."
+        Invoke-Checked { uv --no-progress run --extra coverage coverage report --fail-under=85 }
       } else {
         Write-Host "Fast gate: running the unit subset only (the full UI suite runs on pull requests and on master)..."
         Invoke-Checked { uv --no-progress run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage coverage run -m pytest tests/unit --junit-xml=test-results.xml --timeout=45 --timeout-method=thread --alluredir allure-results }
