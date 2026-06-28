@@ -4,7 +4,9 @@ from typing import Any, Generator
 
 from dirty_equals import IsApprox
 from flaui.core.automation_elements import Slider
-from loguru import logger
+import logging
+
+logger = logging.getLogger(__name__)
 import pytest
 
 from tests.test_utilities.elements.winforms_application import WinFormsApplicationElements

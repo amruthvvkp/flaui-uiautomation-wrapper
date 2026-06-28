@@ -24,6 +24,7 @@ from flaui.lib.exceptions import (
     PropertyNotSupportedException,
     ProxyAssemblyNotLoadedException,
     SystemException,
+    translate_exceptions,
 )
 
 
@@ -128,3 +129,52 @@ class TestHandleCsharpExceptions:
 
         with pytest.raises(SystemException):
             boom()
+
+
+class TestTranslateExceptions:
+    """Validate the public ``translate_exceptions`` decorator/context-manager (GH-73)."""
+
+    def test_bare_decorator(self) -> None:
+        """``@translate_exceptions`` (no args) translates C# exceptions and includes the func name."""
+
+        @translate_exceptions
+        def boom() -> None:
+            """Raise a C# FlaUIException."""
+            raise CSharpFlaUIException("kaboom")
+
+        with pytest.raises(FlaUIException) as info:
+            boom()
+        assert "boom" in str(info.value)
+        assert isinstance(info.value.__cause__, CSharpFlaUIException)
+
+    def test_parametrized_decorator_uses_context_label(self) -> None:
+        """``@translate_exceptions("label")`` includes the supplied context in the message."""
+
+        @translate_exceptions("doing the thing")
+        def boom() -> None:
+            """Raise a raw C# System exception."""
+            raise System.InvalidOperationException("sys")
+
+        with pytest.raises(SystemException) as info:
+            boom()
+        assert "doing the thing" in str(info.value)
+
+    def test_context_manager_translates_and_chains(self) -> None:
+        """``with translate_exceptions(...)`` translates exceptions raised inside the block."""
+        with pytest.raises(SystemException) as info:
+            with translate_exceptions("reading a value"):
+                raise System.InvalidOperationException("sys")
+        assert "reading a value" in str(info.value)
+        assert isinstance(info.value.__cause__, System.InvalidOperationException)
+
+    def test_context_manager_preserves_subtype(self) -> None:
+        """A C# ``PatternNotSupportedException`` keeps its specific Python type in a block."""
+        with pytest.raises(PatternNotSupportedException):
+            with translate_exceptions():
+                raise CSharpPatternNotSupportedException()
+
+    def test_context_manager_passes_through_on_success(self) -> None:
+        """No exception is raised when the block succeeds."""
+        with translate_exceptions("ok"):
+            value = 1 + 1
+        assert value == 2
