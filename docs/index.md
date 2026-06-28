@@ -1,10 +1,32 @@
 # FlaUI for Python
 
-> The premier Windows UI Automation library for Python.
+> The complete FlaUI Windows UI Automation API — made Pythonic, typed, and batteries-included.
 
 ![FlaUI Logo](logo.png)
 
+<p class="hero-badges" markdown>
+[![PyPI version](https://img.shields.io/pypi/v/flaui-uiautomation-wrapper?color=2dd4bf&label=PyPI)](https://pypi.org/project/flaui-uiautomation-wrapper/)
+[![Python versions](https://img.shields.io/pypi/pyversions/flaui-uiautomation-wrapper?color=2dd4bf)](https://pypi.org/project/flaui-uiautomation-wrapper/)
+[![License](https://img.shields.io/pypi/l/flaui-uiautomation-wrapper?color=2dd4bf)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/blob/master/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/amruthvvkp/flaui-uiautomation-wrapper?style=flat&color=2dd4bf)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper)
+</p>
+
+Automate any Windows application — WinForms, WPF, Win32, or Store apps — from Python with a clean,
+fully typed API that maps **1:1** to the battle-tested [FlaUI](https://github.com/FlaUI/FlaUI) C#
+library. No driver binaries to manage, no framework lock-in.
+
+[Get started](basics.md){ .md-button .md-button--primary }
+[API Reference](api/index.md){ .md-button }
+[Why FlaUI for Python?](motivation.md){ .md-button }
+
 ## Get Started
+
+!!! note "Why the C# examples?"
+
+    Upstream [FlaUI](https://github.com/FlaUI/FlaUI) has limited written documentation, so
+    throughout these docs we pair each Python snippet with the **equivalent C# code** for
+    reference. If you have seen a pattern in the original C# library, the side-by-side tabs make
+    it easy to map it onto the Python API.
 
 === "Python"
 
@@ -33,21 +55,59 @@
     mainWindow.FindFirstByXPath("//Button[@Name='OK']").AsButton().Invoke();
     ```
 
-## Why FlaUI?
+## Why FlaUI for Python?
 
-FlaUI provides a modern, clean, and typed API for automating Windows applications.
+<div class="grid cards" markdown>
 
-- **Native UI Automation**: Built on Microsoft's UI Automation (UIA) technology, allowing you to inspect and interact with any Windows application (WinForms, WPF, Store Apps, etc.).
-- **Modern & Typed**: Fully typed with **Pydantic** models, offering excellent IDE support, autocompletion, and compile-time-like checks.
-- **Batteries Included**: Zero-configuration setup. All necessary dependencies are bundled, so you don't need to manage external driver binaries.
-- **Rich Interaction Model**: Beyond simple clicks, FlaUI fully supports complex UIA patterns (Toggle, Select, Expand, Scroll, etc.) for robust application control.
+-   :material-microsoft-windows:{ .lg .middle } __Native UI Automation__
 
-## Key Features
+    ---
 
-- **Dual-Backend Support**: Seamlessly switch between UIA3 (COM-based, recommended for modern apps) and UIA2 (Managed, for legacy apps).
-- **Advanced Element Search**: flexible strategies including Accessibility ID, Name, XPath, or arbitrary condition logic.
-- **Resilient Automation**: Built-in mechanisms for `Retry`, dynamic timeouts, and input waiting ensure your tests aren't flaky.
-- **Drawing & Debugging**: Helpers to highlight elements on screen during test execution.
+    Built on Microsoft's UI Automation (UIA) so you can inspect and drive any Windows
+    application — WinForms, WPF, Win32, and Store apps alike.
+
+-   :material-shield-check:{ .lg .middle } __Modern & Typed__
+
+    ---
+
+    Every element, pattern, and coordinate is backed by **Pydantic** — giving you
+    autocompletion, IDE intellisense, and validation before calls cross the interop boundary.
+
+-   :material-battery-charging:{ .lg .middle } __Batteries Included__
+
+    ---
+
+    Zero-configuration setup. All FlaUI DLLs are bundled in the wheel — no driver binaries or
+    external runtimes to manage.
+
+-   :material-swap-horizontal:{ .lg .middle } __Dual-Backend Support__
+
+    ---
+
+    Switch seamlessly between **UIA3** (COM-based, for modern apps) and **UIA2** (managed, for
+    legacy apps) with a single argument.
+
+-   :material-magnify:{ .lg .middle } __Advanced Element Search__
+
+    ---
+
+    Find elements by Accessibility ID, Name, XPath, or arbitrary `ConditionFactory` logic — plus
+    a full set of UIA patterns (Toggle, Select, Expand, Scroll, …).
+
+-   :material-shield-refresh:{ .lg .middle } __Resilient & Debuggable__
+
+    ---
+
+    Built-in `Retry`, dynamic timeouts, and input waiting keep tests stable; on-screen overlays,
+    capture, and video recording make failures easy to diagnose.
+
+</div>
+
+## Works with any test framework
+
+No lock-in to a single runner. Use FlaUI for Python with **pytest**, **unittest**,
+**Robot Framework**, **Behave**, **TestPlan**, or your own harness — see the
+[Examples](examples/pytest.md).
 
 ## Bundled Library Versions
 
@@ -67,3 +127,4 @@ FlaUI provides a modern, clean, and typed API for automating Windows application
 - **[Advanced Concepts](advanced.md)**: Master XPath, ConditionFactory, and Caching.
 - **[API Reference](api/index.md)**: Explore the full method documentation for every control.
 - **[Troubleshooting](troubleshooting.md)**: Resolve common setup and finding issues.
+- **[Road to v1.0](release-plan.md)**: See how the project gets to a stable `v1.0.0`, how to test betas, and how docs are versioned.
