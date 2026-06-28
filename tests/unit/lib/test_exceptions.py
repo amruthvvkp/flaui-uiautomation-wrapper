@@ -1,9 +1,21 @@
 """Unit tests for the FlaUI exception hierarchy and the C# -> Python translation decorator."""
 
 from FlaUI.Core.Exceptions import (  # type: ignore
+    ElementNotAvailableException as CSharpElementNotAvailableException,
+    ElementNotEnabledException as CSharpElementNotEnabledException,
     FlaUIException as CSharpFlaUIException,
+    MethodNotSupportedException as CSharpMethodNotSupportedException,
+    NoClickablePointException as CSharpNoClickablePointException,
+    NotCachedException as CSharpNotCachedException,
+    NotSupportedByFrameworkException as CSharpNotSupportedByFrameworkException,
+    NotSupportedException as CSharpNotSupportedException,
+    PatternNotCachedException as CSharpPatternNotCachedException,
     PatternNotSupportedException as CSharpPatternNotSupportedException,
+    PropertyNotCachedException as CSharpPropertyNotCachedException,
+    PropertyNotSupportedException as CSharpPropertyNotSupportedException,
+    ProxyAssemblyNotLoadedException as CSharpProxyAssemblyNotLoadedException,
 )
+from FlaUI.Core.Identifiers import PatternId, PropertyId  # type: ignore
 import pytest
 import System  # type: ignore
 
@@ -178,3 +190,109 @@ class TestTranslateExceptions:
         with translate_exceptions("ok"):
             value = 1 + 1
         assert value == 2
+
+
+def _property_id() -> PropertyId:
+    """Build a throwaway C# ``PropertyId`` for exceptions that require one.
+
+    :return: A C# ``PropertyId`` instance.
+    """
+    return PropertyId(30005, "TestProp")
+
+
+def _pattern_id() -> PatternId:
+    """Build a throwaway C# ``PatternId``.
+
+    :return: A C# ``PatternId`` instance.
+    """
+    return PatternId(10000, "TestPattern", None)
+
+
+class TestExceptionInstantiation:
+    """Instantiate every Python exception class so default-message ``__init__`` paths run."""
+
+    @pytest.mark.parametrize(
+        "exc",
+        [
+            ElementNotAvailableException,
+            ElementNotEnabledException,
+            MethodNotSupportedException,
+            NoClickablePointException,
+            NotSupportedByFrameworkException,
+            ProxyAssemblyNotLoadedException,
+            NotCachedException,
+            NotSupportedException,
+            PropertyNotSupportedException,
+            PatternNotSupportedException,
+            PropertyNotCachedException,
+            PatternNotCachedException,
+            ElementNotFound,
+            FlaUIException,
+            SystemException,
+        ],
+    )
+    def test_default_message(self, exc: type) -> None:
+        """Each exception is constructible with no args and carries a non-empty message."""
+        instance = exc()
+        assert str(instance)
+
+
+class TestTranslationLadder:
+    """Exercise every branch of the C# -> Python translation ladder (``_raise_translated``)."""
+
+    @pytest.mark.parametrize(
+        "cs_factory, expected",
+        [
+            (lambda: CSharpPropertyNotSupportedException(_property_id()), PropertyNotSupportedException),
+            (lambda: CSharpPatternNotSupportedException(), PatternNotSupportedException),
+            (lambda: CSharpNotSupportedException(), NotSupportedException),
+            (lambda: CSharpPropertyNotCachedException(), PropertyNotCachedException),
+            (lambda: CSharpPatternNotCachedException(), PatternNotCachedException),
+            (lambda: CSharpNotCachedException(), NotCachedException),
+            (lambda: CSharpNotSupportedByFrameworkException(), NotSupportedByFrameworkException),
+            (lambda: CSharpProxyAssemblyNotLoadedException(), ProxyAssemblyNotLoadedException),
+            (lambda: CSharpNoClickablePointException(), NoClickablePointException),
+            (lambda: CSharpMethodNotSupportedException(), MethodNotSupportedException),
+            (lambda: CSharpElementNotEnabledException(), ElementNotEnabledException),
+            (lambda: CSharpElementNotAvailableException(), ElementNotAvailableException),
+            (lambda: CSharpFlaUIException(), FlaUIException),
+        ],
+    )
+    def test_each_csharp_type_maps_to_python_type(self, cs_factory, expected: type) -> None:
+        """Each specific C# exception maps to its specific Python type, with the original chained."""
+        cs_instance = cs_factory()
+
+        @handle_csharp_exceptions
+        def boom() -> None:
+            """Raise the parametrized C# exception."""
+            raise cs_instance
+
+        with pytest.raises(expected) as info:
+            boom()
+        # Most-derived match: the raised type is exactly ``expected``, not merely a base.
+        assert type(info.value) is expected
+        assert info.value.__cause__ is cs_instance
+
+    def test_property_id_forwarded_from_csharp(self) -> None:
+        """A C# ``PropertyNotSupportedException`` forwards its ``PropertyId`` to the Python exception."""
+
+        @handle_csharp_exceptions
+        def boom() -> None:
+            """Raise a C# PropertyNotSupportedException carrying a PropertyId."""
+            raise CSharpPropertyNotSupportedException(_property_id())
+
+        with pytest.raises(PropertyNotSupportedException) as info:
+            boom()
+        assert info.value.property_id is not None
+
+    def test_pattern_id_forwarded_from_csharp(self) -> None:
+        """A C# ``PatternNotSupportedException`` forwards its ``PatternId`` to the Python exception."""
+
+        @handle_csharp_exceptions
+        def boom() -> None:
+            """Raise a C# PatternNotSupportedException carrying a PatternId."""
+            raise CSharpPatternNotSupportedException(_pattern_id())
+
+        with pytest.raises(PatternNotSupportedException) as info:
+            boom()
+        assert info.value.pattern_id is not None
