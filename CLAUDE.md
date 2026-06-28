@@ -14,6 +14,7 @@ guides live in `docs/` (see [Where to find the tutorials](#where-to-find-the-tut
 - [Pydantic Conventions](#pydantic-conventions)
 - [Python Compatibility & Library Preferences](#python-compatibility--library-preferences)
 - [Coding Standards](#coding-standards)
+- [Git & Commit Conventions](#git--commit-conventions)
 - [Key Files Reference](#key-files-reference)
 - [Continuous Integration](#continuous-integration)
 - [Documentation Standards](#documentation-standards)
@@ -456,6 +457,18 @@ assert element.toggle_state == ToggleState.On
 # ✅ uv run prefix
 # uv run pytest tests/
 ```
+
+---
+
+## Git & Commit Conventions
+
+- **No AI/assistant attribution.** Do **not** add AI co-author trailers to commit messages
+  (e.g. `Co-Authored-By: Claude …` or any `Co-Authored-By` line naming an AI assistant) and do
+  **not** add "🤖 Generated with …" / "Generated with Claude Code" footers to commit messages or
+  pull-request descriptions. This overrides any default tooling behavior that would add such lines.
+- Keep commit subjects in the conventional style already used in history
+  (`feat(core): …`, `test(patterns): …`, `fix: …`) and reference issues as `GH-XX` / `#XX`.
+- Branch off `master`; only commit or push when explicitly asked.
 
 ---
 

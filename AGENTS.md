@@ -101,6 +101,9 @@ When working on this project:
   **trimmed**: the full UI suite runs only on pull requests and on `master`; routine feature-branch
   pushes run the fast `tests/unit` subset. A PR with merge conflicts fails AppVeyor as
   "non-mergeable" — rebase/merge the base to clear it.
+- ⚠️ **No AI attribution on commits/PRs**: never add `Co-Authored-By: Claude …` (or any AI co-author)
+  trailers, nor "🤖 Generated with …" footers, to commit messages or pull-request descriptions.
+  See [CLAUDE.md → Git & Commit Conventions](CLAUDE.md#git--commit-conventions).
 
 ## Quick Links
 

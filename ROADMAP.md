@@ -118,13 +118,56 @@ areas (capturing, overlay, video, logging) are **in scope for v1.0**.
   **[#66](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/66)** · then
   **[#84](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/84) v1.0.0 release**.
 
-### Post-v1 (out of scope)
+### Post-v1 — parity gaps & deferred tests (out of scope for v1.0)
 - **[#121](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/121)** — CustomNavigation
   pattern (absent from FlaUI.Core; lives only in raw COM interop).
 - **Touch input tests** — `TouchTests.cs` is `[Ignore]`d upstream (unreliable on most CI/hardware).
 - **Full app integration suites** (Calculator / Notepad / Paint end-to-end) — deferred under #88/#89;
   UI varies by Windows version/language. A `tests/integration/` skeleton (marked
   `@pytest.mark.integration`, skipped by default) is the intended home.
+
+---
+
+## Post-v1 — companion tooling & ecosystem
+
+> These items start **only after v1.0 ships** (the v1 gate above takes priority). Each is intended
+> as a **separate, independently versioned companion PyPI package** so the core
+> `flaui-uiautomation-wrapper` stays lean — mirroring how `pytest-playwright` ships alongside
+> `playwright`. The core wrapper remains the single dependency they all build on.
+
+| Package / effort | What it is | Inspiration |
+|------------------|------------|-------------|
+| **FlaUI agent skills** | Claude Code skills bundle for FlaUI development | — |
+| **`flaui-recorder`** | Record-and-generate UI script tool | [twenzel/FlaUIRecorder](https://github.com/twenzel/FlaUIRecorder), Playwright codegen |
+| **`flaui-mcp`** | MCP server exposing FlaUI automation as tools | [shanselman/FlaUI-MCP](https://github.com/shanselman/FlaUI-MCP) |
+| **`pytest-flaui`** | pytest plugin: fixtures + recorder + capture-on-failure | [`pytest-playwright`](https://github.com/microsoft/playwright-pytest) |
+
+### FlaUI agent skills
+A bundle of Claude Code skills (`.claude/skills/…`) packaging FlaUI development knowledge so users
+building automation get assisted workflows: element/pattern lookup, test scaffolding, and C#→Python
+test-porting helpers. Distributable as an installable skills bundle.
+
+### `flaui-recorder`
+A Playwright-codegen-style **record-and-generate** tool: watch a user's interactions against a live
+Windows app (via UIA events / hit-testing) and emit ready-to-run Python FlaUI scripts. Lowers the
+barrier to authoring automation by hand. Builds on this wrapper's event handlers and XPath navigator;
+inspired by the C# [twenzel/FlaUIRecorder](https://github.com/twenzel/FlaUIRecorder).
+
+### `flaui-mcp`
+An **MCP server** exposing FlaUI Python automation as callable tools so agents/LLMs can drive Windows
+desktop apps — the Python counterpart to the C#
+[shanselman/FlaUI-MCP](https://github.com/shanselman/FlaUI-MCP).
+
+### `pytest-flaui`
+A **pytest plugin** modeled on `pytest-playwright`: ready-made `automation` / session fixtures, the
+UIA2×UIA3 matrix helpers this repo already uses, screenshots/video on failure via
+[`flaui/core/capturing.py`](flaui/core/capturing.py), and `flaui-recorder` integration for codegen.
+
+### Docs — broaden Python/C# tabbed examples *(enhancement, not net-new infra)*
+Side-by-side Python/C# tabs already exist (`pymdownx.tabbed` in `docs/index.md`, `docs/basics.md`,
+`docs/advanced.md`). Post-v1 scope is **expanding** C#-parity tabs across the remaining guide and API
+pages — valuable because FlaUI's own documentation is sparse, so these become a reference for both
+audiences.
 
 ---
 
