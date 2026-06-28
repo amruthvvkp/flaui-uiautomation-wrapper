@@ -19,7 +19,7 @@ from flaui.core.automation_elements import (
     TextBox,
 )
 from flaui.core.definitions import ControlType
-from flaui.lib.exceptions import ElementNotFound
+from flaui.lib.exceptions import ElementNotFound, FlaUIException, SystemException
 
 from tests.test_utilities.elements.wpf_application.common import AbtstractControlCollection
 from tests.test_utilities.elements.wpf_application.constants import ApplicationTabIndex
@@ -234,39 +234,46 @@ class SimpleControlsElements(AbtstractControlCollection):
         which is the root cause of GH-74. ControlType + Name are stable across that instability.
 
         The lookup is retried a few times because in bulk runs the UIA tree can momentarily be
-        incomplete (a transient ``REGDB_E_IIDNOTREG`` COM hiccup during element discovery), which
-        is the flakiness called out in GH-74.
+        incomplete. The decisive flakiness in GH-74 was a transient ``REGDB_E_IIDNOTREG`` COM hiccup
+        raised during element discovery when the app is backgrounded behind the other matrix combos.
+        That surfaces as a :class:`~flaui.lib.exceptions.SystemException` (a raw ``System.Exception``
+        kept outside the ``FlaUIException`` tree), *not* an ``ElementNotFound`` - so an earlier
+        ``except ElementNotFound`` retry let it escape and fail the test. The retry below therefore
+        also swallows ``SystemException``/``FlaUIException`` between attempts and only raises a clean
+        ``ElementNotFound`` once all attempts are exhausted.
 
         :return: Spinner element
         :raises ElementNotFound: If spinner control is not found (expected on non-UIA3+WinForms)
         """
         cf = self._get_condition_factory
+        last_error: Exception | None = None
         for _ in range(5):
-            # Ensure the Simple Controls tab is active before searching. In bulk runs another test
-            # class sharing the session app may have left a different tab selected, and the spinner
-            # lives on the Simple Controls page; parent_element selects it via the UIA SelectionItem
-            # pattern (more reliable than a mouse click).
             try:
+                # Ensure the Simple Controls tab is active before searching. In bulk runs another
+                # test class sharing the session app may have left a different tab selected, and the
+                # spinner lives on the Simple Controls page; parent_element selects it via the UIA
+                # SelectionItem pattern (more reliable than a mouse click).
                 _ = self.parent_element
-            except ElementNotFound:
-                time.sleep(0.5)
-                continue
-            # Primary: stable ControlType.Spinner + Name match (independent of unstable AutomationID).
-            for element in self.main_window.find_all_descendants(condition=cf.by_control_type(ControlType.Spinner)):
-                try:
+                # Primary: stable ControlType.Spinner + Name match (independent of the unstable
+                # AutomationID that is the root cause of GH-74).
+                for element in self.main_window.find_all_descendants(
+                    condition=cf.by_control_type(ControlType.Spinner)
+                ):
                     if element.name == "Spinner":
                         return element.as_spinner()
-                except ElementNotFound:
-                    continue
-            # Fallback: original AutomationID lookup, in case the control is ever renamed.
-            try:
+                # Fallback: original AutomationID lookup, in case the control is ever renamed.
                 return self.main_window.find_first_descendant(
                     condition=cf.by_automation_id("numericUpDown1")
                 ).as_spinner()
-            except ElementNotFound:
+            except (FlaUIException, SystemException) as error:
+                # ElementNotFound (tab/control not ready) and the transient REGDB_E_IIDNOTREG COM
+                # hiccup (-> SystemException) are both expected mid-bulk-run; retry after a short
+                # settle. FlaUIException is the base of ElementNotFound, so it is covered here too.
+                last_error = error
                 time.sleep(0.5)
         raise ElementNotFound(
-            "Spinner control not found. Note: Spinner only works with UIA3 + WinForms (C# platform limitation)"
+            "Spinner control not found after retries. Note: Spinner only works with UIA3 + WinForms "
+            f"(C# platform limitation). Last error: {last_error}"
         )
 
     @property
