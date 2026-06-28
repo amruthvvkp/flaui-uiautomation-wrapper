@@ -1,10 +1,74 @@
-name: Docs (migrated to Azure Pipelines)
+name: Documentation
+
+# Builds the Zensical docs site and publishes it to GitHub Pages
+# (https://amruthvvkp.github.io/flaui-uiautomation-wrapper/) on every push to master.
+#
+# The build mirrors the Azure Pipelines `docs_strict` job: uv-managed toolchain, the
+# `extract_versions.py` pre-step, and a strict Zensical build into `site/`. It runs on Linux
+# because mkdocstrings/Griffe analyses the source statically and does not import the
+# Windows-only FlaUI DLLs.
+#
+# NOTE: Repository Settings -> Pages -> "Build and deployment" -> Source must be set to
+# "GitHub Actions" for the deploy step to publish. This is mutually exclusive with the dormant,
+# branch-based `deploy_docs` stage in azure-pipelines.yml (gated off via PUBLISH_DOCS=false) —
+# keep deployment on exactly one of the two systems.
 
 on:
-    workflow_dispatch:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment; don't cancel an in-progress publish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
-    migrated:
-        runs-on: ubuntu-latest
-        steps:
-            - run: echo "Docs build and deployment moved to azure-pipelines.yml."
+  build:
+    name: Build docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Build docs (strict)
+        run: |
+          uv sync --group docs
+          uv run python scripts/extract_versions.py
+          uv run zensical build --strict -f zensical.toml
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
