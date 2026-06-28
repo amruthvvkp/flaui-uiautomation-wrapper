@@ -86,6 +86,7 @@ nav = [
     ] },
   ] },
   { "Concepts" = "concepts.md" },
+  { "Running on CI/CD" = "ci-cd.md" },
   { "Troubleshooting" = "troubleshooting.md" },
   { "Agentic Guidelines" = "agentic-guidelines.md" },
   { "Contributing" = [
