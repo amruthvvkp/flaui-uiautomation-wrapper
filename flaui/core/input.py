@@ -58,6 +58,65 @@ class Wait:
         """
         return CSWait.UntilResponsiveHwnd(hWnd, timeout if timeout is not None else Wait.DEFAULT_TIMEOUT)
 
+    @staticmethod
+    def while_cursor_is_busy(timeout_in_secs: float = 30.0, poll_interval_secs: float = 0.1) -> bool:
+        """Wait while the global mouse cursor shows a busy/loading state.
+
+        Many large desktop applications show the *wait* (hourglass/spinner) or *app-starting* cursor
+        while a new window loads its data. Calling this after navigating between screens avoids the
+        sync issues that ``WaitWhileBusy`` / ``UntilResponsive`` miss, by polling the actual cursor
+        the OS is showing until it returns to a non-busy shape (or the timeout elapses).
+
+        Implemented in pure Python via Win32 ``GetCursorInfo`` (no C# dependency), per the project's
+        preference for Python for non-core system utilities.
+
+        :param timeout_in_secs: Maximum time to wait for the cursor to become idle.
+        :param poll_interval_secs: How often to poll the cursor state, in seconds.
+        :return: ``True`` if the cursor became idle within the timeout, ``False`` if it timed out
+            while still busy. Also returns ``True`` when the cursor state cannot be read.
+        """
+        import ctypes
+        from ctypes import wintypes
+
+        class _POINT(ctypes.Structure):
+            """Win32 ``POINT`` structure."""
+
+            _fields_ = [("x", wintypes.LONG), ("y", wintypes.LONG)]
+
+        class _CURSORINFO(ctypes.Structure):
+            """Win32 ``CURSORINFO`` structure."""
+
+            _fields_ = [
+                ("cbSize", wintypes.DWORD),
+                ("flags", wintypes.DWORD),
+                ("hCursor", wintypes.HANDLE),
+                ("ptScreenPos", _POINT),
+            ]
+
+        try:
+            user32 = ctypes.windll.user32  # type: ignore[attr-defined]
+        except (AttributeError, OSError):
+            return True  # Not on Windows or no user32 — nothing to wait on.
+
+        idc_wait, idc_appstarting = 32514, 32650  # IDC_WAIT, IDC_APPSTARTING
+        busy_cursors = {user32.LoadCursorW(None, idc_wait), user32.LoadCursorW(None, idc_appstarting)}
+        busy_cursors.discard(0)
+
+        def _is_busy() -> bool:
+            """Return whether the OS is currently showing a busy cursor."""
+            info = _CURSORINFO()
+            info.cbSize = ctypes.sizeof(_CURSORINFO)
+            if not user32.GetCursorInfo(ctypes.byref(info)):
+                return False  # Cannot read cursor state; treat as not busy.
+            return info.hCursor in busy_cursors
+
+        deadline = time.monotonic() + timeout_in_secs
+        while _is_busy():
+            if time.monotonic() >= deadline:
+                return False
+            time.sleep(poll_interval_secs)
+        return True
+
 
 class Keyboard:
     """Simulates Key input, wrapper over Keyboard class in FlaUI.Core.Input namespace"""

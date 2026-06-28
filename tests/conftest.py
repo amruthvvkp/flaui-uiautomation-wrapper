@@ -12,10 +12,8 @@ import pytest
 
 setup_pythonnet_bridge()
 
-from loguru import logger
-from _pytest.logging import LogCaptureFixture
-
 import gc
+import logging
 import time
 
 from flaui.lib.enums import UIAutomationTypes
@@ -28,23 +26,7 @@ from tests.test_utilities.elements.winforms_application import (
 )
 from tests.test_utilities.elements.wpf_application import WPFApplicationElements, get_wpf_application_elements
 
-
-@pytest.fixture
-def caplog(caplog: LogCaptureFixture) -> Generator[LogCaptureFixture, Any, None]:
-    """Replaces caplog fixture from Pytest to Loguru
-
-    :param caplog: Pytest Caplog fixture
-    :yield: Caplog fixture
-    """
-    handler_id = logger.add(
-        caplog.handler,
-        format="{message}",
-        level=0,
-        filter=lambda record: record["level"].no >= caplog.handler.level,
-        enqueue=False,  # Set to 'True' if your test is spawning child processes.
-    )
-    yield caplog
-    logger.remove(handler_id)
+logger = logging.getLogger(__name__)
 
 
 # =============================================================================

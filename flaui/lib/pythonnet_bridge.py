@@ -35,3 +35,9 @@ def setup_pythonnet_bridge() -> None:
         logging.exception("Failed to setup Python.NET bridge: %s", err)
         raise err
     logging.info("Python.NET bridge setup complete")
+
+    # Opt-in: route C# logging into Python logging when FLAUI_LOG_CSHARP is set. Imported lazily
+    # because it depends on the FlaUI DLLs that were just loaded above.
+    from flaui.core.logging import maybe_enable_from_settings
+
+    maybe_enable_from_settings()

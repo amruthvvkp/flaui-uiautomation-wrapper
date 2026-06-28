@@ -1,5 +1,7 @@
 """This module contains unit tests for the pythonnet_bridge module."""
-from loguru import logger
+import logging
+
+logger = logging.getLogger(__name__)
 import pytest
 
 def test_setup_pythonnet_bridge() -> None:

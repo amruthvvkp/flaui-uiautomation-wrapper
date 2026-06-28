@@ -469,9 +469,12 @@ assert element.toggle_state == ToggleState.On
 | [flaui/uia3/automation.py](flaui/uia3/automation.py) | `UIA3Automation` Python wrapper |
 | [flaui/core/application.py](flaui/core/application.py) | Application launch/attach helpers |
 | [flaui/core/condition_factory.py](flaui/core/condition_factory.py) | Search-condition builders |
-| [flaui/core/input.py](flaui/core/input.py) | Mouse / Keyboard / Wait, `post_wait` helper |
+| [flaui/core/input.py](flaui/core/input.py) | Mouse / Keyboard / Wait (incl. `while_cursor_is_busy`), `post_wait` helper |
+| [flaui/core/capturing.py](flaui/core/capturing.py) | Screen/element capture + video recording (`Capture`, `CaptureImage`, `VideoRecorder`) |
+| [flaui/core/overlay.py](flaui/core/overlay.py) | `OverlayManager` facade (visual-debug overlays) |
+| [flaui/core/logging.py](flaui/core/logging.py) | Opt-in C#→Python log bridge (`enable_csharp_logging`, `FLAUI_LOG_CSHARP`) |
 | [flaui/lib/pythonnet_bridge.py](flaui/lib/pythonnet_bridge.py) | PythonNet initialization, DLL loading |
-| [flaui/lib/exceptions.py](flaui/lib/exceptions.py) | C# → Python exception mapping |
+| [flaui/lib/exceptions.py](flaui/lib/exceptions.py) | C# → Python exception mapping (`handle_csharp_exceptions`, `translate_exceptions`) |
 | [flaui/lib/system/drawing.py](flaui/lib/system/drawing.py) | System.Drawing wrappers (Point, Rectangle, Color) |
 | [flaui/lib/enums.py](flaui/lib/enums.py) | Enum wrappers, `UIAutomationTypes` |
 | [flaui/lib/collections.py](flaui/lib/collections.py) | Type-conversion utilities |

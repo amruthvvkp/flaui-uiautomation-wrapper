@@ -2,7 +2,9 @@
 
 from flaui.lib.enums import UIAutomationTypes
 from flaui.modules.automation import Automation
-from loguru import logger
+import logging
+
+logger = logging.getLogger(__name__)
 import pytest
 
 from tests.test_utilities.os_platform import is_windows_11
