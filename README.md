@@ -1,48 +1,104 @@
 # flaui-uiautomation-wrapper
 
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/flaui-uiautomation-wrapper)
-![GitHub release (with filter)](https://img.shields.io/github/v/release/amruthvvkp/flaui-uiautomation-wrapper)
-![PyPI - Version](https://img.shields.io/pypi/v/flaui-uiautomation-wrapper?link=https%3A%2F%2Fpypi.org%2Fproject%2Fflaui-uiautomation-wrapper%2F)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/flaui-uiautomation-wrapper?logo=semanticuireact)
+> Pythonic, type-safe Windows UI automation — the full FlaUI API in Python.
 
-![GitHub Release Date - Published_At](<https://img.shields.io/github/release-date/amruthvvkp/flaui-uiautomation-wrapper?style=social&logo=semantic-release&label=stable%20release&labelColor=rgb(78%2C%20176%2C%20103)>)
-![GitHub (Pre-)Release Date](<https://img.shields.io/github/release-date-pre/amruthvvkp/flaui-uiautomation-wrapper?style=social&logo=semver&logoColor=rgb(212%2C%2072%2C%2042)&label=Pre-release&labelColor=rgb(212%2C%2072%2C%2042)>)
+[![PyPI - Version](https://img.shields.io/pypi/v/flaui-uiautomation-wrapper)](https://pypi.org/project/flaui-uiautomation-wrapper/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/flaui-uiautomation-wrapper)](https://pypi.org/project/flaui-uiautomation-wrapper/)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/flaui-uiautomation-wrapper)](https://pypi.org/project/flaui-uiautomation-wrapper/)
+[![License](https://img.shields.io/github/license/amruthvvkp/flaui-uiautomation-wrapper)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/blob/master/LICENSE)
 
-![GitHub milestones](https://img.shields.io/github/milestones/all/amruthvvkp/flaui-uiautomation-wrapper)
-![GitHub issues](https://img.shields.io/github/issues/amruthvvkp/flaui-uiautomation-wrapper)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/amruthvvkp/flaui-uiautomation-wrapper)
-![GitHub milestone details](https://img.shields.io/github/milestones/progress-percent/amruthvvkp/flaui-uiautomation-wrapper/1)
-
+[![Build Status](https://dev.azure.com/amruthvvkp/amruthvvkp/_apis/build/status%2Fflaui-uiautomation-wrapper-ci?branchName=master)](https://dev.azure.com/amruthvvkp/amruthvvkp/_build/latest?definitionId=1&branchName=master)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 ![Interrogate](badges/interrogate_badge.svg)
-[![Azure Pipelines](https://dev.azure.com/amruthvvkp/amruthvvkp/_apis/build/status/flaui-uiautomation-wrapper-ci?branchName=master)](https://dev.azure.com/amruthvvkp/amruthvvkp/_build/latest?definitionId=1&branchName=master)
-[![AppVeyor](https://ci.appveyor.com/api/projects/status/github/amruthvvkp/flaui-uiautomation-wrapper?branch=master&svg=true)](https://ci.appveyor.com/project/amruthvvkp/flaui-uiautomation-wrapper)
-![GitHub branch checks state](https://img.shields.io/github/checks-status/amruthvvkp/flaui-uiautomation-wrapper/master)
+[![Docs](https://img.shields.io/badge/docs-zensical-blue)](https://amruthvvkp.github.io/flaui-uiautomation-wrapper)
 
-[![GitHub contributors](https://img.shields.io/github/contributors/amruthvvkp/flaui-uiautomation-wrapper)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/graphs/contributors)
-![GitHub commits since latest release (by SemVer including pre-releases)](https://img.shields.io/github/commits-since/amruthvvkp/flaui-uiautomation-wrapper/latest/master)
-![GitHub last commit](https://img.shields.io/github/last-commit/amruthvvkp/flaui-uiautomation-wrapper)
-![GitHub](https://img.shields.io/github/license/amruthvvkp/flaui-uiautomation-wrapper)
-![PyPI - Format](https://img.shields.io/pypi/format/flaui-uiautomation-wrapper)
+[FlaUI](https://github.com/FlaUI/FlaUI) is a .NET library for UI automated testing of Windows
+desktop applications — Win32, WinForms, WPF, and Store apps — built on top of Microsoft's UI
+Automation technology. **flaui-uiautomation-wrapper** brings the complete FlaUI API to Python via
+[Python.NET](https://github.com/pythonnet/pythonnet), so you get the full power of FlaUI without
+leaving the Python ecosystem.
 
-[FlaUI](https://github.com/FlaUI/FlaUI#:~:text=FlaUI%20is%20a%20.,of%20a%20wrapper%20around%20them.) is a .NET library that can be used to perform UI automated testing of Windows desktop applications like Win32, WinForms, WPF, etc.. It is a wrapper that works alongside Windows inbuilt UI Automation technology to perform UI automation as required.
+Unlike existing Python integrations that are tied to a single test runner, this is a plug-and-play
+wrapper that works with **any** Python framework — [pytest](https://docs.pytest.org/),
+[Behave](https://behave.readthedocs.io/), [TestPlan](https://github.com/morganstanley/testplan),
+`unittest`, or your own tooling — with first-class IDE intellisense backed by Pydantic models.
 
-FlaUI has interesting approaches on multiple non-python projects. On python there is an integration with RobotFramework which allows tests to be written on [RobotFramework](https://github.com/GDATASoftwareAG/robotframework-flaui) and the keywords from it's plugin are utilized to identify elements by XPATH and perform UI actions.
+## Key Differentiators
 
-Other than RobotFramework-FLAUI, there are no Python libraries that help us leverage this useful C# library. The intend of this project is to make sure that a versatile and useful plug-and-play python wrapper is built which works well with IDE's intellisense, integrating with any Python frameworks like [PyTest](https://docs.pytest.org/en/7.1.x/), [Behave](https://behave.readthedocs.io/en/stable/), [TestPlan](https://github.com/morganstanley/testplan), etc. or any other tooling where UI automation is a necessary feature.
+- **Complete feature parity** — a 1:1 mapping of FlaUI's exposed C# API, not a thin subset.
+- **Type safety** — every input/output is backed by Pydantic models for validation and IDE
+  autocompletion.
+- **Any test framework** — pytest, unittest, Behave, TestPlan, or none at all.
+- **Pythonic API** — snake_case methods and Python-native types while preserving the C# structure.
 
-This project is in active development over the latest version of FlaUI (3.2.0) available on GitHub. New releases are expected to come by in the next few weeks and certainly the documentation would improve alongside the planned releases.
+## Installation
 
-If you would like to contribute or request a feature, feel free to join the discussions on the [project's GitHub page](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/discussions).
+Windows-only · Python 3.10–3.14. The required C# DLLs are bundled in the wheel — no separate driver
+binaries to manage.
 
-## Release Notes
+```bash
+pip install flaui-uiautomation-wrapper
+```
 
-Check out the release notes on [GitHub releases](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/releases).
+```bash
+uv add flaui-uiautomation-wrapper
+```
 
-## Project Roadmap
+## Quick start
 
-Check out the project roadmap on [GitHub milestones](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone)
+```python
+from flaui.lib.pythonnet_bridge import setup_pythonnet_bridge
 
-Active development is targetted towards the first major release of the project. The first major release is expected to be released by the end of 2023. The project roadmap is subject to change based on the project's progress.
+# MUST run before importing any C#-backed modules
+setup_pythonnet_bridge()
 
-You can track the project's progress on this [v1.0.0 roadmap](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/1) page.
+from flaui.lib.enums import UIAutomationTypes
+from flaui.modules.automation import Automation
+
+automation = Automation(UIAutomationTypes.UIA3)
+main_window = automation.application.launch("notepad.exe").get_main_window(automation)
+main_window.find_first_by_x_path("//Button[@Name='OK']").as_button().invoke()
+```
+
+## Documentation
+
+Full documentation lives at
+**[amruthvvkp.github.io/flaui-uiautomation-wrapper](https://amruthvvkp.github.io/flaui-uiautomation-wrapper)**,
+including:
+
+- **Basics & Advanced** guides (Initialize → Launch → Find → Interact, XPath, ConditionFactory,
+  caching) with side-by-side Python/C# examples.
+- **API Reference** auto-generated for every control and pattern.
+- **Examples** for pytest, unittest, Behave, TestPlan, and Robot Framework.
+- **Contributing** guides for development, testing, and porting C# tests.
+
+## Roadmap
+
+This project is in active development toward its first major release. Track progress on the
+[v1.0.0 milestone](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/1) and the
+full [`ROADMAP.md`](ROADMAP.md), which also outlines post-v1 companion tooling (a record-and-generate
+recorder, an MCP server, a `pytest-flaui` plugin, and FlaUI agent skills).
+
+Have an idea or feature request? Join the
+[GitHub Discussions](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/discussions).
+
+## Inspirations & Credits
+
+- **[FlaUI](https://github.com/FlaUI/FlaUI)** — the C# library this project wraps; its core logic and
+  test applications are the foundation of this wrapper.
+- **[robotframework-flaui](https://github.com/GDATASoftwareAG/robotframework-flaui)** (GDATA) — the
+  prior-art Python integration for FlaUI that influenced this project's direction.
+- **[Python.NET](https://github.com/pythonnet/pythonnet)** — the interop bridge that makes calling
+  FlaUI from Python possible.
+- **[Playwright](https://playwright.dev/python/)** / **[`pytest-playwright`](https://github.com/microsoft/playwright-pytest)**
+  and **[FlaUIRecorder](https://github.com/twenzel/FlaUIRecorder)** — inspirations for the planned
+  recorder and pytest tooling.
+
+## Contributing
+
+Contributions are welcome! See [docs/contributing.md](docs/contributing.md) for the development
+workflow, coding standards, and testing guidelines.
+
+## License
+
+Licensed under the [LGPL-3.0-or-later](LICENSE).

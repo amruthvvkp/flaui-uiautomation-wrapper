@@ -53,6 +53,13 @@ classifiers = [
     "Intended Audience :: Developers",
 ]
 
+[project.urls]
+Homepage = "https://amruthvvkp.github.io/flaui-uiautomation-wrapper"
+Documentation = "https://amruthvvkp.github.io/flaui-uiautomation-wrapper"
+Repository = "https://github.com/amruthvvkp/flaui-uiautomation-wrapper"
+Issues = "https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues"
+Changelog = "https://github.com/amruthvvkp/flaui-uiautomation-wrapper/releases"
+
 [dependency-groups]
 dev = [
     "interrogate>=1.7.0",
