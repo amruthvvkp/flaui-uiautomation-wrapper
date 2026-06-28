@@ -52,19 +52,20 @@ class PropertyCondition(BaseModel):
         :param value: Value to compare
         :return: True/False
         """
-        return self.cs_condition.Equals(value.cs_condition.cs_condition)
+        other = value.cs_condition if isinstance(value, PropertyCondition) else value
+        return self.cs_condition.Equals(other)
 
     def Not(self, new_condition: PropertyCondition) -> PropertyCondition:
-        """Adds the given condition with an "not".
+        """Combines this condition with the negation of another ("and not").
 
-        :param new_condition: New condition
-        :return: PropertyCondition
+        The C# ``ConditionBase.Not()`` is parameterless and negates the condition it is called on,
+        so this builds ``self AND NOT new_condition``.
+
+        :param new_condition: Condition to negate and combine with this one.
+        :return: PropertyCondition matching this condition and NOT ``new_condition``.
         """
-        return PropertyCondition(
-            cs_condition=self.cs_condition.Not(
-                new_condition.cs_condition if isinstance(new_condition, PropertyCondition) else new_condition
-            )
-        )
+        other = new_condition.cs_condition if isinstance(new_condition, PropertyCondition) else new_condition
+        return PropertyCondition(cs_condition=self.cs_condition.And(other.Not()))
 
     def Or(self, new_condition: PropertyCondition) -> PropertyCondition:
         """Packs this condition into a not condition.
@@ -224,7 +225,7 @@ class ConditionFactory(BaseModel):
         """
         return PropertyCondition(
             cs_condition=self.raw_cf.ByLocalizedControlType(
-                localized_control_type, condition_flags_property_condition_flags
+                localized_control_type, condition_flags_property_condition_flags.value
             )
         )
 
