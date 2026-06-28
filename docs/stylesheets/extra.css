@@ -1,5 +1,23 @@
 /* Custom styling for FlaUI Python Wrapper docs */
 
+/* Stylized, minimalistic font for the site title (top-left header) */
+@import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&display=swap");
+
+.md-header__title {
+  font-family: "Quicksand", var(--md-text-font-family, sans-serif);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* Home page hero logo — keep it tasteful, not oversized */
+.md-content img[alt="FlaUI Logo"] {
+  display: block;
+  margin: 1rem auto;
+  width: 220px;
+  max-width: 60%;
+  height: auto;
+}
+
 /* Grid cards styling for feature boxes */
 .grid.cards {
   display: grid;
@@ -18,12 +36,6 @@
 .grid.cards > div:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transition: box-shadow 0.3s ease;
-}
-
-/* Centered logo on home page */
-.md-content img[alt="FlaUI Python Wrapper"] {
-  display: block;
-  margin: 0 auto;
 }
 
 /* Better code block styling */
@@ -74,12 +86,11 @@ table th {
   );
 }
 
-/* Footer copyright only, no generator text */
+/* Footer: copyright + CTA on the left, social links on the right */
 .md-footer-meta__inner {
   display: flex;
-  justify-content: center;
-}
-
-.md-footer-copyright {
-  margin: 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }

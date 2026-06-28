@@ -4,14 +4,29 @@ This project now uses `pytest-bug` to track known issues and limitations linked 
 
 ## GitHub Issues Created
 
-| Issue | Title | Tests Affected | Platform |
-|-------|-------|----------------|----------|
-| [#74](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/74) | Spinner control AutomationID instability | test_spinner.py (3 tests) | UIA3 + WinForms |
-| [#75](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/75) | Combobox broken on WinForms | test_combobox.py, test_listbox.py, test_pop_up.py (22 tests) | UIA2/UIA3 + WinForms |
-| [#76](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/76) | Tree test flaky on AppVeyor CI | test_tree.py::test_selection (4 tests) | All (CI only) |
-| [#77](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/77) | RegisterAutomationEvent not ported | test_invoke_pattern.py::test_invoke_with_event (4 tests) | All |
-| [#78](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/78) | Toggle pattern unsupported on WinForms menus | test_menu.py::test_checked_menu_item (2 tests) | UIA2/UIA3 + WinForms |
-| [#79](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/79) | Context menu broken with UIA3 + WinForms | test_window.py::test_context_menu (1 test) | UIA3 + WinForms |
+Categories: **Upstream** = Windows/.NET/UIA limitation (documented, not a wrapper bug);
+**Flaky** = environment/timing instability hardened and/or CI-scoped; **Wrapper** = under
+investigation as a genuine wrapper bug; **Env** = environment guard.
+
+| Issue | Title | Tests Affected | Platform | Category |
+|-------|-------|----------------|----------|----------|
+| [#74](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/74) | Spinner control AutomationID instability | test_spinner.py (3 tests) | UIA3 + WinForms | Flaky |
+| [#75](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/75) | Combobox broken on WinForms | test_combobox.py, test_listbox.py, test_pop_up.py (22 tests) | UIA2/UIA3 + WinForms | Upstream |
+| [#76](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/76) | Tree test flaky on AppVeyor CI | test_tree.py::test_selection (4 tests) | All (CI only) | Flaky |
+| ~~[#77](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/77)~~ | RegisterAutomationEvent not ported | test_invoke_pattern.py::test_invoke_with_event | All | ✅ Resolved (ported) |
+| [#78](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/78) | Toggle pattern unsupported on WinForms menus | test_menu.py::test_checked_menu_item (2 tests) | UIA2/UIA3 + WinForms | Upstream |
+| [#79](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/79) | Context menu broken with UIA3 + WinForms | test_window.py::test_context_menu (1 test) | UIA3 + WinForms | Upstream |
+| [#80](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/80) | find_all/first_with_options fail on some UIA/platform combos | test_automation_element.py (8 parametrizations) | UIA2 (all), UIA3+WinForms | Wrapper (investigating) |
+| [#82](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/82) | test_get_control_type Tab not found during setup | test_value_converter.py::test_get_control_type | UIA2 + WinForms | Flaky |
+| [#83](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/83) | ListBox select_by_index fails | test_listbox.py::test_select_by_index | UIA3 + WPF | Wrapper (investigating) |
+| [#89](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/89) | Notepad tests on Windows 11 (Store app) | Notepad-based tests (test_getter/search/xpath/keyboard) | Windows 11 | Env (guarded via `skip_notepad_on_win11`) |
+
+> **Triage policy (Phase 0).** Upstream issues are documented and skipped with `platform_limitation`
+> / `skip` markers — they are not wrapper defects and will not be "fixed" here. Flaky issues are
+> hardened (retry/wait) and CI-scoped where needed. Wrapper issues (#80, #83) remain `xfail` with a
+> `bug` marker until a fix is verified against the full UIA2/UIA3 × WinForms/WPF matrix. The #88
+> coverage gate is enforced on the full suite (AppVeyor PR/master) — see
+> [Road to v1.0](release-plan.md).
 
 ## Usage Examples
 
