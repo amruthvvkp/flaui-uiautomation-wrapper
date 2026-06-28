@@ -7,15 +7,12 @@ import logging
 logger = logging.getLogger(__name__)
 import pytest
 
-from tests.test_utilities.os_platform import is_windows_11
-
 
 @pytest.mark.windows11
-@pytest.mark.xfail(
-    is_windows_11,
-    reason="Notepad has moved to Windows Store framework on Windows 11. "
-    "The Win32 notepad.exe may not launch reliably or have different automation properties. "
-    "Consider using test applications (WinForms/WPF) instead of Notepad for stable testing.",
+@pytest.mark.skip_notepad_on_win11(
+    reason="Notepad has moved to the Windows Store framework on Windows 11; the Win32 notepad.exe "
+    "may not launch reliably. Skipped on Windows 11 (see issue #89); use WinForms/WPF test "
+    "applications for stable coverage."
 )
 def test_application() -> None:
     """Tests the application module.

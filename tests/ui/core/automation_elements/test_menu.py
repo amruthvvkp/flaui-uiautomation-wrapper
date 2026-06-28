@@ -130,12 +130,13 @@ class TestMenu:
         assert fancy is not None, "Fancy menu item not found"
         assert fancy.properties.name.value == "Fancy", "Fancy menu item name does not match"
 
-    def test_checked_menu_item(self, menu: Menu, test_application_type: str) -> None:
+    # GH-78: UI Automation does not support the Toggle pattern on menu items in WinForms
+    # applications (upstream limitation). Skipped on WinForms via skip_on_winforms; runs on WPF.
+    # Tagged platform_limitation (queryable via `-m platform_limitation`) rather than `bug`,
+    # because the bug marker is whole-test and would skip the passing WPF combos too.
+    @pytest.mark.platform_limitation
+    def test_checked_menu_item(self, menu: Menu, skip_on_winforms: None) -> None:
         """Tests the checked menu item."""
-        if test_application_type == "WinForms":
-            pytest.skip(
-                "UI Automation currently does not support Toggle pattern on menu items in WinForms applications."
-            )
         edit = menu.get_item_by_name("Edit")
         assert edit is not None, "Edit menu item not found"
         show_label = edit.get_item_by_name("Show Label")
