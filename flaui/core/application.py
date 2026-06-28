@@ -42,6 +42,38 @@ class Application:
 
     _application = CSApplication
 
+    def __enter__(self) -> "Application":
+        """Enter the runtime context and return the application instance.
+
+        Enables ``with Application() as app:`` usage. Launch or attach to a process inside the
+        ``with`` block; the application is closed and disposed automatically on exit.
+
+        :return: This application instance.
+        """
+        return self
+
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
+        """Exit the runtime context, gracefully closing then disposing the application.
+
+        Mirrors the C# ``IDisposable`` contract: attempts a graceful ``close`` first, then falls
+        back to ``dispose``. Never raises — cleanup failures are swallowed so they cannot mask an
+        exception raised inside the ``with`` block.
+
+        :param exc_type: The exception type raised in the context, if any.
+        :param exc_value: The exception instance raised in the context, if any.
+        :param traceback: The traceback for the exception, if any.
+        """
+        # Nothing was launched/attached, so there is no live process to clean up.
+        if self._application is CSApplication:
+            return
+        try:
+            self.close()
+        except Exception:
+            try:
+                self.dispose()
+            except Exception:
+                logging.debug("Application cleanup failed during context exit", exc_info=True)
+
     @property
     def name(self) -> str:
         """The name of the application's process.

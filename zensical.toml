@@ -4,20 +4,27 @@
 [project]
 site_name = "FlaUI for Python"
 site_description = "Complete Windows UI Automation for Python with 1:1 FlaUI parity"
-site_url = "https://amruthvvkp.github.io/flaui-uiautomation-wrapper"
+# Trailing slash is recommended when using versioned docs (mike publishes each
+# version as a subdirectory, e.g. /latest/, /stable/, /0.2/).
+site_url = "https://amruthvvkp.github.io/flaui-uiautomation-wrapper/"
 repo_url = "https://github.com/amruthvvkp/flaui-uiautomation-wrapper"
 repo_name = "amruthvvkp/flaui-uiautomation-wrapper"
 edit_uri = ""
+copyright = 'Copyright &copy; 2024&ndash;2026 Amruth VVKP &amp; contributors &middot; <a href="https://github.com/amruthvvkp/flaui-uiautomation-wrapper">Star us on GitHub</a>'
 
 extra_css = ["stylesheets/extra.css"]
 extra_javascript = ["https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js"]
 
 nav = [
   { "Home" = "index.md" },
+  { "Roadmap" = "roadmap.md" },
+  { "Road to v1.0" = "release-plan.md" },
+  { "Upgrade Guide" = "upgrade-guide.md" },
   { "Motivation" = "motivation.md" },
   { "Basics" = "basics.md" },
   { "UIA2 vs UIA3" = "uia2-uia3.md" },
   { "Advanced" = "advanced.md" },
+  { "Pythonic API" = "pythonic-api.md" },
   { "API Reference" = [
     { "Overview" = "api/index.md" },
     { "Core" = [
@@ -41,6 +48,7 @@ nav = [
     ] },
     { "Tools" = [
       { "Retry" = "api/retry.md" },
+      { "Expectations" = "api/expectations.md" },
       { "Tools & Utilities" = "api/tools.md" },
       { "Cache Request" = "api/cache_request.md" },
       { "Drawing" = "api/drawing.md" },
@@ -103,6 +111,7 @@ nav = [
 [project.theme]
 language = "en"
 logo = "logo.png"
+favicon = "logo.png"
 features = [
   "navigation.instant",
   "navigation.tracking",
@@ -116,21 +125,53 @@ features = [
   "search.suggest",
   "toc.follow",
   "toc.integrate",
+  "navigation.footer",
 ]
 
 [[project.theme.palette]]
 scheme = "default"
-primary = "deep purple"
+primary = "indigo"
 accent = "teal"
 toggle.icon = "lucide/sun"
 toggle.name = "Switch to dark mode"
 
 [[project.theme.palette]]
 scheme = "slate"
-primary = "deep purple"
+primary = "indigo"
 accent = "teal"
 toggle.icon = "lucide/moon"
 toggle.name = "Switch to light mode"
+
+# ----------------------------------------------------------------------------
+# Footer / extras
+# ----------------------------------------------------------------------------
+[project.extra]
+# Drop the "Made with Zensical" notice; the footer carries the copyright,
+# a "Star us on GitHub" call-to-action, and the social links below instead.
+generator = false
+
+[[project.extra.social]]
+icon = "fontawesome/brands/github"
+link = "https://github.com/amruthvvkp/flaui-uiautomation-wrapper"
+name = "FlaUI for Python on GitHub"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/python"
+link = "https://pypi.org/project/flaui-uiautomation-wrapper/"
+name = "FlaUI for Python on PyPI"
+
+# ----------------------------------------------------------------------------
+# Documentation versioning (mike)
+# ----------------------------------------------------------------------------
+# Enables the version selector in the header. Versions are published to GitHub
+# Pages with mike (Zensical's fork). Aliases used by this project:
+#   latest  -> docs built from `master` (in-development)
+#   stable  -> the most recent released version (set as default at v1.0.0)
+# Until v1.0.0 ships, `latest` remains the default landing version.
+# See docs/release-plan.md ("Documentation versioning") for the workflow.
+[project.extra.version]
+provider = "mike"
+alias = true
 
 # ----------------------------------------------------------------------------
 # Plugins

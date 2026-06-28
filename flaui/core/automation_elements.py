@@ -396,6 +396,62 @@ class SelectionItemAutomationElement(ElementModel, abc.ABC):  # pragma: no cover
 # ================================================================================
 #   Element wrappers from FlaUI.Core.AutomationElements
 # ================================================================================
+class AutomationElementCollection(list):
+    """A list of automation elements with convenience helpers.
+
+    Behaves exactly like a built-in ``list`` (indexing, slicing, iteration, ``len``, ``bool``) for
+    full backward compatibility, and adds ergonomic accessors such as :attr:`first`,
+    :meth:`filter`, and :meth:`where` for fluent handling of search results.
+    """
+
+    @property
+    def first(self) -> Optional["AutomationElement"]:
+        """Return the first element, or ``None`` when the collection is empty.
+
+        :return: The first matched element, or ``None`` if there are no matches.
+        """
+        return self[0] if self else None
+
+    def filter(self, predicate: Callable[["AutomationElement"], bool]) -> "AutomationElementCollection":
+        """Return a new collection with the elements for which ``predicate`` is truthy.
+
+        :param predicate: A callable invoked with each element; a truthy result keeps the element.
+        :return: A new :class:`AutomationElementCollection` of the matching elements.
+        """
+        return AutomationElementCollection(element for element in self if predicate(element))
+
+    def where(self, **properties: Any) -> "AutomationElementCollection":
+        """Return a new collection of elements whose attributes equal the given values.
+
+        Attribute-access failures are treated as a non-match rather than raising, so a property that
+        is unavailable on some elements simply filters them out.
+
+        :param properties: Attribute name/value pairs to match (e.g. ``name="OK"``).
+        :return: A new :class:`AutomationElementCollection` of the matching elements.
+        """
+
+        def _matches(element: "AutomationElement") -> bool:
+            """Return whether a single element matches every requested attribute value."""
+            for key, expected in properties.items():
+                try:
+                    if getattr(element, key) != expected:
+                        return False
+                except Exception:
+                    return False
+            return True
+
+        return self.filter(_matches)
+
+    def __repr__(self) -> str:
+        """Return a concise representation showing the count and a short preview.
+
+        :return: A string like ``<AutomationElementCollection len=3 [...]>``.
+        """
+        preview = ", ".join(repr(element) for element in self[:3])
+        suffix = ", ..." if len(self) > 3 else ""
+        return f"<AutomationElementCollection len={len(self)} [{preview}{suffix}]>"
+
+
 class AutomationElement(ElementBase):
     """UI element which can be used in automation"""
 
@@ -477,60 +533,68 @@ class AutomationElement(ElementBase):
         return self.raw_element.Equals(another_element.raw_element)
 
     @handle_csharp_exceptions
-    def find_all(self, tree_scope: TreeScope, condition: PropertyCondition) -> List[AutomationElement]:
+    def find_all(self, tree_scope: TreeScope, condition: PropertyCondition) -> AutomationElementCollection:
         """Finds all children with the condition.
 
         :aram tree_scope: Treescope object
         :param condition: The search condition.
-        :return: The found elements or an empty list if no elements were found.
+        :return: The found elements or an empty collection if no elements were found.
         """
-        return [
+        return AutomationElementCollection(
             AutomationElement(raw_element=_) for _ in self.raw_element.FindAll(tree_scope.value, condition.cs_condition)
-        ]
+        )
 
     @handle_csharp_exceptions
-    def find_all_by_x_path(self, x_path: str) -> List[AutomationElement]:
+    def find_all_by_x_path(self, x_path: str) -> AutomationElementCollection:
         """Finds all items which match the given xpath.
 
         :param x_path: Element XPath
-        :return: The found elements or an empty list if no elements were found.
+        :return: The found elements or an empty collection if no elements were found.
         """
-        return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllByXPath(x_path)]
+        return AutomationElementCollection(
+            AutomationElement(raw_element=_) for _ in self.raw_element.FindAllByXPath(x_path)
+        )
 
     @handle_csharp_exceptions
-    def find_all_children(self, condition: Optional[PropertyCondition] = None) -> List[AutomationElement]:
+    def find_all_children(self, condition: Optional[PropertyCondition] = None) -> AutomationElementCollection:
         """Finds all children with the condition.
 
         :param condition: The search condition.
-        :return: The found elements or an empty list if no elements were found.
+        :return: The found elements or an empty collection if no elements were found.
         """
         if condition is None:
-            return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllChildren()]
-        else:
-            return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllChildren(condition.cs_condition)]
+            return AutomationElementCollection(
+                AutomationElement(raw_element=_) for _ in self.raw_element.FindAllChildren()
+            )
+        return AutomationElementCollection(
+            AutomationElement(raw_element=_) for _ in self.raw_element.FindAllChildren(condition.cs_condition)
+        )
 
     @handle_csharp_exceptions
-    def find_all_descendants(self, condition: Optional[PropertyCondition] = None) -> List[AutomationElement]:
+    def find_all_descendants(self, condition: Optional[PropertyCondition] = None) -> AutomationElementCollection:
         """Finds all descendants with the condition.
 
         :param condition: The search condition.
-        :return: The found elements or an empty list if no elements were found.
+        :return: The found elements or an empty collection if no elements were found.
         """
         if condition is None:
-            return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllDescendants()]
-        else:
-            return [
-                AutomationElement(raw_element=_) for _ in self.raw_element.FindAllDescendants(condition.cs_condition)
-            ]
+            return AutomationElementCollection(
+                AutomationElement(raw_element=_) for _ in self.raw_element.FindAllDescendants()
+            )
+        return AutomationElementCollection(
+            AutomationElement(raw_element=_) for _ in self.raw_element.FindAllDescendants(condition.cs_condition)
+        )
 
     @handle_csharp_exceptions
-    def find_all_nested(self, condition: PropertyCondition) -> List[AutomationElement]:
+    def find_all_nested(self, condition: PropertyCondition) -> AutomationElementCollection:
         """Finds all elements by iterating thru all conditions.
 
         :param condition: The search condition.
-        :return: The found elements or an empty list if no elements were found.
+        :return: The found elements or an empty collection if no elements were found.
         """
-        return [AutomationElement(raw_element=_) for _ in self.raw_element.FindAllNested(condition.cs_condition)]
+        return AutomationElementCollection(
+            AutomationElement(raw_element=_) for _ in self.raw_element.FindAllNested(condition.cs_condition)
+        )
 
     @handle_csharp_exceptions
     def find_all_with_options(
@@ -539,21 +603,21 @@ class AutomationElement(ElementBase):
         condition: PropertyCondition,
         traversal_options: TreeTraversalOptions,
         root: AutomationElement,
-    ) -> List[AutomationElement]:
+    ) -> AutomationElementCollection:
         """Find all matching elements in the specified order.
 
         :param tree_scope: A combination of values specifying the scope of the search.
         :param condition: A condition that represents the criteria to match.
         :param traversal_options: Value specifying the tree navigation order.
         :param root: An element with which to begin the search.
-        :return: The found elements or an empty list if no elements were found.
+        :return: The found elements or an empty collection if no elements were found.
         """
-        return [
+        return AutomationElementCollection(
             AutomationElement(raw_element=_)
             for _ in self.raw_element.FindAllWithOptions(
                 tree_scope.value, condition.cs_condition, traversal_options.value, root.raw_element
             )
-        ]
+        )
 
     @handle_csharp_exceptions
     def find_at(self, tree_scope: TreeScope, index: int, condition: PropertyCondition) -> AutomationElement:
