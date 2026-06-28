@@ -223,21 +223,22 @@ class TestAutomationElementAdditional:
             condition_factory.by_control_type(ControlType.Tab)
         ) == HasLen(1), "There should be one nested element"
 
-    @pytest.mark.bug(
-        id="GH-80",
-        url="https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/80",
-        reason="find_all_with_options fails on UIA2 (all) and UIA3+WinForms - TreeTraversalOptions support issue",
-        run=True,
-    )
+    # GH-80: find_*_with_options are UIA3-only. FlaUI's UIA2 layer raises
+    # NotSupportedByFrameworkException (FindAllWithOptions/FindFirstWithOptions do not exist in
+    # UIA2), so UIA2 is skipped as an upstream limitation. by_control_type(ControlType.Tab) is used
+    # (not by_class_name("TabControl"), which only matches WPF) so the condition matches on both
+    # WinForms and WPF.
+    @pytest.mark.platform_limitation
     def test_find_all_with_options(
         self,
         test_application: WinFormsApplicationElements | WPFApplicationElements,
         condition_factory: ConditionFactory,
+        skip_on_uia2: None,
     ) -> None:
         """Test the find_all_with_options method of the AutomationElement class."""
         assert test_application.main_window.find_all_with_options(
             TreeScope.Descendants,
-            condition_factory.by_class_name("TabControl"),
+            condition_factory.by_control_type(ControlType.Tab),
             TreeTraversalOptions.Default,
             test_application.main_window,
         ) == HasLen(1), "There should be one element"
@@ -308,16 +309,14 @@ class TestAutomationElementAdditional:
             condition_factory.by_control_type(ControlType.Tab)
         ) == HasAttributes(control_type=ControlType.Tab), "ControlType should be Tab"
 
-    @pytest.mark.bug(
-        id="GH-80",
-        url="https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/80",
-        reason="find_first_with_options fails on UIA2+WinForms - TreeTraversalOptions support issue",
-        run=True,
-    )
+    # GH-80: see test_find_all_with_options - UIA2 is skipped as an upstream limitation
+    # (NotSupportedByFrameworkException from FlaUI's UIA2 layer).
+    @pytest.mark.platform_limitation
     def test_find_first_with_options(
         self,
         test_application: WinFormsApplicationElements | WPFApplicationElements,
         condition_factory: ConditionFactory,
+        skip_on_uia2: None,
     ) -> None:
         """Test the find_first_with_options method of the AutomationElement class."""
         assert test_application.main_window.find_first_with_options(

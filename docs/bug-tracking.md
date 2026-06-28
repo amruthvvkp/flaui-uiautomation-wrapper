@@ -16,7 +16,7 @@ investigation as a genuine wrapper bug; **Env** = environment guard.
 | ~~[#77](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/77)~~ | RegisterAutomationEvent not ported | test_invoke_pattern.py::test_invoke_with_event | All | ✅ Resolved (ported) |
 | [#78](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/78) | Toggle pattern unsupported on WinForms menus | test_menu.py::test_checked_menu_item (2 tests) | UIA2/UIA3 + WinForms | Upstream |
 | [#79](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/79) | Context menu broken with UIA3 + WinForms | test_window.py::test_context_menu (1 test) | UIA3 + WinForms | Upstream |
-| [#80](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/80) | find_all/first_with_options fail on some UIA/platform combos | test_automation_element.py (8 parametrizations) | UIA2 (all), UIA3+WinForms | Wrapper (investigating) |
+| [#80](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/80) | find_all/first_with_options fail on some UIA/platform combos | test_automation_element.py (8 parametrizations) | UIA2 (all), UIA3+WinForms | Upstream (UIA2) + test fix — see outcomes below |
 
 > **Note on #80 vs #81.** [#81](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/81)
 > is a **closed duplicate** of #80. The in-code markers now reference `GH-80` (the canonical open
@@ -55,6 +55,25 @@ Current assignments after the Phase 0 marker-hygiene pass:
   validated against the full matrix.
 - **#89** (`test_application.py`): aligned to `skip_notepad_on_win11` (was a `windows11` +
   conditional `xfail`), which also avoids the Win11 Store-notepad launch hanging until timeout.
+
+### Bug-fix pass outcomes (Phase 0)
+
+Investigation results from running each item against the local UIA2/UIA3 × WinForms/WPF matrix:
+
+- **#74** (spinner) — **locator hardened**. The WinForms app exposes two `ControlType.Spinner`
+  controls; the target is now located by `ControlType.Spinner` + `Name == "Spinner"` (independent
+  of the unstable AutomationID) with a retry and an explicit Simple-Controls tab selection
+  (`tests/test_utilities/elements/winforms_application/simple_controls.py`). Passes reliably in
+  isolation. A residual flakiness remains only in large bulk runs (the WinForms app is backgrounded
+  while other matrix combos run first), so the class keeps a non-blocking `bug(run=True)` monitor.
+- **#80** (find_*_with_options) — **fixed / reclassified, not a wrapper bug**. FlaUI's own UIA2
+  layer raises `NotSupportedByFrameworkException` (these methods don't exist in UIA2), so UIA2 is
+  skipped via `skip_on_uia2` + `platform_limitation`. The `find_all` test also used
+  `by_class_name("TabControl")` (WPF-only); switched to `by_control_type(ControlType.Tab)` so it
+  passes on UIA3 + WinForms too. Now passes on UIA3 (both frameworks) and skips on UIA2.
+- **#82** (test_get_control_type) and **#83** (ListBox select_by_index) — **not reproducible**.
+  Both pass on all four matrix combos locally (the conftest tab-navigation retry already mitigates
+  the #82 setup flakiness). Kept as `bug(run=True)` monitors; close once CI confirms green.
 
 ## Usage Examples
 

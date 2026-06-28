@@ -1,5 +1,7 @@
 """This module maps up all the elements in Simple Controls tab for the WPF application."""
 
+import time
+
 from flaui.core.automation_elements import (
     AutomationElement,
     Button,
@@ -16,6 +18,7 @@ from flaui.core.automation_elements import (
     TabItem,
     TextBox,
 )
+from flaui.core.definitions import ControlType
 from flaui.lib.exceptions import ElementNotFound
 
 from tests.test_utilities.elements.wpf_application.common import AbtstractControlCollection
@@ -224,32 +227,47 @@ class SimpleControlsElements(AbtstractControlCollection):
         Note: Spinner control only works with UIA3 + WinForms due to platform limitations.
         This matches C# FlaUI SpinnerTests which only runs on that combination.
 
+        The control is located by ``ControlType.Spinner`` + ``Name == "Spinner"`` rather than by
+        AutomationID. The WinForms app exposes two ``Spinner`` controls (the labelled target named
+        "Spinner" and an unlabelled one named "NumericUpDown"), and the target's AutomationID is
+        unstable - it intermittently flips from ``numericUpDown1`` to a generated numeric value,
+        which is the root cause of GH-74. ControlType + Name are stable across that instability.
+
+        The lookup is retried a few times because in bulk runs the UIA tree can momentarily be
+        incomplete (a transient ``REGDB_E_IIDNOTREG`` COM hiccup during element discovery), which
+        is the flakiness called out in GH-74.
+
         :return: Spinner element
         :raises ElementNotFound: If spinner control is not found (expected on non-UIA3+WinForms)
         """
-        try:
-            return self.main_window.find_first_descendant(
-                condition=self._get_condition_factory.by_automation_id("numericUpDown1")
-            ).as_spinner()
-        except ElementNotFound:
-            # Fallback: A hacky workaround since AutomationID sometimes returns as uuid
-            # This is particularly noticeable when running bulk tests
+        cf = self._get_condition_factory
+        for _ in range(5):
+            # Ensure the Simple Controls tab is active before searching. In bulk runs another test
+            # class sharing the session app may have left a different tab selected, and the spinner
+            # lives on the Simple Controls page; parent_element selects it via the UIA SelectionItem
+            # pattern (more reliable than a mouse click).
             try:
-                elements = [
-                    _
-                    for _ in self.main_window.find_all_descendants(
-                        condition=self._get_condition_factory.by_name("Spinner")
-                    )
-                    if _.automation_id not in ["label2", "dateTimePicker1", "ProgressBar", "Slider"]
-                ]
-                if elements:
-                    return elements[0].as_spinner()
+                _ = self.parent_element
             except ElementNotFound:
-                pass
-            # If we still can't find it, this is expected behavior for non-UIA3+WinForms
-            raise ElementNotFound(
-                "Spinner control not found. Note: Spinner only works with UIA3 + WinForms (C# platform limitation)"
-            )
+                time.sleep(0.5)
+                continue
+            # Primary: stable ControlType.Spinner + Name match (independent of unstable AutomationID).
+            for element in self.main_window.find_all_descendants(condition=cf.by_control_type(ControlType.Spinner)):
+                try:
+                    if element.name == "Spinner":
+                        return element.as_spinner()
+                except ElementNotFound:
+                    continue
+            # Fallback: original AutomationID lookup, in case the control is ever renamed.
+            try:
+                return self.main_window.find_first_descendant(
+                    condition=cf.by_automation_id("numericUpDown1")
+                ).as_spinner()
+            except ElementNotFound:
+                time.sleep(0.5)
+        raise ElementNotFound(
+            "Spinner control not found. Note: Spinner only works with UIA3 + WinForms (C# platform limitation)"
+        )
 
     @property
     def date_picker(self) -> DateTimePicker:

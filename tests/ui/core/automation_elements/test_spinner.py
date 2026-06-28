@@ -16,17 +16,21 @@ from tests.test_utilities.elements.wpf_application import WPFApplicationElements
 @pytest.mark.bug(
     id="GH-74",
     url="https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/74",
-    reason="Spinner control element finding is flaky - AutomationID sometimes returns as uuid. "
-    "This is a known issue mentioned in element locator comments, particularly noticeable in bulk test runs.",
+    reason="Spinner locator hardened to ControlType.Spinner + Name (AutomationID-independent) with "
+    "retry and explicit tab selection; passes reliably in isolation. A residual flakiness remains "
+    "only in large bulk runs where the WinForms app has been backgrounded while other matrix "
+    "combos run first, so this is kept as a non-blocking monitor (run=True) - BUG-PASS when green.",
+    run=True,
 )
-@pytest.mark.xfail(reason="Spinner control broken - AutomationID returns uuid instead of expected string.")
 class TestSpinner:
     """Tests for Spinner control.
 
     C# SpinnerTests only runs on UIA3 + WinForms due to platform limitation:
     "The spinner control does not work with UIA2/WinForms anymore due to bugs in Windows / .NET"
 
-    KNOWN ISSUE: Element finding is flaky due to AutomationID instability.
+    The spinner element is located by ControlType + Name (not AutomationID) with a retry and an
+    explicit tab selection; see the ``spinner`` property in the WinForms element map for the GH-74
+    fix. Marked bug(run=True) to monitor the residual bulk-run flakiness without blocking CI.
     """
 
     @pytest.fixture(name="spinner")
