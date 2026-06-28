@@ -96,6 +96,7 @@ nav = [
     { "Bug Tracking" = "bug-tracking.md" },
   ] },
   { "Examples" = [
+    { "Overview" = "examples/index.md" },
     { "Pytest" = "examples/pytest.md" },
     { "Unittest" = "examples/unittest.md" },
     { "Robot Framework" = "examples/robot-framework.md" },
