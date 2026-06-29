@@ -23,6 +23,7 @@ nav = [
     { "Advanced" = "advanced.md" },
     { "Pythonic API" = "pythonic-api.md" },
     { "Concepts" = "concepts.md" },
+    { "Running on CI/CD" = "ci-cd.md" },
     { "Troubleshooting" = "troubleshooting.md" },
   ] },
   { "API Reference" = [
