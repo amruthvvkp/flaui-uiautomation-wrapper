@@ -4,6 +4,45 @@
 
 ![FlaUI Logo](logo.png)
 
+## Installation
+
+FlaUI for Python targets **Python 3.10–3.14** on **Windows** (the bundled FlaUI DLLs require the
+Windows UI Automation stack). All C# dependencies ship inside the wheel — there are no external
+drivers to install.
+
+=== "pip"
+
+    ```bash
+    pip install flaui-uiautomation-wrapper
+    ```
+
+=== "uv"
+
+    ```bash
+    uv add flaui-uiautomation-wrapper
+    ```
+
+### Trying a beta
+
+We publish `1.0.0bN` betas on the road to v1.0. Pre-releases are **not** installed by default —
+opt in explicitly:
+
+=== "pip"
+
+    ```bash
+    pip install --pre --upgrade flaui-uiautomation-wrapper
+    # or pin an exact beta for reproducibility
+    pip install flaui-uiautomation-wrapper==1.0.0b1
+    ```
+
+=== "uv"
+
+    ```bash
+    uv pip install --prerelease=allow flaui-uiautomation-wrapper
+    ```
+
+See [Road to v1.0](release-plan.md) for the beta-soak plan and how to give feedback.
+
 ## Get Started
 
 === "Python"
