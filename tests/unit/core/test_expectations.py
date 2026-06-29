@@ -1,5 +1,6 @@
 """Unit tests for the expect() fluent assertion API."""
 
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -70,3 +71,41 @@ def test_read_returns_sentinel_on_error() -> None:
     result = _read(Boom(), "value")
     assert result != "anything"
     assert result is not None
+
+
+def test_to_be_enabled_passes_on_stub_element() -> None:
+    """to_be_enabled succeeds against a stub element reporting is_enabled=True."""
+    element = SimpleNamespace(is_enabled=True)
+    expect(element, timeout=200).to_be_enabled()  # type: ignore[arg-type]
+
+
+def test_to_be_enabled_times_out_when_disabled() -> None:
+    """to_be_enabled raises AssertionError when the element is never enabled."""
+    element = SimpleNamespace(is_enabled=False)
+    with pytest.raises(AssertionError):
+        expect(element, timeout=200).to_be_enabled()  # type: ignore[arg-type]
+
+
+def test_to_be_checked_passes_on_stub_element() -> None:
+    """to_be_checked succeeds against a stub element reporting is_checked=True."""
+    element = SimpleNamespace(is_checked=True)
+    expect(element, timeout=200).to_be_checked()  # type: ignore[arg-type]
+
+
+def test_to_have_text_passes_on_stub_element() -> None:
+    """to_have_text succeeds when the element's text equals the expectation."""
+    element = SimpleNamespace(text="Done")
+    expect(element, timeout=200).to_have_text("Done")  # type: ignore[arg-type]
+
+
+def test_to_have_text_times_out_on_mismatch() -> None:
+    """to_have_text raises AssertionError when the text never matches."""
+    element = SimpleNamespace(text="Other")
+    with pytest.raises(AssertionError):
+        expect(element, timeout=200).to_have_text("Done")  # type: ignore[arg-type]
+
+
+def test_to_have_value_passes_on_stub_element() -> None:
+    """to_have_value succeeds when the element's value equals the expectation."""
+    element = SimpleNamespace(value=42)
+    expect(element, timeout=200).to_have_value(42)  # type: ignore[arg-type]

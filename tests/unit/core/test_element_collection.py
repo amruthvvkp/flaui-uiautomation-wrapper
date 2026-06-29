@@ -1,9 +1,9 @@
 """Unit tests for AutomationElementCollection (iterator/collection protocol)."""
 
 from types import SimpleNamespace
+from unittest.mock import MagicMock
 
-from flaui.core.automation_elements import AutomationElementCollection
-from flaui.uia3 import UIA3Automation
+from flaui.core.automation_elements import AutomationElement, AutomationElementCollection
 
 
 def test_behaves_like_a_list() -> None:
@@ -56,7 +56,20 @@ def test_repr_shows_count_and_preview() -> None:
 
 
 def test_find_all_children_returns_collection() -> None:
-    """find_all_children returns an AutomationElementCollection from a real element."""
-    desktop = UIA3Automation().get_desktop()
-    children = desktop.find_all_children()
+    """find_all_children wraps each C# child in an AutomationElement collection.
+
+    Hermetic: the C# ``raw_element`` and its ``FindAllChildren()`` return are mocked so the test
+    never touches a live UIA tree (which would hang a unit run).
+    """
+    raw_parent = MagicMock()
+    raw_children = [MagicMock(), MagicMock()]
+    raw_parent.FindAllChildren.return_value = raw_children
+
+    element = AutomationElement(raw_element=raw_parent)
+    children = element.find_all_children()
+
+    raw_parent.FindAllChildren.assert_called_once_with()
     assert isinstance(children, AutomationElementCollection)
+    assert len(children) == 2
+    assert all(isinstance(child, AutomationElement) for child in children)
+    assert [child.raw_element for child in children] == raw_children

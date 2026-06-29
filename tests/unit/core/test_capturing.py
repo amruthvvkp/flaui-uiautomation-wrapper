@@ -6,8 +6,8 @@ screen/element captures are cheap and run here too; only ``VideoRecorder.start``
 """
 
 from pathlib import Path
-from typing import Generator
-from unittest.mock import MagicMock
+from typing import Any, Generator
+from unittest.mock import MagicMock, patch
 
 from System.Drawing import Rectangle as CSRectangle  # type: ignore
 import pytest
@@ -191,3 +191,115 @@ class TestVideoRecorder:
         with recorder as entered:
             assert entered is recorder
         raw.Dispose.assert_called_once_with()
+
+
+class _StubCapturing:
+    """Stand-in for the C# ``FlaUI.Core.Capturing`` module used by ``VideoRecorder.start``.
+
+    Captures the frame delegate that ``start`` builds so the test can invoke it directly and verify
+    both the default (whole-desktop) and custom-callback frame sources without any native calls.
+    """
+
+    def __init__(self) -> None:
+        """Initialise the stub recorder/capture surfaces and delegate capture slot."""
+        self.captured_delegate: Any = None
+        screen_marker = self
+        self.screen_sentinel = object()
+
+        class Capture:
+            """Stub for ``Capture`` whose ``Screen`` returns a recognisable sentinel."""
+
+            @staticmethod
+            def Screen() -> object:
+                """Return the stub's screen-capture sentinel."""
+                return screen_marker.screen_sentinel
+
+        class CaptureImage:
+            """Marker type for the ``Func`` generic; never instantiated here."""
+
+        recorder_self = self
+
+        class VideoRecorder:  # noqa: N801 - mirrors the C# type name
+            """Stub C# recorder that records the constructor's delegate argument."""
+
+            def __init__(self, _settings: Any, delegate: Any) -> None:
+                """Store the delegate so the test can drive it."""
+                recorder_self.captured_delegate = delegate
+
+        self.Capture = Capture
+        self.CaptureImage = CaptureImage
+        self.VideoRecorder = VideoRecorder
+
+
+def _stub_func_module() -> Any:
+    """Return a ``System`` module stub whose ``Func[...]`` just wraps the Python callable."""
+    system = MagicMock()
+
+    class _Func:
+        """Mimic ``System.Func`` generic subscription: ``Func[A, B](fn)`` returns ``fn``."""
+
+        def __getitem__(self, _types: Any) -> Any:
+            """Return a constructor that hands the Python callable straight back."""
+            return lambda fn: fn
+
+    system.Func = _Func()
+    return system
+
+
+class TestVideoRecorderStart:
+    """Cover ``VideoRecorder.start`` and ``download_ffmpeg`` with stubbed C# capturing types."""
+
+    def test_start_default_frame_source_captures_desktop(self) -> None:
+        """With no ``capture_method``, the frame delegate captures the whole desktop screen."""
+        capturing = _StubCapturing()
+        # A stub settings object: ``start`` only needs ``cs_object`` from it, so avoid touching the
+        # real C# ``VideoRecorderSettings`` (whose ``cs_object`` would import the stubbed module).
+        settings = MagicMock(cs_object=object())
+        with patch.dict(
+            "sys.modules",
+            {"System": _stub_func_module(), "FlaUI.Core.Capturing": capturing},
+        ):
+            recorder = VideoRecorder.start(settings)
+
+        assert isinstance(recorder, VideoRecorder)
+        # Invoke the captured delegate to exercise the default ``_frame`` body.
+        assert capturing.captured_delegate(MagicMock()) is capturing.screen_sentinel
+
+    def test_start_custom_capture_method_unwraps_capture_image(self) -> None:
+        """A custom callback returning a ``CaptureImage`` has its ``raw_image`` forwarded."""
+        capturing = _StubCapturing()
+        raw_image = object()
+        capture_image = CaptureImage(raw_image=raw_image)
+        settings = MagicMock(cs_object=object())
+
+        def _capture(_recorder: VideoRecorder) -> CaptureImage:
+            """Return a wrapped capture image to exercise the unwrap branch."""
+            return capture_image
+
+        with patch.dict(
+            "sys.modules",
+            {"System": _stub_func_module(), "FlaUI.Core.Capturing": capturing},
+        ):
+            VideoRecorder.start(settings, capture_method=_capture)
+            assert capturing.captured_delegate(MagicMock()) is raw_image
+
+    def test_start_custom_capture_method_passes_through_raw(self) -> None:
+        """A custom callback returning a raw (non-CaptureImage) value is forwarded unchanged."""
+        capturing = _StubCapturing()
+        raw_frame = object()
+        settings = MagicMock(cs_object=object())
+
+        with patch.dict(
+            "sys.modules",
+            {"System": _stub_func_module(), "FlaUI.Core.Capturing": capturing},
+        ):
+            VideoRecorder.start(settings, capture_method=lambda _recorder: raw_frame)
+            assert capturing.captured_delegate(MagicMock()) is raw_frame
+
+    def test_download_ffmpeg_delegates_to_cs(self) -> None:
+        """``download_ffmpeg`` returns the path produced by the C# task result."""
+        capturing = MagicMock()
+        capturing.VideoRecorder.DownloadFFMpeg.return_value.Result = "C:/ffmpeg/ffmpeg.exe"
+        with patch.dict("sys.modules", {"FlaUI.Core.Capturing": capturing}):
+            assert VideoRecorder.download_ffmpeg("C:/ffmpeg") == "C:/ffmpeg/ffmpeg.exe"
+        capturing.VideoRecorder.DownloadFFMpeg.assert_called_once_with("C:/ffmpeg")

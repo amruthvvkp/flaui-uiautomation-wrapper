@@ -88,10 +88,10 @@ test_script:
         # Enforce the coverage gate only on the full suite. The flag is passed explicitly here
         # (not via pyproject) so the fast unit subset and report/xml/html generation elsewhere
         # stay informational and do not fail on partial coverage.
-        # Initial floor is conservative (85); ratchet toward 90-95 once a green full-suite run
-        # confirms the actual full-matrix coverage number.
-        Write-Host "Enforcing coverage gate (--fail-under=85)..."
-        Invoke-Checked { uv --no-progress run --extra coverage coverage report --fail-under=85 }
+        # v1.0 gate: 95% on the full UIA2/UIA3 x WinForms/WPF matrix. Unit-only coverage is ~88%;
+        # the UI matrix carries automation_elements/application/input the rest of the way.
+        Write-Host "Enforcing coverage gate (--fail-under=95)..."
+        Invoke-Checked { uv --no-progress run --extra coverage coverage report --fail-under=95 }
       } else {
         Write-Host "Fast gate: running the unit subset only (the full UI suite runs on pull requests and on master)..."
         Invoke-Checked { uv --no-progress run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage coverage run -m pytest tests/unit --junit-xml=test-results.xml --timeout=45 --timeout-method=thread --alluredir allure-results }
