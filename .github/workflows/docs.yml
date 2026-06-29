@@ -48,9 +48,13 @@ jobs:
         run: uv python install 3.12
 
       - name: Build docs (strict)
+        env:
+          # Raises the GitHub API rate limit for scripts/build_changelog.py.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           uv sync --group docs
           uv run python scripts/extract_versions.py
+          uv run python scripts/build_changelog.py
           uv run zensical build --strict -f zensical.toml
 
       - name: Configure Pages

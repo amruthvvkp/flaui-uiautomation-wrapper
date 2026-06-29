@@ -100,6 +100,7 @@ nav = [
     { "Roadmap" = "roadmap.md" },
     { "C# Parity Map" = "parity.md" },
     { "Road to v1.0" = "release-plan.md" },
+    { "Changelog" = "changelog.md" },
     { "Upgrade Guide" = "upgrade-guide.md" },
   ] },
   { "Contributing" = [
