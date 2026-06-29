@@ -11,6 +11,10 @@ from tests.test_utilities.elements.winforms_application import WinFormsApplicati
 from tests.test_utilities.elements.wpf_application import WPFApplicationElements
 
 
+# GH-75: Combobox is heavily broken on WinForms due to upstream Windows/.NET bugs. The class-level
+# bug marker currently skips the whole class on every matrix combo; restoring WPF coverage (skip on
+# WinForms only) is tracked for the coverage PR, where it can be validated against the full matrix.
+@pytest.mark.platform_limitation
 @pytest.mark.bug(
     id="GH-75",
     url="https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/75",

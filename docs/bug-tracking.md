@@ -17,6 +17,10 @@ investigation as a genuine wrapper bug; **Env** = environment guard.
 | [#78](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/78) | Toggle pattern unsupported on WinForms menus | test_menu.py::test_checked_menu_item (2 tests) | UIA2/UIA3 + WinForms | Upstream |
 | [#79](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/79) | Context menu broken with UIA3 + WinForms | test_window.py::test_context_menu (1 test) | UIA3 + WinForms | Upstream |
 | [#80](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/80) | find_all/first_with_options fail on some UIA/platform combos | test_automation_element.py (8 parametrizations) | UIA2 (all), UIA3+WinForms | Wrapper (investigating) |
+
+> **Note on #80 vs #81.** [#81](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/81)
+> is a **closed duplicate** of #80. The in-code markers now reference `GH-80` (the canonical open
+> issue); any lingering `GH-81` references should be treated as `GH-80`.
 | [#82](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/82) | test_get_control_type Tab not found during setup | test_value_converter.py::test_get_control_type | UIA2 + WinForms | Flaky |
 | [#83](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/83) | ListBox select_by_index fails | test_listbox.py::test_select_by_index | UIA3 + WPF | Wrapper (investigating) |
 | [#89](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/89) | Notepad tests on Windows 11 (Store app) | Notepad-based tests (test_getter/search/xpath/keyboard) | Windows 11 | Env (guarded via `skip_notepad_on_win11`) |
@@ -27,6 +31,30 @@ investigation as a genuine wrapper bug; **Env** = environment guard.
 > `bug` marker until a fix is verified against the full UIA2/UIA3 × WinForms/WPF matrix. The #88
 > coverage gate is enforced on the full suite (AppVeyor PR/master) — see
 > [Road to v1.0](release-plan.md).
+
+### Marker taxonomy (which marker to use)
+
+`pytest-bug`'s `@pytest.mark.bug` is **whole-test**: with the default `run=False` it skips the test
+on *every* matrix combo, and with `run=True` it treats the *whole* test as xfail. It cannot express
+"skip on WinForms but pass on WPF". Choose the marker by failure shape:
+
+| Failure shape | Marker | Behaviour | Query |
+|---------------|--------|-----------|-------|
+| Whole test broken/flaky on **all** affected combos, under active triage | `@pytest.mark.bug(id=…, url=…, reason=…, run=True)` | runs, treated as xfail (BUG-PASS / BUG-FAIL); detects a future fix | `-m bug`, `--bug-pattern=GH-XX` |
+| Upstream limitation on **specific** matrix combos only (passes on the rest) | `@pytest.mark.platform_limitation` + a conditional skip fixture (`skip_on_winforms`, `skip_on_uia3_winforms`, …) | healthy combos run for real; only the broken combo is skipped | `-m platform_limitation` |
+| Notepad / Store-app environment guard | `@pytest.mark.skip_notepad_on_win11(reason=…)` | skipped only on Windows 11 (build ≥ 22000) | `-m skip_notepad_on_win11` |
+
+Current assignments after the Phase 0 marker-hygiene pass:
+
+- **#76** (tree, flaky on CI across all combos): `bug(run=True)` — replaced the previous inline
+  `try/except AssertionError → pytest.xfail`.
+- **#78** (menu Toggle, WinForms only) and **#79** (context menu, UIA3+WinForms only):
+  `platform_limitation` + conditional skip fixture — replaced the previous in-body `pytest.skip`.
+- **#75** (combobox, WinForms): `platform_limitation` + `bug` + class-level `xfail`. Restoring real
+  WPF combobox coverage (skip on WinForms only) is deferred to the coverage PR so it can be
+  validated against the full matrix.
+- **#89** (`test_application.py`): aligned to `skip_notepad_on_win11` (was a `windows11` +
+  conditional `xfail`), which also avoids the Win11 Store-notepad launch hanging until timeout.
 
 ## Usage Examples
 

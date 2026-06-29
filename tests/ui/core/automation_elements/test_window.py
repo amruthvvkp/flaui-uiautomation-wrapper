@@ -2,29 +2,26 @@
 
 from dirty_equals import HasAttributes, HasLen
 from flaui.core.input import Mouse, MouseButton
-from flaui.lib.enums import UIAutomationTypes
 import pytest
 
 from tests.test_utilities.elements.winforms_application import WinFormsApplicationElements
 from tests.test_utilities.elements.wpf_application import WPFApplicationElements
 
-# UIA3 WinForms test is Broken in newer .NET Versions
-# TODO: Somehow the context menu of Winforms isn't getting captured, fix it and run this test
-
 
 class TestWindow:
     """Tests for Window control."""
 
+    # GH-79: Context menu of WinForms is not captured with UIA3 on newer .NET versions (upstream
+    # limitation). Skipped on UIA3 + WinForms via skip_on_uia3_winforms; runs on the other three
+    # matrix combinations. Tagged platform_limitation (queryable via `-m platform_limitation`)
+    # rather than `bug`, because the bug marker is whole-test and would skip the healthy combos too.
+    @pytest.mark.platform_limitation
     def test_context_menu(
         self,
         test_application: WinFormsApplicationElements | WPFApplicationElements,
-        ui_automation_type: UIAutomationTypes,
-        test_application_type: str,
+        skip_on_uia3_winforms: None,
     ) -> None:
         """Tests Context Menu of Window controls"""
-        if ui_automation_type == UIAutomationTypes.UIA3 and test_application_type == "WinForms":
-            pytest.skip("Context menu of WinForms is not working with UIA3 on newer .NET versions")
-
         button = test_application.simple_controls_tab.context_menu_button
         Mouse.click(button.get_clickable_point(), mouse_button=MouseButton.Right, post_wait=True)
         try:

@@ -224,8 +224,9 @@ class TestAutomationElementAdditional:
         ) == HasLen(1), "There should be one nested element"
 
     @pytest.mark.bug(
-        "GH-81",
-        "find_all_with_options fails on UIA2 (all) and UIA3+WinForms - TreeTraversalOptions support issue",
+        id="GH-80",
+        url="https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/80",
+        reason="find_all_with_options fails on UIA2 (all) and UIA3+WinForms - TreeTraversalOptions support issue",
         run=True,
     )
     def test_find_all_with_options(
@@ -308,8 +309,9 @@ class TestAutomationElementAdditional:
         ) == HasAttributes(control_type=ControlType.Tab), "ControlType should be Tab"
 
     @pytest.mark.bug(
-        "GH-81",
-        "find_first_with_options fails on UIA2+WinForms - TreeTraversalOptions support issue",
+        id="GH-80",
+        url="https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/80",
+        reason="find_first_with_options fails on UIA2+WinForms - TreeTraversalOptions support issue",
         run=True,
     )
     def test_find_first_with_options(
