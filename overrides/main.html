@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+<!--
+  Template overrides for the FlaUI for Python docs site.
+  Keep this directory wired up via `custom_dir = "overrides"` in zensical.toml.
+-->
+
+{% block announce %}
+  FlaUI for Python is on the
+  <a href="{{ 'release-plan/' | url }}"><strong>Road to v1.0</strong></a> &mdash;
+  the API is stabilizing. Try the betas and
+  <a href="https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues">share feedback</a>.
+{% endblock %}
