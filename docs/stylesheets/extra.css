@@ -18,6 +18,19 @@
   height: auto;
 }
 
+/* Home page hero badge row — centered, with comfortable spacing */
+.hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+  margin: 0.5rem 0 1.5rem;
+}
+
+.hero-badges img {
+  height: 1.3rem;
+}
+
 /* Grid cards styling for feature boxes */
 .grid.cards {
   display: grid;
@@ -77,13 +90,11 @@ table th {
   border: 1px solid var(--md-default-fg-color--lightest);
 }
 
-/* Navigation tabs enhancement */
+/* Navigation tabs: let the theme palette drive colors (clean white / black).
+   Add a subtle divider so the tab strip reads as part of the header without a
+   heavy colored band. */
 .md-tabs {
-  background: linear-gradient(
-    to bottom,
-    var(--md-primary-fg-color),
-    var(--md-primary-fg-color--dark)
-  );
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
 }
 
 /* Footer: copyright + CTA on the left, social links on the right */

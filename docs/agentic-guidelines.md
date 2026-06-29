@@ -2,6 +2,30 @@
 
 Copy-paste snippets for LLMs (Claude/GPT/Gemini) so generated code follows project rules.
 
+## Use with AI agents and MCP
+
+FlaUI for Python is a clean, typed foundation for **building agent tools** on top of Windows UI
+automation. Because every element, pattern, and input method is exposed as a plain Python call with
+Pydantic-backed types, wrapping `find`, `click`, `type`, and pattern actions as
+[MCP](https://modelcontextprotocol.io/) tools (or any other agent-tool interface) is
+straightforward — an agent can then drive arbitrary Windows applications.
+
+!!! note "An enabling foundation, not a shipped feature"
+
+    This library does **not** ship an MCP server or any built-in agent control. It is the
+    *substrate* you would build one on. A reference MCP server / agent-tool example is tracked as a
+    post-v1 item on the [Roadmap](roadmap.md#wishlist-postv1).
+
+!!! warning "Responsible use"
+
+    Letting an agent click and type into live applications is powerful and risky. If you build
+    agent tooling on this library:
+
+    - Only automate applications and environments you are **authorized** to control.
+    - Prefer scoping tools to a known target window/process rather than the whole desktop.
+    - Add confirmation or dry-run modes for destructive actions, and keep a human in the loop for
+      anything irreversible.
+
 ## System prompt template
 - Call `setup_pythonnet_bridge()` before importing any C# types.
 - Use snake_case for methods/properties; classes stay PascalCase.

@@ -90,6 +90,7 @@ of truth; this page is the human-friendly summary.
 ## 💡 Wishlist (post‑v1)
 - [ ] [`CustomNavigation` pattern (#121)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/121)
 - [ ] UI recorder / codegen (inspired by FlaUIRecorder & Playwright codegen)
+- [ ] Reference MCP server / agent-tool example exposing element find/click/type as tools (see [Use with AI agents](agentic-guidelines.md#use-with-ai-agents-and-mcp))
 - [ ] Async / `pytest-asyncio` ergonomics evaluation
 - [ ] Enhanced HTML/Allure reporting helpers
 
