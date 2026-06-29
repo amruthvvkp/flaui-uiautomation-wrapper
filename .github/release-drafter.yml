@@ -7,6 +7,12 @@ template: |
 
   See details of [all code changes](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION) since previous release
 
+  ---
+
+  - 📦 **PyPI:** https://pypi.org/project/flaui-uiautomation-wrapper/$RESOLVED_VERSION/
+  - 📚 **Docs:** https://amruthvvkp.github.io/flaui-uiautomation-wrapper/
+  - 🧪 Pre-releases are opt-in: `pip install --pre flaui-uiautomation-wrapper` (or pin `==$RESOLVED_VERSION`)
+
 categories:
   - title: Exciting New Features 🎉
     labels:

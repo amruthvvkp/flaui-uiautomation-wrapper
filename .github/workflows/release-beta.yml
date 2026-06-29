@@ -1,0 +1,64 @@
+name: Cut beta pre-release
+
+# On merge to master, mint the next 1.0.0bN beta: publish a GitHub pre-release (with notes
+# drafted by release-drafter from the merged PRs) tagged v1.0.0bN. Pushing that tag triggers the
+# Azure Pipelines `deploy_pypi` stage, which builds and uploads the wheel/sdist to PyPI.
+#
+# Safe by default: the job is inert unless the repository variable ENABLE_BETA_RELEASES == 'true'
+# (Settings -> Secrets and variables -> Actions -> Variables). Flip it on once the PyPI token and
+# Azure `PUBLISH_PYPI` flag are configured and you're ready for continuous betas.
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: write # create tags + GitHub releases
+  pull-requests: read # release-drafter reads merged PRs
+
+concurrency:
+  group: release-beta
+  cancel-in-progress: false
+
+jobs:
+  cut-beta:
+    if: vars.ENABLE_BETA_RELEASES == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Compute next beta version
+        id: ver
+        run: |
+          set -euo pipefail
+          NEXT=$(python - <<'PY'
+          import json, re, urllib.request
+          url = "https://pypi.org/pypi/flaui-uiautomation-wrapper/json"
+          nums = []
+          try:
+              with urllib.request.urlopen(url, timeout=15) as resp:
+                  data = json.load(resp)
+              for ver in data.get("releases", {}):
+                  m = re.fullmatch(r"1\.0\.0b(\d+)", ver)
+                  if m:
+                      nums.append(int(m.group(1)))
+          except Exception:
+              # Package or releases not found yet -> start the beta series at 1.
+              pass
+          print((max(nums) + 1) if nums else 1)
+          PY
+          )
+          echo "beta=1.0.0b${NEXT}" >> "$GITHUB_OUTPUT"
+          echo "tag=v1.0.0b${NEXT}" >> "$GITHUB_OUTPUT"
+          echo "Next beta: 1.0.0b${NEXT}"
+
+      - name: Publish beta pre-release with drafted notes
+        uses: release-drafter/release-drafter@v6
+        with:
+          config-name: release-drafter.yml
+          version: ${{ steps.ver.outputs.beta }}
+          tag: ${{ steps.ver.outputs.tag }}
+          name: ${{ steps.ver.outputs.tag }}
+          prerelease: true
+          publish: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
