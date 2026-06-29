@@ -1,0 +1,52 @@
+name: Publish dev build to TestPyPI
+
+# On every pull request to master, build a unique dev version (1.0.0.dev<run_id>) and upload it to
+# TestPyPI so reviewers can install the candidate:
+#
+#   pip install -i https://test.pypi.org/simple/ flaui-uiautomation-wrapper
+#
+# Each run mints a unique 1.0.0.dev<run_id>, so uploads never collide (skip-existing guards re-runs).
+#
+# NOTE: pull_request only exposes secrets for branches in THIS repository (the maintainer's own
+# branches). PRs from forks have no access to TEST_PYPI_API_TOKEN and the upload step is skipped.
+
+on:
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: testpypi-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  testpypi:
+    name: Build and publish to TestPyPI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set dev version and build
+        run: |
+          set -euo pipefail
+          VERSION="1.0.0.dev${{ github.run_id }}"
+          uv version --frozen "$VERSION"
+          uv build
+          echo "Built dev version ${VERSION}"
+
+      - name: Publish to TestPyPI
+        # Skipped automatically for fork PRs, where the secret is not available.
+        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          repository-url: https://test.pypi.org/legacy/
+          skip-existing: true

@@ -8,8 +8,9 @@ name: Draft stable release
 #   2. release-drafter creates/updates a DRAFT release with notes compiled from
 #      the PRs merged since the previous release. No git tag is created yet.
 #   3. You review the draft in GitHub Releases and click "Publish release".
-#      Publishing creates the tag v<version>, which triggers the Azure Pipelines
-#      `deploy_pypi` (and `deploy_docs`) stage to ship the wheel/sdist to PyPI.
+#      Publishing creates the tag v<version> and emits a `release: published`
+#      event (a human action, so it triggers workflows), which runs
+#      publish-pypi.yml to build and ship the wheel/sdist to PyPI.
 #
 # Because the tag is only created when you publish the draft, nothing reaches
 # PyPI without an explicit human action, and no workflow pushes to `master`.
