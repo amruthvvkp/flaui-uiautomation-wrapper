@@ -60,3 +60,11 @@ class TestIdentifierWrappers:
         """Constructing an identifier with a missing C# reference is rejected."""
         with pytest.raises(ValueError):
             EventId(raw=None)
+
+    def test_equality_with_non_identifier_is_not_equal(self, automation: Any) -> None:
+        """Comparing an identifier to a non-identifier returns NotImplemented, so ``==`` is False."""
+        identifier = PropertyId(raw=automation.PropertyLibrary.Element.Name)
+        # Exercises the ``return NotImplemented`` branch of ``__eq__`` (Python then falls back to
+        # identity, yielding ``False``) for an unrelated object.
+        assert (identifier == "not-an-identifier") is False
+        assert identifier != "not-an-identifier"

@@ -1,7 +1,11 @@
-# Robot Framework (Coming Soon)
+# Robot Framework (planned post-v1)
 
-!!! warning "Coming Soon (Issue #48)"
-    Full keyword library is planned. Below is scaffolding pseudocode.
+!!! info "Planned for after v1.0"
+    A first-class Robot Framework keyword library is **not part of the v1.0 scope** — it's tracked
+    as post-v1 companion tooling alongside `pytest-flaui` and the recorder (see the
+    [Roadmap](../roadmap.md) wishlist). You can already drive the
+    wrapper from Robot Framework today using a thin custom library; the sketch below shows the
+    shape such a library would take.
 
 ```text
 *** Settings ***

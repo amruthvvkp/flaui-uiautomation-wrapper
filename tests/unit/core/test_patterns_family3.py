@@ -7,7 +7,7 @@ by the textbox color UI test, which reads a document-range attribute through the
 
 from types import SimpleNamespace
 
-from flaui.core.automation_elements import AutomationProperty
+from flaui.core.automation_elements import AutomationElement, AutomationProperty
 from flaui.core.definitions import (
     DockPosition,
     SupportedTextSelection,
@@ -94,10 +94,15 @@ class TestTextPatterns:
     def test_text_pattern_surface(self) -> None:
         """TextPattern exposes the document range, selection mode, and range collections."""
         doc = SimpleNamespace()
+        child_range = SimpleNamespace()
+        point_range = SimpleNamespace()
         native = SimpleNamespace(
             DocumentRange=doc,
             SupportedTextSelection=SupportedTextSelection.Single.value,
             GetSelection=lambda: [SimpleNamespace(), SimpleNamespace()],
+            GetVisibleRanges=lambda: [SimpleNamespace()],
+            RangeFromChild=lambda e: child_range,
+            RangeFromPoint=lambda p: point_range,
         )
         pattern = TextPattern(raw_pattern=native)
         assert isinstance(pattern.document_range, TextRange)
@@ -107,16 +112,32 @@ class TestTextPatterns:
         assert len(ranges) == 2
         assert all(isinstance(r, TextRange) for r in ranges)
 
+        visible = pattern.get_visible_ranges()
+        assert len(visible) == 1 and isinstance(visible[0], TextRange)
+
+        child = pattern.range_from_child(AutomationElement(raw_element=SimpleNamespace()))
+        assert isinstance(child, TextRange) and child.raw_text_range is child_range
+
+        from_point = pattern.range_from_point(SimpleNamespace(cs_object=SimpleNamespace()))  # type: ignore[arg-type]
+        assert isinstance(from_point, TextRange) and from_point.raw_text_range is point_range
+
     def test_text2_extends_text_and_returns_caret_tuple(self) -> None:
         """Text2 inherits Text and returns the caret range plus its active flag."""
         caret = SimpleNamespace()
-        native = SimpleNamespace(GetCaretRange=lambda: (caret, True))
+        annotation_range = SimpleNamespace()
+        native = SimpleNamespace(
+            GetCaretRange=lambda: (caret, True),
+            RangeFromAnnotation=lambda e: annotation_range,
+        )
         pattern = Text2Pattern(raw_pattern=native)
         assert isinstance(pattern, TextPattern)
         caret_range, is_active = pattern.get_caret_range()
         assert isinstance(caret_range, TextRange)
         assert caret_range.raw_text_range is caret
         assert is_active is True
+        from_annotation = pattern.range_from_annotation(AutomationElement(raw_element=SimpleNamespace()))
+        assert isinstance(from_annotation, TextRange)
+        assert from_annotation.raw_text_range is annotation_range
 
     def test_text_edit_handles_missing_composition(self) -> None:
         """TextEdit returns ``None`` when there is no active composition."""
@@ -154,7 +175,11 @@ class TestWindowPattern:
         pattern = WindowPattern(raw_pattern=native)
         assert isinstance(pattern.can_maximize, AutomationProperty)
         assert pattern.can_maximize.value is True
+        assert pattern.can_minimize.value is False
+        assert pattern.is_modal.value is False
         assert pattern.is_topmost.value is True
+        assert pattern.window_interaction_state.value == "Running"
+        assert pattern.window_visual_state.value == "Normal"
         pattern.close()
         pattern.set_window_visual_state(WindowVisualState.Maximized)
         assert pattern.wait_for_input_idle(100) is True
@@ -179,6 +204,8 @@ class TestTransformPatterns:
         )
         pattern = TransformPattern(raw_pattern=native)
         assert pattern.can_move.value is True
+        assert pattern.can_resize.value is True
+        assert pattern.can_rotate.value is False
         pattern.move(1.0, 2.0)
         pattern.resize(30.0, 40.0)
         pattern.rotate(90.0)
@@ -201,7 +228,9 @@ class TestTransformPatterns:
         pattern = Transform2Pattern(raw_pattern=native)
         assert isinstance(pattern, TransformPattern)
         assert pattern.can_zoom.value is True
+        assert pattern.zoom_level.value == 1.0
         assert pattern.zoom_maximum.value == 4.0
+        assert pattern.zoom_minimum.value == 0.5
         pattern.zoom(2.0)
         pattern.zoom_by_unit(ZoomUnit.SmallIncrement)
         assert captured["zoom"] == 2.0

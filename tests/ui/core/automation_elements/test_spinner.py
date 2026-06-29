@@ -4,6 +4,7 @@ from typing import Any, Generator
 
 from dirty_equals import HasAttributes
 from flaui.core.automation_elements import Spinner
+from flaui.lib.exceptions import ElementNotFound
 import pytest
 
 from tests.test_utilities.elements.winforms_application import WinFormsApplicationElements
@@ -13,20 +14,24 @@ from tests.test_utilities.elements.wpf_application import WPFApplicationElements
 @pytest.mark.platform_limitation
 @pytest.mark.uia3_only
 @pytest.mark.winforms_only
-@pytest.mark.bug(
-    id="GH-74",
-    url="https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/74",
-    reason="Spinner control element finding is flaky - AutomationID sometimes returns as uuid. "
-    "This is a known issue mentioned in element locator comments, particularly noticeable in bulk test runs.",
-)
-@pytest.mark.xfail(reason="Spinner control broken - AutomationID returns uuid instead of expected string.")
 class TestSpinner:
     """Tests for Spinner control.
 
-    C# SpinnerTests only runs on UIA3 + WinForms due to platform limitation:
-    "The spinner control does not work with UIA2/WinForms anymore due to bugs in Windows / .NET"
+    C# SpinnerTests only runs on UIA3 + WinForms due to a platform limitation:
+    "The spinner control does not work with UIA2/WinForms anymore due to bugs in Windows / .NET".
 
-    KNOWN ISSUE: Element finding is flaky due to AutomationID instability.
+    GH-74 root cause (confirmed locally on Windows 11): the WinForms ``NumericUpDown`` UIA peer
+    intermittently fails to register, so the control is *absent from the accessibility tree* even
+    though the window and its sibling controls (slider, textbox) are present. ``focus()``,
+    ``set_foreground()`` and a physical tab click do not bring it back - there is no element to find.
+    This is an upstream Windows/.NET limitation, not a wrapper bug, and it cannot be fixed by the
+    element locator.
+
+    The locator (see the ``spinner`` property in the WinForms element map) is still hardened to
+    ``ControlType.Spinner`` + ``Name`` with retry and transient-COM-error handling, so the tests run
+    and assert for real wherever the peer *is* exposed. When the peer is genuinely absent, the
+    fixture skips with a documented reason instead of erroring - matching how C# excludes the
+    combination and keeping CI deterministic.
     """
 
     @pytest.fixture(name="spinner")
@@ -35,13 +40,21 @@ class TestSpinner:
         test_application: WinFormsApplicationElements | WPFApplicationElements,
         require_uia3_winforms: None,
     ) -> Generator[Spinner, Any, None]:
-        """Returns the spinner element.
+        """Returns the spinner element, or skips when the WinForms NumericUpDown peer is absent.
 
         :param test_application: Test application elements.
         :param require_uia3_winforms: Fixture that skips if not UIA3+WinForms.
         :return: Test spinner element.
         """
-        yield test_application.simple_controls_tab.spinner  # type: ignore
+        try:
+            yield test_application.simple_controls_tab.spinner  # type: ignore
+        except ElementNotFound:
+            pytest.skip(
+                "WinForms NumericUpDown (Spinner) UIA peer is not exposed in the accessibility tree "
+                "on this environment - a known Windows/.NET WinForms limitation (GH-74). The window "
+                "and its sibling controls are present, but the spinner peer failed to register, so "
+                "there is no element to drive. See test_spinner.py for the root-cause analysis."
+            )
 
     def test_set_value(self, spinner: Spinner) -> None:
         """Tests the value setting on Spinner control."""

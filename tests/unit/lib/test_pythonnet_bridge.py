@@ -21,3 +21,21 @@ def test_setup_pythonnet_bridge() -> None:
     except Exception as err:
         logger.exception(f"{err}")
         pytest.fail("Failed to setup Python.NET bridge for FlaUI dependencies")
+
+
+def test_setup_pythonnet_bridge_reraises_on_load_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A failure while loading a DLL is logged and re-raised (covers the except branch).
+
+    The loop's first ``clr.AddReference`` is patched to raise, so the bridge surfaces the error
+    instead of silently swallowing it. No real assemblies are touched.
+    """
+    import flaui.lib.pythonnet_bridge as bridge
+
+    def _boom(*_args: object, **_kwargs: object) -> None:
+        """Simulate a DLL load failure from PythonNet."""
+        raise RuntimeError("simulated DLL load failure")
+
+    monkeypatch.setattr(bridge.clr, "AddReference", _boom)
+
+    with pytest.raises(RuntimeError, match="simulated DLL load failure"):
+        bridge.setup_pythonnet_bridge()

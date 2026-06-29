@@ -60,6 +60,28 @@ Please report anything surprising on the
 [issue tracker](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues) — beta feedback is
 the whole point of this stage.
 
+## How releases are automated
+
+Releases are **tag-driven**, which sidesteps the protected-`master` problem (no workflow needs to
+push commits to `master`):
+
+| Event | What happens | Where |
+|-------|--------------|-------|
+| **Pull request** | A dev build `1.0.0.dev<buildId>` is published to **TestPyPI** so reviewers can install the candidate. | Azure `deploy_testpypi` |
+| **Merge to `master`** | The `release-beta` GitHub Action mints the next `1.0.0bN`, publishes a GitHub **pre-release** with notes drafted by [release-drafter](https://github.com/release-drafter/release-drafter) from the merged PRs, and pushes tag `v1.0.0bN`. | `.github/workflows/release-beta.yml` |
+| **Tag `v1.0.0bN` pushed** | Azure builds the wheel/sdist and uploads to **PyPI**. PyPI auto-classifies it as a pre-release (only `--pre` installs it). | Azure `deploy_pypi` |
+| **Tag `v1.0.0` pushed** (manual) | Same path publishes the **stable** release; docs `stable` alias becomes default. | Azure `deploy_pypi` + `deploy_docs` |
+
+Each GitHub release links back to its PyPI version and the docs site (see `.github/release-drafter.yml`).
+
+!!! note "Enabling the automation"
+    Everything is **off by default** so nothing publishes until tokens are configured:
+
+    - Azure: set `PUBLISH_TEST_PYPI` / `PUBLISH_PYPI` to `true` and configure the
+      `TEST_PYPI_API_TOKEN` / `PYPI_API_TOKEN` secret pipeline variables.
+    - GitHub: set the repository variable `ENABLE_BETA_RELEASES` to `true`
+      (Settings → Secrets and variables → Actions → Variables).
+
 ## Documentation versioning
 
 The docs site is **versioned** so that each release has its own snapshot. Versioning uses

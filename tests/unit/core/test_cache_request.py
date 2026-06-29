@@ -1,5 +1,7 @@
 """Unit tests for the :class:`flaui.core.cache_request.CacheRequest` wrapper."""
 
+from unittest.mock import MagicMock
+
 from FlaUI.Core import CacheRequest as CSCacheRequest  # type: ignore
 from FlaUI.Core.Identifiers import PatternId, PropertyId  # type: ignore
 
@@ -108,3 +110,36 @@ class TestCachingLifecycle:
 
         assert disposable is not None
         disposable.Dispose()
+
+
+class TestActivateDisposalFallbacks:
+    """Cover the ``activate`` finalizer's disposal fallback branches with a stub C# instance."""
+
+    def test_activate_falls_back_to_lowercase_dispose(self) -> None:
+        """When ``Dispose`` raises, ``activate`` falls back to the lowercase ``dispose``."""
+        disposable = MagicMock()
+        disposable.Dispose.side_effect = RuntimeError("Dispose unavailable")
+        cs_instance = MagicMock()
+        cs_instance.Activate.return_value = disposable
+
+        cache_request = CacheRequest(_cs_instance=cs_instance)
+        with cache_request.activate():
+            pass
+
+        disposable.Dispose.assert_called_once_with()
+        disposable.dispose.assert_called_once_with()
+
+    def test_activate_swallows_both_dispose_failures(self) -> None:
+        """When both ``Dispose`` and ``dispose`` raise, ``activate`` exits without error."""
+        disposable = MagicMock()
+        disposable.Dispose.side_effect = RuntimeError("Dispose unavailable")
+        disposable.dispose.side_effect = RuntimeError("dispose unavailable")
+        cs_instance = MagicMock()
+        cs_instance.Activate.return_value = disposable
+
+        cache_request = CacheRequest(_cs_instance=cs_instance)
+        with cache_request.activate():
+            pass
+
+        disposable.Dispose.assert_called_once_with()
+        disposable.dispose.assert_called_once_with()

@@ -89,6 +89,8 @@ class TestScrollPatterns:
         assert pattern.horizontally_scrollable.value is True
         assert pattern.vertically_scrollable.value is False
         assert pattern.horizontal_scroll_percent.value == 10.0
+        assert pattern.vertical_scroll_percent.value == 0.0
+        assert pattern.horizontal_view_size.value == 50.0
         assert pattern.vertical_view_size.value == 100.0
 
     def test_scroll_converts_enum_at_boundary(self) -> None:

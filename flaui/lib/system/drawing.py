@@ -761,7 +761,7 @@ class Point(BaseModel):
 
         :return: Size object
         """
-        return Size(raw_value=self.raw_value)
+        return Size(raw_value=(self.x, self.y))
 
     def distance(
         self, other_x: Optional[int] = None, other_y: Optional[int] = None, other_point: Optional[Point] = None
@@ -924,14 +924,14 @@ class Size(BaseModel):
         if not isinstance(other, CSSize):
             raise TypeError(f"Unsupported operand type(s) for +: 'Size' and '{type(other)}'")
 
-        return Size(raw_value=(self.x - other.Width, self.y - other.Height))  # type: ignore
+        return Size(raw_value=(self.width - other.Width, self.height - other.Height))  # type: ignore
 
     def to_point(self) -> Point:
         """Explicitly converts Size structure to Point structure
 
         :return: Parsed Point object
         """
-        return Point(raw_value=self.raw_value)
+        return Point(raw_value=(self.width, self.height))
 
 
 class Rectangle(BaseModel):
@@ -1136,7 +1136,9 @@ class Rectangle(BaseModel):
         :param value: Value to enlarge
         :return: Enlarged Rectangle
         """
-        return Rectangle(raw_value=self.raw_value.Inflate(*value))  # type: ignore
+        # ``Rectangle.Inflate(int, int)`` is the void *instance* overload that mutates in place;
+        # use the static ``Rectangle.Inflate(rect, x, y)`` overload to return a new Rectangle.
+        return Rectangle(raw_value=CSRectangle.Inflate(self.raw_value, value[0], value[1]))  # type: ignore
 
     def interset(self, other: Union[Rectangle, Tuple[Rectangle, Rectangle]]) -> Rectangle:
         """Replaces this Rectangle with the intersection of itself and the specified Rectangle.
@@ -1145,10 +1147,13 @@ class Rectangle(BaseModel):
         :param other: Value to intersect with
         :return: Updated rectangle
         """
+        # The single-argument instance ``Intersect(Rectangle)`` overload mutates in place and
+        # returns void; use the static ``Rectangle.Intersect(a, b)`` overload, which returns the
+        # intersection (an empty Rectangle when the two do not overlap).
         return Rectangle(
-            raw_value=self.raw_value.Intersect(other.raw_value)  # type: ignore
+            raw_value=CSRectangle.Intersect(self.raw_value, other.raw_value)  # type: ignore
             if isinstance(other, Rectangle)
-            else self.raw_value.Intersect(*[_.raw_value for _ in other])  # type: ignore
+            else CSRectangle.Intersect(*[_.raw_value for _ in other])  # type: ignore
         )
 
     def intersects_with(self, other: Rectangle) -> bool:

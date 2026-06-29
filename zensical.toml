@@ -87,6 +87,7 @@ nav = [
     ] },
   ] },
   { "Examples" = [
+    { "Overview" = "examples/index.md" },
     { "Pytest" = "examples/pytest.md" },
     { "Unittest" = "examples/unittest.md" },
     { "Robot Framework" = "examples/robot-framework.md" },
@@ -97,6 +98,7 @@ nav = [
   { "Project" = [
     { "Motivation" = "motivation.md" },
     { "Roadmap" = "roadmap.md" },
+    { "C# Parity Map" = "parity.md" },
     { "Road to v1.0" = "release-plan.md" },
     { "Upgrade Guide" = "upgrade-guide.md" },
   ] },

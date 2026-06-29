@@ -25,6 +25,10 @@ variables:
   ACTIVE_PYTHON_VERSION: "3.12"
   DOCS_PYTHON_VERSION: "3.12"
   PACKAGE_PYTHON_VERSION: "3.12"
+  # Target series for pre-releases. Beta numbers (1.0.0bN) are minted by the
+  # `release-beta` GitHub Action on merge to master; PR builds publish dev versions
+  # of this series (1.0.0.dev<buildId>) to TestPyPI.
+  RELEASE_SERIES: "1.0.0"
   PUBLISH_TEST_PYPI: "false"
   PUBLISH_PYPI: "false"
   PUBLISH_DOCS: "false"
@@ -310,9 +314,17 @@ stages:
               SHORT_SHA="$(Build.SourceVersion)"
               SHORT_SHA="${SHORT_SHA:0:7}"
               BASE_VERSION="$(uv version --short)"
+              # Version selection by build context:
+              #   tag refs/tags/v*  -> the tag's version (authoritative; e.g. 1.0.0b3). The beta
+              #                        tag is minted by the release-beta GitHub Action on merge.
+              #   pull request      -> PEP 440 dev release of the target series (1.0.0.dev<buildId>),
+              #                        uploaded to TestPyPI. No local '+sha' segment: PyPI rejects it.
+              #   other (master CI) -> local dev version for the build artifact only (not published).
               if [[ "$(Build.SourceBranch)" == refs/tags/v* ]]; then
                 PACKAGE_VERSION="$(Build.SourceBranchName)"
                 PACKAGE_VERSION="${PACKAGE_VERSION#v}"
+              elif [[ "$(Build.Reason)" == "PullRequest" ]]; then
+                PACKAGE_VERSION="$(RELEASE_SERIES).dev$(Build.BuildId)"
               else
                 PACKAGE_VERSION="${BASE_VERSION}+g${SHORT_SHA}"
               fi
@@ -332,7 +344,10 @@ stages:
   - stage: deploy_testpypi
     displayName: Deploy to TestPyPI
     dependsOn: package
-    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['PUBLISH_TEST_PYPI'], 'true'))
+    # Publish a dev build to TestPyPI on every pull request, so reviewers can install the
+    # candidate (pip install -i https://test.pypi.org/simple/ ...). Each build mints a unique
+    # 1.0.0.dev<buildId> version, so re-uploads never collide.
+    condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['PUBLISH_TEST_PYPI'], 'true'))
     jobs:
       - deployment: publish_testpypi
         displayName: Publish to TestPyPI
@@ -361,6 +376,9 @@ stages:
   - stage: deploy_pypi
     displayName: Deploy to PyPI
     dependsOn: package
+    # Fires on any v* tag. Beta tags (v1.0.0bN) are pushed by the release-beta GitHub Action on
+    # merge to master; the stable v1.0.0 tag is pushed manually. PyPI auto-classifies 1.0.0bN as a
+    # pre-release (only installed with --pre), so the same path serves betas and the final release.
     condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'), eq(variables['PUBLISH_PYPI'], 'true'))
     jobs:
       - deployment: publish_pypi

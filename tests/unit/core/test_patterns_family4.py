@@ -47,6 +47,7 @@ class TestPropertyOnlyPatterns:
         assert isinstance(pattern.annotation_type, AutomationProperty)
         assert pattern.annotation_type_name.value == "Comment"
         assert pattern.author.value == "alice"
+        assert pattern.date_time.value == "2026-01-01"
         assert pattern.target.value == "element"
 
     def test_styles_properties(self) -> None:
@@ -61,7 +62,12 @@ class TestPropertyOnlyPatterns:
             StyleName=_prop("Heading"),
         )
         pattern = StylesPattern(raw_pattern=native)
+        assert pattern.extended_properties.value == "ext"
         assert pattern.fill_color.value == 255
+        assert pattern.fill_pattern_color.value == 128
+        assert pattern.fill_pattern_style.value == "solid"
+        assert pattern.shape.value == "rect"
+        assert pattern.style.value == 7
         assert pattern.style_name.value == "Heading"
 
     def test_spreadsheet_item_properties(self) -> None:
@@ -74,6 +80,7 @@ class TestPropertyOnlyPatterns:
         pattern = SpreadsheetItemPattern(raw_pattern=native)
         assert pattern.formula.value == "=A1+B1"
         assert pattern.annotation_objects.value == ["a"]
+        assert pattern.annotation_types.value == [1]
 
     def test_drag_and_drop_target_properties(self) -> None:
         """Drag and DropTarget expose their effect and grabbed-item properties."""
@@ -85,13 +92,16 @@ class TestPropertyOnlyPatterns:
                 GrabbedItems=_prop([]),
             )
         )
-        assert drag.is_grabbed.value is True
+        assert drag.drop_effect.value == "move"
         assert drag.drop_effects.value == ["move", "copy"]
+        assert drag.is_grabbed.value is True
+        assert drag.grabbed_items.value == []
 
         drop = DropTargetPattern(
             raw_pattern=SimpleNamespace(DropTargetEffect=_prop("link"), DropTargetEffects=_prop(["link"]))
         )
         assert drop.drop_target_effect.value == "link"
+        assert drop.drop_target_effects.value == ["link"]
 
     def test_legacy_i_accessible_properties_and_methods(self) -> None:
         """LegacyIAccessible exposes MSAA properties and delegates its action methods."""
@@ -112,8 +122,16 @@ class TestPropertyOnlyPatterns:
             SetValue=lambda v: calls.append(("set", v)),
         )
         pattern = LegacyIAccessiblePattern(raw_pattern=native)
-        assert pattern.name.value == "Save"
+        assert pattern.child_id.value == 0
         assert pattern.default_action.value == "press"
+        assert pattern.description.value == "desc"
+        assert pattern.help.value == "help"
+        assert pattern.keyboard_shortcut.value == "Ctrl+S"
+        assert pattern.name.value == "Save"
+        assert pattern.role.value == 43
+        assert pattern.state.value == 0
+        assert pattern.selection.value == []
+        assert pattern.value.value == "val"
         pattern.do_default_action()
         pattern.select(3)
         pattern.set_value("new")
@@ -134,6 +152,7 @@ class TestMethodPatterns:
         )
         pattern = MultipleViewPattern(raw_pattern=native)
         assert pattern.current_view.value == 0
+        assert pattern.supported_views.value == [0, 1]
         assert pattern.get_view_name(1) == "Details"
         assert captured["name_arg"] == 1
         pattern.set_current_view(1)
