@@ -139,6 +139,9 @@ venv.bak/
 # mkdocs documentation
 /site
 
+# Generated at docs build time by scripts/build_changelog.py (live GitHub Releases fetch)
+docs/changelog.md
+
 # mypy
 .mypy_cache/
 .dmypy.json
@@ -184,3 +187,4 @@ allure-report/*
 diagnostic-output.txt
 test-report.jsonl
 log.txt
+.claude/settings.local.json

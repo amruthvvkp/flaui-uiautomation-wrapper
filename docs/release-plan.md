@@ -70,7 +70,12 @@ push commits to `master`):
 | **Pull request** | A dev build `1.0.0.dev<buildId>` is published to **TestPyPI** so reviewers can install the candidate. | Azure `deploy_testpypi` |
 | **Merge to `master`** | The `release-beta` GitHub Action mints the next `1.0.0bN`, publishes a GitHub **pre-release** with notes drafted by [release-drafter](https://github.com/release-drafter/release-drafter) from the merged PRs, and pushes tag `v1.0.0bN`. | `.github/workflows/release-beta.yml` |
 | **Tag `v1.0.0bN` pushed** | Azure builds the wheel/sdist and uploads to **PyPI**. PyPI auto-classifies it as a pre-release (only `--pre` installs it). | Azure `deploy_pypi` |
-| **Tag `v1.0.0` pushed** (manual) | Same path publishes the **stable** release; docs `stable` alias becomes default. | Azure `deploy_pypi` + `deploy_docs` |
+| **Stable release (manual)** | You run the **Draft stable release** workflow (Actions → Run workflow → type the version, e.g. `1.0.0`). It creates a **draft** release with notes compiled from merged PRs — *no tag is pushed yet*. You review the draft and click **Publish**, which creates tag `v1.0.0`. | `.github/workflows/release-stable.yml` |
+| **Tag `v1.0.0` pushed** (by publishing the draft) | Same path publishes the **stable** release to PyPI; docs `stable` alias becomes default. | Azure `deploy_pypi` + `deploy_docs` |
+
+Betas are minted and published automatically on merge; the **stable** release is the one human
+checkpoint — nothing reaches PyPI until you publish the reviewed draft from GitHub Releases (which
+is what creates the `v1.0.0` tag).
 
 Each GitHub release links back to its PyPI version and the docs site (see `.github/release-drafter.yml`).
 
@@ -81,6 +86,15 @@ Each GitHub release links back to its PyPI version and the docs site (see `.gith
       `TEST_PYPI_API_TOKEN` / `PYPI_API_TOKEN` secret pipeline variables.
     - GitHub: set the repository variable `ENABLE_BETA_RELEASES` to `true`
       (Settings → Secrets and variables → Actions → Variables).
+
+## Changelog page
+
+The [Changelog](changelog.md) is generated at **docs build time** by
+`scripts/build_changelog.py`, which fetches published GitHub Releases (betas and stable) and renders
+their notes into a single page. It is gitignored and refreshes on every docs build, so it always
+matches GitHub Releases without manual upkeep. The fetch is build-safe: if the GitHub API is
+unreachable (offline local builds, rate limits) a small fallback page is written instead so the
+strict build never fails.
 
 ## Documentation versioning
 

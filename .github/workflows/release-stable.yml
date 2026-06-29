@@ -1,0 +1,69 @@
+name: Draft stable release
+
+# Manually drafts a stable GitHub release for review. Unlike the beta flow
+# (.github/workflows/release-beta.yml), this NEVER publishes on its own:
+#
+#   1. You run this workflow (Actions -> "Draft stable release" -> Run workflow),
+#      typing the version (e.g. 1.0.0).
+#   2. release-drafter creates/updates a DRAFT release with notes compiled from
+#      the PRs merged since the previous release. No git tag is created yet.
+#   3. You review the draft in GitHub Releases and click "Publish release".
+#      Publishing creates the tag v<version>, which triggers the Azure Pipelines
+#      `deploy_pypi` (and `deploy_docs`) stage to ship the wheel/sdist to PyPI.
+#
+# Because the tag is only created when you publish the draft, nothing reaches
+# PyPI without an explicit human action, and no workflow pushes to `master`.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Stable version to draft (no leading v), e.g. 1.0.0"
+        required: true
+        type: string
+
+permissions:
+  contents: write # create/update the draft release
+  pull-requests: read # release-drafter reads merged PRs
+
+concurrency:
+  group: release-stable
+  cancel-in-progress: false
+
+jobs:
+  draft-stable:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Guard — master only
+        run: |
+          if [[ "${{ github.ref }}" != "refs/heads/master" ]]; then
+            echo "::error::Stable releases must be drafted from 'master' (got '${{ github.ref }}'). Re-run with master selected as the branch." >&2
+            exit 1
+          fi
+
+      - name: Validate version input
+        id: ver
+        run: |
+          set -euo pipefail
+          VERSION="${{ inputs.version }}"
+          # Strip an accidental leading "v" and reject pre-release/build suffixes.
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::'$VERSION' is not a stable X.Y.Z version. Betas are cut automatically by release-beta.yml." >&2
+            exit 1
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Drafting stable release v${VERSION}"
+
+      - name: Draft stable release with compiled notes
+        uses: release-drafter/release-drafter@v6
+        with:
+          config-name: release-drafter.yml
+          version: ${{ steps.ver.outputs.version }}
+          tag: ${{ steps.ver.outputs.tag }}
+          name: ${{ steps.ver.outputs.tag }}
+          prerelease: false
+          publish: false # draft only — you publish manually from GitHub Releases
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
