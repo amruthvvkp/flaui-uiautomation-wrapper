@@ -18,6 +18,7 @@ extra_javascript = ["https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js"]
 nav = [
   { "Home" = "index.md" },
   { "Roadmap" = "roadmap.md" },
+  { "C# Parity Map" = "parity.md" },
   { "Road to v1.0" = "release-plan.md" },
   { "Upgrade Guide" = "upgrade-guide.md" },
   { "Motivation" = "motivation.md" },
