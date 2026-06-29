@@ -22,14 +22,14 @@ order we'll tackle the rest.
 | Phase | Milestone | Status | Open / Closed |
 |-------|-----------|--------|---------------|
 | — | [Create initial usable release](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/1) | ✅ Done | 0 / 18 |
-| 0 | [Stabilize](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/7) | ⏳ Pending | 10 / 1 |
-| 1 | [Exceptions & Identifiers](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/8) | 🟡 Almost done | 1 / 5 |
+| 0 | [Stabilize](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/7) | 🟡 In progress | 10 / 1 |
+| 1 | [Exceptions & Identifiers](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/8) | ✅ Done | 0 / 6 |
 | 2 | [Patterns](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/9) | ✅ Done | 0 / 5 |
 | 3 | [Elements & ScrollBars](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/10) | ✅ Done | 0 / 2 |
 | 4 | [Events](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/11) | ✅ Done | 0 / 2 |
-| 5 | [Capturing / Overlay / Video](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/12) | ⏳ Pending | 2 / 0 |
-| 6 | [Logging / Tools / Enhancers](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/13) | 🟡 In progress | 3 / 1 |
-| 7 | [Docs & Zensical](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/14) | ⏳ Pending | 5 / 0 |
+| 5 | [Capturing / Overlay / Video](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/12) | ✅ Done | 0 / 2 |
+| 6 | [Logging / Tools / Enhancers](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/13) | 🟡 In progress | 1 / 3 |
+| 7 | [Docs & Zensical](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/14) | 🟡 In progress | 5 / 0 |
 | 8 | [Polish & v1.0](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/15) | ⏳ Pending | 5 / 0 |
 
 **Legend:** ✅ done · 🟡 in progress · ⏳ not started
@@ -45,9 +45,10 @@ order we'll tackle the rest.
 - pytest matrix framework (UIA2/UIA3 × WinForms/WPF), object mapping, pytest-bug tracking.
 - Python 3.10+ support, packaging/issue/PR templates.
 
-### Phase 1 — Exceptions & Identifiers *(5 of 6 closed)*
+### Phase 1 — Exceptions & Identifiers *(complete)*
 - **#102** Complete exception hierarchy · **#98** Identifier system (EventId/PatternId/PropertyId/
-  TextAttributeId) · **#105 / #104** XPath navigation support.
+  TextAttributeId) · **#105 / #104** XPath navigation support · **#73** `translate_exceptions`
+  Pythonic wrapper over the hierarchy.
 
 ### Phase 2 — Patterns *(complete)*
 - **#91** All **34 UI Automation patterns** implemented (full parity with FlaUI's `IFrameworkPatterns`).
@@ -59,7 +60,13 @@ order we'll tackle the rest.
 ### Phase 4 — Events *(complete)*
 - **#94** Event handler system · **#77** `RegisterAutomationEvent` ported with GC keep-alive (**PR #123**).
 
-### Phase 6 — Tools *(partial)*
+### Phase 5 — Capturing / Overlay / Video *(complete)*
+- **#95** Screen capture & video (`flaui/core/capturing.py` — `Capture`, `CaptureImage`,
+  `VideoRecorder`) · **#103** Overlay system (`flaui/core/overlay.py` — `OverlayManager`).
+
+### Phase 6 — Logging / Tools *(partial)*
+- **#96** Logging infrastructure (stdlib `logging`, opt-in C#→Python sink via `FLAUI_LOG_CSHARP`) ·
+  **#68** mouse busy-spinner / loading-state wait helper.
 - **#100** Tools/utilities: `ItemRealizer`, `AccessibilityTextResolver`, `WindowsStoreAppLauncher`,
   `LocalizedStrings`, `SystemInfo` (**PR #123**).
 
@@ -71,52 +78,39 @@ order we'll tackle the rest.
 
 ## ⏳ Pending — prioritized backlog
 
-Priority order: **P1 → P6**. Per direction, the next focus is **Phase 1 → 5 → 6**, and all feature
-areas (capturing, overlay, video, logging) are **in scope for v1.0**.
+Phases 1–5 are now complete (exceptions/identifiers, patterns, elements, events, capturing/overlay/
+video). The remaining v1.0 gate is **Phase 0 → 7 → 8**, in that priority order.
 
-### P1 — Finish Phase 1
-- **[#73](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/73)** — `translate_exceptions`
-  Pythonic exception-translation wrapper over the hierarchy built in #102. *Small; closes the milestone.*
-
-### P2 — Phase 5: Capturing / Overlay / Video *(new modules)*
-- **[#95](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/95)** — Screen capturing &
-  video: `flaui/core/capturing/` wrapping `Capture` / `CaptureImage` / `VideoRecorder` (wire the
-  existing `VideoRecordingMode` enum; video needs ffmpeg).
-- **[#103](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/103)** — Overlay system:
-  `flaui/core/overlay/` wrapping `IOverlayManager` / `WinFormsOverlayManager` for visual debugging.
-
-### P3 — Phase 6: Logging / Enhancers
-- **[#96](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/96)** — Logging infrastructure:
-  - **Drop Loguru**, standardize on stdlib `logging`.
-  - **C#→Python sink:** a Python `ILogger` implementation assigned to FlaUI's `Logger.Default` so C#
-    log output flows into Python `logging` — unified telemetry in one destination.
-  - **Opt-in** via a `Settings` flag / env var (`FLAUI_LOG_CSHARP`); off by default.
-- **[#68](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/68)** — Mouse busy-spinner /
-  loading-state waiting helper (align with `Wait` / `post_wait`).
-- **[#87](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/87)** — Enhanced Python
-  integration (umbrella): context managers, iterators, `__repr__`/`__str__`, fluent waits. *Triage;
-  not all required for v1.0.*
-
-### P4 — Phase 0: Stabilize *(pre-release gate)*
+### P1 — Phase 0: Stabilize *(pre-release gate — active)*
 - **[#88](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/88)** — `flaui.core` test
-  coverage umbrella.
-- Bug fixes: **#74 #75 #76 #78 #79 #80 #82 #83 #89** (see table below). Several are upstream
-  Windows/.NET issues — fix where feasible, otherwise document as known xfail/skip.
+  coverage umbrella. Target **95%** (gate raised from the 85% floor; verified on the AppVeyor full
+  UI matrix). See [C# Parity Map](parity.md) / `docs/parity.md` for surface coverage.
+- Bug fixes: **#74 #75 #76 #78 #79 #80 #82 #83 #89** (see table below). Most are now triaged with
+  `platform_limitation` / `bug(run=True)` markers and documented in
+  [bug-tracking](bug-tracking.md); several are upstream Windows/.NET issues kept as known xfail/skip.
 
-### P5 — Phase 7: Docs & Zensical
+### P2 — Phase 7: Docs & Zensical
 - **[#86](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/86)** comprehensive docs
   (umbrella) · **[#69](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/69)** example
   gallery · sample suites: **[#48](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/48)**
   Behave · **[#49](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/49)** TestPlan ·
-  **[#50](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/50)** PyTest.
+  **[#50](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/50)** PyTest. *(Runnable
+  suites under `examples/` are landed; Robot Framework deferred to post-v1.)*
 
-### P6 — Phase 8: Polish & release
+### P3 — Phase 8: Polish & release
 - **[#85](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/85)** polish & production
   readiness · release automation
   **[#57](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/57)** /
   **[#65](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/65)** /
   **[#66](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/66)** · then
   **[#84](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/84) v1.0.0 release**.
+  *(Tag-driven beta automation is wired — see [Release automation](#release-automation) — pending
+  token enablement.)*
+
+### Remaining Phase 6
+- **[#87](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/87)** — Enhanced Python
+  integration (umbrella): context managers, iterators, `__repr__`/`__str__`, fluent waits. *Triage;
+  not all required for v1.0.*
 
 ### Post-v1 — parity gaps & deferred tests (out of scope for v1.0)
 - **[#121](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/121)** — CustomNavigation
@@ -187,11 +181,34 @@ audiences.
 
 ---
 
+## Release automation
+
+Releases are **tag-driven** so no workflow needs to push to protected `master` (resolves #57):
+
+| Event | Outcome | Where |
+|-------|---------|-------|
+| Pull request | dev build `1.0.0.dev<buildId>` → **TestPyPI** | Azure `deploy_testpypi` |
+| Merge to `master` | next `1.0.0bN` minted → GitHub **pre-release** (notes via release-drafter, #65) + tag `v1.0.0bN` | `.github/workflows/release-beta.yml` |
+| Tag `v1.0.0bN` | wheel/sdist → **PyPI** pre-release (links to PyPI + docs on the notes, #66) | Azure `deploy_pypi` |
+| Tag `v1.0.0` | stable release + `stable` docs alias | Azure `deploy_pypi` + `deploy_docs` |
+
+All publish paths are **off by default**; enable via Azure `PUBLISH_*` flags + tokens and the GitHub
+`ENABLE_BETA_RELEASES` repo variable. Full flow: [Road to v1.0](release-plan.md#how-releases-are-automated).
+
+## C# parity
+
+`docs/parity.md` (generated by `scripts/parity_audit.py`, re-run on DLL bumps) maps the bundled
+FlaUI 5.0 surface against the Python wrapper. The user-facing `FlaUI.Core` surface (elements,
+patterns, conditions, input, tools, capturing, overlay, identifiers) is the actionable backlog;
+UIA2/UIA3 framework-adapter internals are out of scope by design.
+
+---
+
 ## Success metrics (v1.0 gate)
 
 | Metric | Target | Current |
 |--------|--------|---------|
-| Test coverage | 95%+ | ~85% |
+| Test coverage | 95%+ | gate raised to 95% (verified on AppVeyor full UI matrix) |
 | Docstring coverage (`interrogate`) | 95%+ | ~99% ✅ |
 | Ruff lint | 0 errors | clean ✅ |
 | Pattern parity | 34/34 | ✅ |
