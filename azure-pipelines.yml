@@ -121,6 +121,7 @@ stages:
           - bash: |
               uv sync --group docs
               uv run python scripts/extract_versions.py
+              uv run python scripts/build_changelog.py
               uv run zensical build --strict -f zensical.toml
             displayName: Build docs
             env:
@@ -467,9 +468,11 @@ stages:
                     # Tokenised origin so mike can push the gh-pages branch.
                     git remote set-url origin "https://x-access-token:${GITHUB_PAGES_TOKEN}@github.com/amruthvvkp/flaui-uiautomation-wrapper.git"
 
-                    # Regenerate the bundled-versions include the docs build depends on.
+                    # Regenerate the bundled-versions include and the live changelog the docs
+                    # build depends on (both are gitignored, generated artifacts).
                     uv sync --group docs
                     uv run python scripts/extract_versions.py
+                    uv run python scripts/build_changelog.py
 
                     # mike (Zensical's fork) builds the docs and commits them to gh-pages, keeping
                     # each version under its own subdir and updating the moving alias. It is installed
