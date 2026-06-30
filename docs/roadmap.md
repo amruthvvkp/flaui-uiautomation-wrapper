@@ -20,7 +20,7 @@ of truth; this page is the human-friendly summary.
 | [Phase 3 — Elements & ScrollBars](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/10) | Element wrappers, scrollbars | ✅ Complete |
 | [Phase 4 — Events](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/11) | Event handler system, automation events | ✅ Complete |
 | [Phase 5 — Capturing/Overlay/Video](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/12) | Screenshots, overlays, video recording | ✅ Complete |
-| [Phase 6 — Logging/Tools/Enhancers](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/13) | Logging bridge, tools, Pythonic enhancers | 🚧 In progress |
+| [Phase 6 — Logging/Tools/Enhancers](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/13) | Logging bridge, tools, Pythonic enhancers | ✅ Complete |
 | [Phase 0 — Stabilize](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/7) | Green CI, stable matrix, 100% core coverage | 🚧 In progress |
 | [Phase 7 — Docs & Zensical](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/14) | v1 docs, per-framework guides, API reference | 🗓️ Planned |
 | [Phase 8 — Polish & v1.0](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/15) | Release plumbing, beta soak, v1.0.0 | 🗓️ Planned |
@@ -50,7 +50,13 @@ of truth; this page is the human-friendly summary.
 ### CI & docs platform
 - [x] [Migrate Windows UI CI from AppVeyor to a hybrid Azure Pipelines + AppVeyor setup (#118)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/118)
 - [x] Zensical documentation site with auto-generated API reference (mkdocstrings)
-- [x] `element.__repr__` for readable debugging (part of Phase 6 enhancers)
+
+### Phase 6 — Enhanced Python integration ([#87](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/87))
+- [x] `__repr__` on elements
+- [x] Context-manager support for `Application` / `Automation` (`with` auto-dispose)
+- [x] Iterator/collection protocol on element results (`AutomationElementCollection` with `.first`, `.filter`, `.where`, indexing/iteration)
+- [x] Fluent waiting + Playwright-style assertions (`expect(el).to_be_visible()`, `flaui/core/expectations.py`)
+- [x] `py.typed` marker + `ty` (Astral) type-check gate in CI
 
 ## 🚧 In progress
 
@@ -63,13 +69,6 @@ of truth; this page is the human-friendly summary.
 - [ ] [`ListBox.select_by_index` on UIA3/WPF (#83)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/83) — fix selection
 - [ ] [Notepad tests on Windows 11 Store app (#89)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/89) — environment guard
 - [ ] Document upstream Windows/.NET limitations — [ComboBox/WinForms (#75)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/75), [Toggle on WinForms menus (#78)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/78), [UIA3 WinForms context menus (#79)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/79)
-
-### Phase 6 — Enhanced Python integration ([#87](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/87))
-- [x] `__repr__` on elements
-- [x] Context-manager support for `Application` / `Automation` (`with` auto-dispose)
-- [ ] Iterator/collection protocol on element results (`.first`, `.filter`, indexing)
-- [ ] Fluent waiting + Playwright-style assertions (`expect(el).to_be_visible()`)
-- [ ] `py.typed` marker + `ty` (Astral) type-check gate in CI
 
 ## 🗓️ Planned
 

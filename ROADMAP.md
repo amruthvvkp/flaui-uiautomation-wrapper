@@ -28,7 +28,7 @@ order we'll tackle the rest.
 | 3 | [Elements & ScrollBars](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/10) | ✅ Done | 0 / 2 |
 | 4 | [Events](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/11) | ✅ Done | 0 / 2 |
 | 5 | [Capturing / Overlay / Video](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/12) | ✅ Done | 0 / 2 |
-| 6 | [Logging / Tools / Enhancers](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/13) | 🟡 In progress | 1 / 3 |
+| 6 | [Logging / Tools / Enhancers](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/13) | ✅ Done | 1 / 3 |
 | 7 | [Docs & Zensical](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/14) | 🟡 In progress | 5 / 0 |
 | 8 | [Polish & v1.0](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/15) | ⏳ Pending | 5 / 0 |
 
@@ -64,11 +64,14 @@ order we'll tackle the rest.
 - **#95** Screen capture & video (`flaui/core/capturing.py` — `Capture`, `CaptureImage`,
   `VideoRecorder`) · **#103** Overlay system (`flaui/core/overlay.py` — `OverlayManager`).
 
-### Phase 6 — Logging / Tools *(partial)*
+### Phase 6 — Logging / Tools / Enhancers *(complete)*
 - **#96** Logging infrastructure (stdlib `logging`, opt-in C#→Python sink via `FLAUI_LOG_CSHARP`) ·
   **#68** mouse busy-spinner / loading-state wait helper.
 - **#100** Tools/utilities: `ItemRealizer`, `AccessibilityTextResolver`, `WindowsStoreAppLauncher`,
   `LocalizedStrings`, `SystemInfo` (**PR #123**).
+- **#87** Pythonic enhancers: `__repr__`, `Application`/`Automation` context managers,
+  `AutomationElementCollection` (`.first`/`.filter`/`.where` + iteration/indexing), `expect()` fluent
+  assertions (`flaui/core/expectations.py`), `py.typed` marker + `ty` type-check gate in CI.
 
 ### Infrastructure
 - **#107** Python `AutomationBase` + UIA2/UIA3 facades · **#118** CI migrated to Azure Pipelines
@@ -78,8 +81,9 @@ order we'll tackle the rest.
 
 ## ⏳ Pending — prioritized backlog
 
-Phases 1–5 are now complete (exceptions/identifiers, patterns, elements, events, capturing/overlay/
-video). The remaining v1.0 gate is **Phase 0 → 7 → 8**, in that priority order.
+Phases 1–6 are now complete (exceptions/identifiers, patterns, elements, events, capturing/overlay/
+video, logging/tools/Pythonic enhancers). The remaining v1.0 gate is **Phase 0 → 7 → 8**, in that
+priority order.
 
 ### P1 — Phase 0: Stabilize *(pre-release gate — active)*
 - **[#88](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/88)** — `flaui.core` test
@@ -106,11 +110,6 @@ video). The remaining v1.0 gate is **Phase 0 → 7 → 8**, in that priority ord
   **[#84](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/84) v1.0.0 release**.
   *(Tag-driven beta automation is wired — see [Release automation](#release-automation) — pending
   token enablement.)*
-
-### Remaining Phase 6
-- **[#87](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/87)** — Enhanced Python
-  integration (umbrella): context managers, iterators, `__repr__`/`__str__`, fluent waits. *Triage;
-  not all required for v1.0.*
 
 ### Post-v1 — parity gaps & deferred tests (out of scope for v1.0)
 - **[#121](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/121)** — CustomNavigation

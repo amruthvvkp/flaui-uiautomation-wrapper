@@ -1,0 +1,80 @@
+name: Publish to PyPI
+
+# Builds the package at a given tag and uploads it to PyPI using the repository
+# `PYPI_API_TOKEN` secret. This is the single PyPI publish path; it is invoked three ways:
+#
+#   1. workflow_call  — from release-beta.yml after a beta pre-release + tag is cut on merge to
+#                       master (the beta is published via GITHUB_TOKEN, which by design does NOT
+#                       trigger a `release`/tag workflow, so the beta flow calls this explicitly).
+#   2. release:published — when you publish the drafted stable release from GitHub Releases (a
+#                       human action, so it DOES trigger this), shipping the stable v1.0.0 to PyPI.
+#   3. workflow_dispatch — manual backfill: build and publish an existing tag (e.g. v1.0.0b1) that
+#                       was tagged on GitHub but never reached PyPI.
+#
+# The version is taken from the tag (v1.0.0b3 -> 1.0.0b3); PyPI auto-classifies bN as a
+# pre-release, so the same path serves betas and the final release. Uploads use skip-existing so
+# re-runs are idempotent.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing git tag to build and publish (e.g. v1.0.0b1)"
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      tag:
+        description: "Git tag to build and publish (e.g. v1.0.0b3)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-pypi-${{ inputs.tag || github.event.release.tag_name }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Build and publish to PyPI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve tag and version
+        id: tag
+        run: |
+          set -euo pipefail
+          TAG="${{ inputs.tag || github.event.release.tag_name }}"
+          if [[ -z "$TAG" ]]; then
+            echo "::error::No tag resolved from inputs or release event." >&2
+            exit 1
+          fi
+          VERSION="${TAG#v}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Publishing version ${VERSION} (tag ${TAG})"
+
+      - name: Checkout at tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.tag.outputs.tag }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set version and build
+        run: |
+          set -euo pipefail
+          uv version --frozen "${{ steps.tag.outputs.version }}"
+          uv build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          skip-existing: true

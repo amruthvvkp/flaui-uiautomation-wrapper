@@ -1,12 +1,16 @@
 name: Cut beta pre-release
 
 # On merge to master, mint the next 1.0.0bN beta: publish a GitHub pre-release (with notes
-# drafted by release-drafter from the merged PRs) tagged v1.0.0bN. Pushing that tag triggers the
-# Azure Pipelines `deploy_pypi` stage, which builds and uploads the wheel/sdist to PyPI.
+# drafted by release-drafter from the merged PRs) tagged v1.0.0bN, then build and upload that
+# version to PyPI via the reusable publish-pypi.yml workflow.
+#
+# The beta release is published with GITHUB_TOKEN, which by design does NOT trigger a downstream
+# `release`/tag workflow, so we publish to PyPI by calling publish-pypi.yml explicitly (rather than
+# relying on its `release: published` trigger).
 #
 # Safe by default: the job is inert unless the repository variable ENABLE_BETA_RELEASES == 'true'
-# (Settings -> Secrets and variables -> Actions -> Variables). Flip it on once the PyPI token and
-# Azure `PUBLISH_PYPI` flag are configured and you're ready for continuous betas.
+# (Settings -> Secrets and variables -> Actions -> Variables). The PyPI upload uses the repository
+# PYPI_API_TOKEN secret.
 
 on:
   push:
@@ -25,6 +29,8 @@ jobs:
   cut-beta:
     if: vars.ENABLE_BETA_RELEASES == 'true'
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.ver.outputs.tag }}
     steps:
       - name: Compute next beta version
         id: ver
@@ -62,3 +68,12 @@ jobs:
           publish: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Build the freshly-tagged beta and upload it to PyPI. Runs only if cut-beta succeeded
+  # (skipped automatically when ENABLE_BETA_RELEASES is not 'true', since cut-beta is then skipped).
+  publish-pypi:
+    needs: cut-beta
+    uses: ./.github/workflows/publish-pypi.yml
+    with:
+      tag: ${{ needs.cut-beta.outputs.tag }}
+    secrets: inherit

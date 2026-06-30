@@ -22,7 +22,7 @@ investigation as a genuine wrapper bug; **Env** = environment guard.
 > is a **closed duplicate** of #80. The in-code markers now reference `GH-80` (the canonical open
 > issue); any lingering `GH-81` references should be treated as `GH-80`.
 | [#82](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/82) | test_get_control_type Tab not found during setup | test_value_converter.py::test_get_control_type | UIA2 + WinForms | Flaky |
-| [#83](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/83) | ListBox select_by_index fails | test_listbox.py::test_select_by_index | UIA3 + WPF | Wrapper (investigating) |
+| [#83](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/83) | ListBox select_by_index fails | test_listbox.py::test_select_by_index | UIA3 + WPF | Not reproducible — CI flake (monitor `run=True`) |
 | [#89](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/89) | Notepad tests on Windows 11 (Store app) | Notepad-based tests (test_getter/search/xpath/keyboard) | Windows 11 | Env (guarded via `skip_notepad_on_win11`) |
 
 > **Triage policy (Phase 0).** Upstream issues are documented and skipped with `platform_limitation`

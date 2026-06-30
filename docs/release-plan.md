@@ -65,27 +65,38 @@ the whole point of this stage.
 Releases are **tag-driven**, which sidesteps the protected-`master` problem (no workflow needs to
 push commits to `master`):
 
+PyPI publishing runs entirely on **GitHub Actions** using the repository `PYPI_API_TOKEN` /
+`TEST_PYPI_API_TOKEN` secrets. `publish-pypi.yml` is the single PyPI publish path (it builds the
+package at a tag and uploads it); `publish-testpypi.yml` handles pull-request dev builds.
+
 | Event | What happens | Where |
 |-------|--------------|-------|
-| **Pull request** | A dev build `1.0.0.dev<buildId>` is published to **TestPyPI** so reviewers can install the candidate. | Azure `deploy_testpypi` |
-| **Merge to `master`** | The `release-beta` GitHub Action mints the next `1.0.0bN`, publishes a GitHub **pre-release** with notes drafted by [release-drafter](https://github.com/release-drafter/release-drafter) from the merged PRs, and pushes tag `v1.0.0bN`. | `.github/workflows/release-beta.yml` |
-| **Tag `v1.0.0bN` pushed** | Azure builds the wheel/sdist and uploads to **PyPI**. PyPI auto-classifies it as a pre-release (only `--pre` installs it). | Azure `deploy_pypi` |
-| **Stable release (manual)** | You run the **Draft stable release** workflow (Actions → Run workflow → type the version, e.g. `1.0.0`). It creates a **draft** release with notes compiled from merged PRs — *no tag is pushed yet*. You review the draft and click **Publish**, which creates tag `v1.0.0`. | `.github/workflows/release-stable.yml` |
-| **Tag `v1.0.0` pushed** (by publishing the draft) | Same path publishes the **stable** release to PyPI; docs `stable` alias becomes default. | Azure `deploy_pypi` + `deploy_docs` |
+| **Pull request** | A dev build `1.0.0.dev<run_id>` is published to **TestPyPI** so reviewers can install the candidate. | `.github/workflows/publish-testpypi.yml` |
+| **Merge to `master`** | The `release-beta` workflow mints the next `1.0.0bN`, publishes a GitHub **pre-release** with notes drafted by [release-drafter](https://github.com/release-drafter/release-drafter), pushes tag `v1.0.0bN`, then calls `publish-pypi.yml` to build and upload to **PyPI**. PyPI auto-classifies it as a pre-release (only `--pre` installs it). | `release-beta.yml` → `publish-pypi.yml` |
+| **Stable release (manual)** | You run the **Draft stable release** workflow (Actions → Run workflow → type the version, e.g. `1.0.0`). It creates a **draft** release — *no tag yet*. You review and click **Publish**, which creates tag `v1.0.0` and emits a `release: published` event. | `.github/workflows/release-stable.yml` |
+| **Publishing the stable draft** | The `release: published` event runs `publish-pypi.yml`, which ships the **stable** release to PyPI. | `release-stable.yml` → `publish-pypi.yml` |
+| **Manual backfill** | Run `publish-pypi.yml` directly (Actions → Run workflow → enter an existing tag, e.g. `v1.0.0b1`) to build and publish a tag that was created on GitHub but never reached PyPI. | `.github/workflows/publish-pypi.yml` |
 
 Betas are minted and published automatically on merge; the **stable** release is the one human
-checkpoint — nothing reaches PyPI until you publish the reviewed draft from GitHub Releases (which
-is what creates the `v1.0.0` tag).
+checkpoint — nothing stable reaches PyPI until you publish the reviewed draft from GitHub Releases.
+Uploads use `skip-existing`, so re-runs are idempotent.
 
 Each GitHub release links back to its PyPI version and the docs site (see `.github/release-drafter.yml`).
 
-!!! note "Enabling the automation"
-    Everything is **off by default** so nothing publishes until tokens are configured:
+!!! note "Why the beta flow calls publish explicitly"
+    The beta pre-release is published with `GITHUB_TOKEN`, and GitHub does **not** trigger a
+    downstream `release`/tag workflow from `GITHUB_TOKEN` actions (a recursion guard). So
+    `release-beta.yml` invokes `publish-pypi.yml` via `workflow_call` rather than relying on its
+    `release: published` trigger. The stable flow is published by a human, so its `release:
+    published` event fires normally.
 
-    - Azure: set `PUBLISH_TEST_PYPI` / `PUBLISH_PYPI` to `true` and configure the
-      `TEST_PYPI_API_TOKEN` / `PYPI_API_TOKEN` secret pipeline variables.
-    - GitHub: set the repository variable `ENABLE_BETA_RELEASES` to `true`
+!!! note "Enabling / disabling the automation"
+    - **PyPI / TestPyPI**: gated on the repository `PYPI_API_TOKEN` / `TEST_PYPI_API_TOKEN` secrets
+      (Settings → Secrets and variables → Actions → Secrets) — already configured.
+    - **Betas**: set the repository variable `ENABLE_BETA_RELEASES` to `true`
       (Settings → Secrets and variables → Actions → Variables).
+    - The legacy Azure `deploy_testpypi` / `deploy_pypi` stages remain in `azure-pipelines.yml` but
+      stay inert (`PUBLISH_TEST_PYPI` / `PUBLISH_PYPI` = `false`); GitHub Actions owns publishing.
 
 ## Changelog page
 
