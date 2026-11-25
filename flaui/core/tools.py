@@ -19,9 +19,19 @@ T = TypeVar("T")
 
 
 class Retry:
-    """This class contains methods for retrying actions.
+    """Polling helpers modelled on C# ``FlaUI.Core.Tools.Retry``.
 
-    :raises TimeoutError: If the timeout has been reached.
+    Every method calls ``retry_method`` repeatedly until its condition holds or ``timeout`` runs out.
+    Unlike C#, ``timeout`` and ``interval`` are plain integers in **milliseconds** (not ``TimeSpan``),
+    and results are returned directly (not wrapped in a ``RetryResult``).
+
+    Pick the method by what you are waiting for:
+
+    - a value to become truthy: :meth:`While` (returns it) or :meth:`WhileFalse` (returns ``bool``)
+    - a value to become falsy: :meth:`WhileNot` or :meth:`WhileTrue`
+    - a non-None value: :meth:`WhileNull`; a value to go away (become None): :meth:`WhileNotNull`
+    - a non-empty collection: :meth:`WhileEmpty`
+    - a call to stop raising (e.g. lookups raising ``ElementNotFound``): :meth:`WhileException`
     """
 
     @staticmethod
@@ -45,26 +55,32 @@ class Retry:
         last_value_on_timeout: bool = False,
         default_on_timeout: Optional[T] = None,
     ) -> T:
-        """Retries the method until the check method returns True.
+        """Retry until ``retry_method`` returns a truthy value, and return that value.
 
-        Example:
+        Mirrors the polling of C# ``Retry.While``. Unlike C#, there is no separate check function:
+        the result itself is tested for truthiness.
 
-        Retry.While(
-            retry_method=lambda: main_window.find_first_descendant(condition=cf.by_class_name("#32770")).as_window(),
-            timeout=5,
-            interval=0.1,
-        )
+        Only ``ValueError`` and ``AssertionError`` are handled (see ``ignore_exception``). Any other
+        exception, including :class:`~flaui.lib.exceptions.ElementNotFound`, propagates straight away;
+        use :meth:`WhileException` to retry a lookup that raises until it succeeds.
 
-        :param retry_method: The method to retry.
-        :param timeout: Timeout when the retry aborts, defaults to 1
-        :param interval: Interval of retries, defaults to 0.1
-        :param throw_on_timeout: Flag to indicate if exception is thrown on timeout, defaults to False
-        :param ignore_exception: Flag to indicate that exceptions can be ignored, defaults to False
-        :param timeout_message: Message that should be added to the timeout exception incase of a timeout, defaults to None
-        :param last_value_on_timeout: Flag to indicate that last value should be returned on timeout, defaults to False
-        :param default_on_timeout: Defines a default value in case of a timeout, defaults to None
-        :raises TimeoutError: If the timeout has been reached
-        :return: Result of the retry method
+        Example::
+
+            value = Retry.While(lambda: label.text, timeout=5000, interval=100)  # 5 s
+
+        :param retry_method: Callable taking no arguments; it is called repeatedly.
+        :param timeout: How long to keep retrying, in **milliseconds**, defaults to 1000.
+        :param interval: Pause between attempts, in **milliseconds**, defaults to 100.
+        :param throw_on_timeout: Raise ``TimeoutError`` when the timeout is reached, defaults to False.
+        :param ignore_exception: Treat a ``ValueError`` / ``AssertionError`` from ``retry_method`` as a
+            failed attempt and keep retrying, instead of re-raising it, defaults to False.
+        :param timeout_message: Message for the ``TimeoutError``, defaults to None.
+        :param last_value_on_timeout: On timeout, return the last (falsy) result instead of raising,
+            defaults to False.
+        :param default_on_timeout: On timeout, return this value instead of raising, defaults to None.
+        :raises TimeoutError: On timeout, unless ``last_value_on_timeout`` or ``default_on_timeout``
+            provides a value to return.
+        :return: The first truthy result.
         """
         start = Retry._now_ms()
         last_value: Optional[T] = None
@@ -99,18 +115,25 @@ class Retry:
         last_value_on_timeout: bool = False,
         default_on_timeout: Optional[T] = None,
     ) -> T:
-        """Retries the method until the check method returns False.
+        """Retry until ``retry_method`` returns a falsy value, and return that value.
 
-        :param retry_method: The method to retry.
-        :param timeout: Timeout when the retry aborts, defaults to 1
-        :param interval: Interval of retries, defaults to 0.1
-        :param throw_on_timeout: Flag to indicate if exception is thrown on timeout, defaults to False
-        :param ignore_exception: Flag to indicate that exceptions can be ignored, defaults to False
-        :param timeout_message: Message that should be added to the timeout exception incase of a timeout, defaults to None
-        :param last_value_on_timeout: Flag to indicate that last value should be returned on timeout, defaults to False
-        :param default_on_timeout: Defines a default value in case of a timeout, defaults to None
-        :raises TimeoutError: If the timeout has been reached
-        :return: Result of the retry method
+        Only ``ValueError`` and ``AssertionError`` are handled (see ``ignore_exception``). Any other
+        exception, including :class:`~flaui.lib.exceptions.ElementNotFound`, propagates straight away;
+        use :meth:`WhileException` to retry a lookup that raises until it succeeds.
+
+        :param retry_method: Callable taking no arguments; it is called repeatedly.
+        :param timeout: How long to keep retrying, in **milliseconds**, defaults to 1000.
+        :param interval: Pause between attempts, in **milliseconds**, defaults to 100.
+        :param throw_on_timeout: Raise ``TimeoutError`` when the timeout is reached, defaults to False.
+        :param ignore_exception: Treat a ``ValueError`` / ``AssertionError`` from ``retry_method`` as a
+            failed attempt and keep retrying, instead of re-raising it, defaults to False.
+        :param timeout_message: Message for the ``TimeoutError``, defaults to None.
+        :param last_value_on_timeout: On timeout, return the last (truthy) result instead of raising,
+            defaults to False.
+        :param default_on_timeout: On timeout, return this value instead of raising, defaults to None.
+        :raises TimeoutError: On timeout, unless ``last_value_on_timeout`` or ``default_on_timeout``
+            provides a value to return.
+        :return: The first falsy result.
         """
         start = Retry._now_ms()
         last_value: Optional[T] = None
@@ -145,18 +168,26 @@ class Retry:
         last_value_on_timeout: bool = False,
         default_on_timeout: Optional[T] = None,
     ) -> bool:
-        """Retries while the predicate returns True; succeeds when it becomes False.
+        """Retry while ``retry_method`` returns a truthy value; succeed once it becomes falsy.
 
-        :param retry_method: The method to retry.
-        :param timeout: Timeout when the retry aborts, defaults to 1
-        :param interval: Interval of retries, defaults to 0.1
-        :param throw_on_timeout: Flag to indicate if exception is thrown on timeout, defaults to False
-        :param ignore_exception: Flag to indicate that exceptions can be ignored, defaults to False
-        :param timeout_message: Message that should be added to the timeout exception incase of a timeout, defaults to None
-        :param last_value_on_timeout: Flag to indicate that last value should be returned on timeout, defaults to False
-        :param default_on_timeout: Defines a default value in case of a timeout, defaults to None
-        :raises TimeoutError: If the timeout has been reached
-        :return: True if the predicate became False before timeout, False otherwise
+        Python equivalent of C# ``Retry.WhileTrue``, which returns a ``RetryResult<bool>``; this
+        returns the boolean directly.
+
+        Only ``ValueError`` and ``AssertionError`` are handled (see ``ignore_exception``). Any other
+        exception, including :class:`~flaui.lib.exceptions.ElementNotFound`, propagates straight away;
+        use :meth:`WhileException` to retry a lookup that raises until it succeeds.
+
+        :param retry_method: Callable taking no arguments; it is called repeatedly.
+        :param timeout: How long to keep retrying, in **milliseconds**, defaults to 1000.
+        :param interval: Pause between attempts, in **milliseconds**, defaults to 100.
+        :param throw_on_timeout: Raise ``TimeoutError`` when the timeout is reached, defaults to False.
+        :param ignore_exception: Treat a ``ValueError`` / ``AssertionError`` from ``retry_method`` as a
+            failed attempt and keep retrying, instead of re-raising it, defaults to False.
+        :param timeout_message: Message for the ``TimeoutError``, defaults to None.
+        :param last_value_on_timeout: Accepted for signature parity; not used.
+        :param default_on_timeout: Accepted for signature parity; not used.
+        :raises TimeoutError: On timeout, only when ``throw_on_timeout`` is True.
+        :return: True if the predicate became falsy in time, False if the timeout was reached.
         """
         start = Retry._now_ms()
         while True:
@@ -183,18 +214,30 @@ class Retry:
         last_value_on_timeout: bool = False,
         default_on_timeout: Optional[T] = None,
     ) -> bool:
-        """Retries while the predicate returns False; succeeds when it becomes True.
+        """Retry while ``retry_method`` returns a falsy value; succeed once it becomes truthy.
 
-        :param retry_method: The method to retry.
-        :param timeout: Timeout when the retry aborts, defaults to 1
-        :param interval: Interval of retries, defaults to 0.1
-        :param throw_on_timeout: Flag to indicate if exception is thrown on timeout, defaults to False
-        :param ignore_exception: Flag to indicate that exceptions can be ignored, defaults to False
-        :param timeout_message: Message that should be added to the timeout exception incase of a timeout, defaults to None
-        :param last_value_on_timeout: Flag to indicate that last value should be returned on timeout, defaults to False
-        :param default_on_timeout: Defines a default value in case of a timeout, defaults to None
-        :raises TimeoutError: If the timeout has been reached
-        :return: True if the predicate became True before timeout, False otherwise
+        This is the usual "wait until" helper::
+
+            Retry.WhileFalse(lambda: button.is_enabled, timeout=2000)
+
+        Python equivalent of C# ``Retry.WhileFalse``, which returns a ``RetryResult<bool>``; this
+        returns the boolean directly.
+
+        Only ``ValueError`` and ``AssertionError`` are handled (see ``ignore_exception``). Any other
+        exception, including :class:`~flaui.lib.exceptions.ElementNotFound`, propagates straight away;
+        use :meth:`WhileException` to retry a lookup that raises until it succeeds.
+
+        :param retry_method: Callable taking no arguments; it is called repeatedly.
+        :param timeout: How long to keep retrying, in **milliseconds**, defaults to 1000.
+        :param interval: Pause between attempts, in **milliseconds**, defaults to 100.
+        :param throw_on_timeout: Raise ``TimeoutError`` when the timeout is reached, defaults to False.
+        :param ignore_exception: Treat a ``ValueError`` / ``AssertionError`` from ``retry_method`` as a
+            failed attempt and keep retrying, instead of re-raising it, defaults to False.
+        :param timeout_message: Message for the ``TimeoutError``, defaults to None.
+        :param last_value_on_timeout: Accepted for signature parity; not used.
+        :param default_on_timeout: Accepted for signature parity; not used.
+        :raises TimeoutError: On timeout, only when ``throw_on_timeout`` is True.
+        :return: True if the predicate became truthy in time, False if the timeout was reached.
         """
         start = Retry._now_ms()
         while True:
@@ -221,18 +264,23 @@ class Retry:
         last_value_on_timeout: bool = False,
         default_on_timeout: Optional[T] = None,
     ) -> T:
-        """Retries while the result is None; returns first non-None value.
+        """Retry while ``retry_method`` returns None, and return the first non-None result.
 
-        :param retry_method: The method to retry.
-        :param timeout: Timeout when the retry aborts, defaults to 1
-        :param interval: Interval of retries, defaults to 0.1
-        :param throw_on_timeout: Flag to indicate if exception is thrown on timeout, defaults to False
-        :param ignore_exception: Flag to indicate that exceptions can be ignored, defaults to False
-        :param timeout_message: Message that should be added to the timeout exception incase of a timeout, defaults to None
-        :param last_value_on_timeout: Flag to indicate that last value should be returned on timeout, defaults to False
-        :param default_on_timeout: Defines a default value in case of a timeout, defaults to None
-        :raises TimeoutError: If the timeout has been reached
-        :return: Result of the retry method
+        Only ``ValueError`` and ``AssertionError`` are handled (see ``ignore_exception``). Any other
+        exception, including :class:`~flaui.lib.exceptions.ElementNotFound`, propagates straight away;
+        use :meth:`WhileException` to retry a lookup that raises until it succeeds.
+
+        :param retry_method: Callable taking no arguments; it is called repeatedly.
+        :param timeout: How long to keep retrying, in **milliseconds**, defaults to 1000.
+        :param interval: Pause between attempts, in **milliseconds**, defaults to 100.
+        :param throw_on_timeout: Raise ``TimeoutError`` when the timeout is reached, defaults to False.
+        :param ignore_exception: Treat a ``ValueError`` / ``AssertionError`` from ``retry_method`` as a
+            failed attempt and keep retrying, instead of re-raising it, defaults to False.
+        :param timeout_message: Message for the ``TimeoutError``, defaults to None.
+        :param last_value_on_timeout: Accepted for signature parity; not used.
+        :param default_on_timeout: Accepted for signature parity; not used.
+        :raises TimeoutError: On timeout, only when ``throw_on_timeout`` is True.
+        :return: The first non-None result, or None if the timeout was reached.
         """
         start = Retry._now_ms()
         while True:
@@ -260,18 +308,26 @@ class Retry:
         last_value_on_timeout: bool = False,
         default_on_timeout: Optional[T] = None,
     ) -> T:
-        """Retries while the result is not None; returns None once it becomes None.
+        """Retry while ``retry_method`` returns a non-None value; succeed once it returns None.
 
-        :param retry_method: The method to retry.
-        :param timeout: Timeout when the retry aborts, defaults to 1
-        :param interval: Interval of retries, defaults to 0.1
-        :param throw_on_timeout: Flag to indicate if exception is thrown on timeout, defaults to False
-        :param ignore_exception: Flag to indicate that exceptions can be ignored, defaults to False
-        :param timeout_message: Message that should be added to the timeout exception incase of a timeout, defaults to None
-        :param last_value_on_timeout: Flag to indicate that last value should be returned on timeout, defaults to False
-        :param default_on_timeout: Defines a default value in case of a timeout, defaults to None
-        :raises TimeoutError: If the timeout has been reached
-        :return: Result of the retry method
+        Useful for waiting until something disappears.
+
+        Only ``ValueError`` and ``AssertionError`` are handled (see ``ignore_exception``). Any other
+        exception, including :class:`~flaui.lib.exceptions.ElementNotFound`, propagates straight away;
+        use :meth:`WhileException` to retry a lookup that raises until it succeeds.
+
+        :param retry_method: Callable taking no arguments; it is called repeatedly.
+        :param timeout: How long to keep retrying, in **milliseconds**, defaults to 1000.
+        :param interval: Pause between attempts, in **milliseconds**, defaults to 100.
+        :param throw_on_timeout: Raise ``TimeoutError`` when the timeout is reached, defaults to False.
+        :param ignore_exception: Treat a ``ValueError`` / ``AssertionError`` from ``retry_method`` as a
+            failed attempt and keep retrying, instead of re-raising it, defaults to False.
+        :param timeout_message: Message for the ``TimeoutError``, defaults to None.
+        :param last_value_on_timeout: Accepted for signature parity; the last value is always returned
+            on timeout.
+        :param default_on_timeout: Accepted for signature parity; not used.
+        :raises TimeoutError: On timeout, only when ``throw_on_timeout`` is True.
+        :return: None once the result became None, or the last result if the timeout was reached.
         """
         start = Retry._now_ms()
         last_value: Optional[T] = None
@@ -302,18 +358,27 @@ class Retry:
         last_value_on_timeout: bool = False,
         default_on_timeout: Optional[T] = None,
     ) -> T:
-        """Retries while the result is empty (iterable of length 0).
+        """Retry while ``retry_method`` returns an empty iterable, and return the first non-empty result.
 
-        :param retry_method: The method to retry.
-        :param timeout: Timeout when the retry aborts, defaults to 1
-        :param interval: Interval of retries, defaults to 0.1
-        :param throw_on_timeout: Flag to indicate if exception is thrown on timeout, defaults to False
-        :param ignore_exception: Flag to indicate that exceptions can be ignored, defaults to False
-        :param timeout_message: Message that should be added to the timeout exception incase of a timeout, defaults to None
-        :param last_value_on_timeout: Flag to indicate that last value should be returned on timeout, defaults to False
-        :param default_on_timeout: Defines a default value in case of a timeout, defaults to None
-        :raises TimeoutError: If the timeout has been reached
-        :return: Result of the retry method
+        A non-iterable result counts as "not empty" and is returned straight away.
+
+        Only ``ValueError`` and ``AssertionError`` are handled (see ``ignore_exception``). Any other
+        exception, including :class:`~flaui.lib.exceptions.ElementNotFound`, propagates straight away;
+        use :meth:`WhileException` to retry a lookup that raises until it succeeds.
+
+        :param retry_method: Callable taking no arguments; it is called repeatedly.
+        :param timeout: How long to keep retrying, in **milliseconds**, defaults to 1000.
+        :param interval: Pause between attempts, in **milliseconds**, defaults to 100.
+        :param throw_on_timeout: Raise ``TimeoutError`` when the timeout is reached, defaults to False.
+        :param ignore_exception: Treat a ``ValueError`` / ``AssertionError`` from ``retry_method`` as a
+            failed attempt and keep retrying, instead of re-raising it, defaults to False.
+        :param timeout_message: Message for the ``TimeoutError``, defaults to None.
+        :param last_value_on_timeout: On timeout, return the last (empty) result instead of raising,
+            defaults to False.
+        :param default_on_timeout: On timeout, return this value instead of raising, defaults to None.
+        :raises TimeoutError: On timeout, unless ``last_value_on_timeout`` or ``default_on_timeout``
+            provides a value to return.
+        :return: The first non-empty result.
         """
         start = Retry._now_ms()
         last_value: Optional[T] = None
@@ -348,18 +413,30 @@ class Retry:
         last_value_on_timeout: bool = False,
         default_on_timeout: Optional[T] = None,
     ) -> T:
-        """Retries while the function raises; returns first successful result.
+        """Retry while ``retry_method`` raises any exception, and return its first successful result.
 
-        :param retry_method: The method to retry.
-        :param timeout: Timeout when the retry aborts, defaults to 1
-        :param interval: Interval of retries, defaults to 0.1
-        :param throw_on_timeout: Flag to indicate if exception is thrown on timeout, defaults to False
-        :param ignore_exception: Flag to indicate that exceptions can be ignored, defaults to False
-        :param timeout_message: Message that should be added to the timeout exception incase of a timeout, defaults to None
-        :param last_value_on_timeout: Flag to indicate that last value should be returned on timeout, defaults to False
-        :param default_on_timeout: Defines a default value in case of a timeout, defaults to None
-        :raises TimeoutError: If the timeout has been reached
-        :return: Result of the retry method
+        This is the helper for element lookups, which raise
+        :class:`~flaui.lib.exceptions.ElementNotFound` until the element exists::
+
+            button = Retry.WhileException(
+                lambda: window.find_first_descendant(cf.by_automation_id("OK")),
+                timeout=5000,
+                throw_on_timeout=True,
+            )
+
+        :param retry_method: Callable taking no arguments; it is called repeatedly.
+        :param timeout: How long to keep retrying, in **milliseconds**, defaults to 1000.
+        :param interval: Pause between attempts, in **milliseconds**, defaults to 100.
+        :param throw_on_timeout: On timeout, raise ``TimeoutError`` instead of re-raising the last
+            exception, defaults to False.
+        :param ignore_exception: On timeout, raise ``TimeoutError`` instead of re-raising the last
+            exception, defaults to False.
+        :param timeout_message: Message for the ``TimeoutError``, defaults to None.
+        :param last_value_on_timeout: Accepted for signature parity; not used.
+        :param default_on_timeout: Accepted for signature parity; not used.
+        :raises TimeoutError: On timeout, when ``throw_on_timeout`` or ``ignore_exception`` is True.
+        :raises Exception: On timeout otherwise: the last exception ``retry_method`` raised.
+        :return: The first result returned without raising.
         """
         start = Retry._now_ms()
         last_exc: Optional[Exception] = None
@@ -379,10 +456,10 @@ class Retry:
 
     @staticmethod
     def IsTimeOutReached(start_time: float, timeout: int) -> bool:
-        """Checks if the timeout has been reached.
+        """Return whether ``timeout`` milliseconds have passed since ``start_time``.
 
-        :param start_time: The start time.
-        :param timeout: The timeout.
+        :param start_time: Start time from ``time.monotonic()`` (seconds).
+        :param timeout: Timeout in milliseconds.
         :return: True if the timeout has been reached, False otherwise.
         """
         return (time.monotonic() - start_time) * 1000.0 > timeout

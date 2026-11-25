@@ -51,3 +51,16 @@ def test_selected_tab_item_is_a_property() -> None:
 
     assert isinstance(item, TabItem)
     assert item.raw_element is raw.SelectedTabItem
+
+
+def test_draw_highlight_passes_duration_as_int_milliseconds() -> None:
+    """``draw_highlight`` must call ``OverlayManager.Show(Rectangle, Color, int ms)``, not a TimeSpan."""
+    from flaui.core.automation_elements import AutomationElement
+    from flaui.lib.system.drawing import Color
+
+    raw = MagicMock()
+    AutomationElement(raw_element=raw).draw_highlight(Color.Blue, duration=750)
+
+    rect, color, duration = raw.Automation.OverlayManager.Show.call_args.args
+    assert rect is raw.Properties.BoundingRectangle.Value
+    assert duration == 750 and isinstance(duration, int)

@@ -35,28 +35,36 @@ class Wait:
         time.sleep(wait_time)
 
     @staticmethod
-    def until_responsive(automation_element: AutomationElement, timeout_in_secs: Optional[float] = None):
-        """
-        Waits until the given element is responsive.
+    def until_responsive(automation_element: AutomationElement, timeout_in_secs: Optional[float] = None) -> bool:
+        """Wait until the window that owns the element accepts input again.
 
-        :param automation_element: The element that should be waited for.
-        :param timeout_in_secs: The timeout of the waiting.
-        :return: True if the element was responsive, false otherwise.
+        Mirrors C# ``Wait.UntilResponsive(AutomationElement, TimeSpan)``.
+
+        :param automation_element: The element (usually a window) to wait for. A raw C# element works too.
+        :param timeout_in_secs: How long to wait, in **seconds**, defaults to ``Wait.DEFAULT_TIMEOUT`` (1 s).
+        :return: True if the element became responsive in time, False otherwise.
         """
-        return CSWait.UntilResponsive(
-            automation_element, timeout_in_secs if timeout_in_secs is not None else Wait.DEFAULT_TIMEOUT
-        )
+        from System import TimeSpan  # pyright: ignore
+
+        raw = getattr(automation_element, "raw_element", automation_element)
+        seconds = timeout_in_secs if timeout_in_secs is not None else Wait.DEFAULT_TIMEOUT
+        return bool(CSWait.UntilResponsive(raw, TimeSpan.FromSeconds(seconds)))
 
     @staticmethod
-    def until_responsive_hwnd(hWnd: Any, timeout: Optional[float] = None):
-        """
-        Waits until the given hwnd is responsive.
+    def until_responsive_hwnd(hWnd: Any, timeout: Optional[float] = None) -> bool:
+        """Wait until the window with the given native handle accepts input again.
 
-        :param hWnd: The hwnd that should be waited for.
-        :param timeout: The timeout of the waiting.
-        :return: True if the hwnd was responsive, false otherwise.
+        Mirrors C# ``Wait.UntilResponsive(IntPtr, TimeSpan)``.
+
+        :param hWnd: The window handle, as an ``int`` (e.g. ``app.main_window_handle``) or ``IntPtr``.
+        :param timeout: How long to wait, in **seconds**, defaults to ``Wait.DEFAULT_TIMEOUT`` (1 s).
+        :return: True if the window became responsive in time, False otherwise.
         """
-        return CSWait.UntilResponsiveHwnd(hWnd, timeout if timeout is not None else Wait.DEFAULT_TIMEOUT)
+        from System import IntPtr, TimeSpan  # pyright: ignore
+
+        handle = hWnd if isinstance(hWnd, IntPtr) else IntPtr(int(hWnd))
+        seconds = timeout if timeout is not None else Wait.DEFAULT_TIMEOUT
+        return bool(CSWait.UntilResponsive(handle, TimeSpan.FromSeconds(seconds)))
 
     @staticmethod
     def while_cursor_is_busy(timeout_in_secs: float = 30.0, poll_interval_secs: float = 0.1) -> bool:
@@ -213,12 +221,46 @@ class Keyboard:
         CSKeyboard.ReleaseVirtualKeyCode(virtual_keycode)
 
     @staticmethod
-    def pressing(virtual_keys: List[VirtualKeyShort]) -> None:
-        """Presses the given keys and releases them when the returned object is disposed.
+    def pressing(virtual_keys: List[VirtualKeyShort]) -> "PressedKeys":
+        """Hold the given keys down until the returned handle is released.
 
-        :param virtual_keys: Virtual keys to enter
+        Use it as a context manager so the keys are released even if the block raises::
+
+            with Keyboard.pressing([VirtualKeyShort.CONTROL]):
+                Keyboard.type_key(VirtualKeyShort.KEY_A)  # Ctrl+A
+
+        Mirrors C# ``Keyboard.Pressing``, which returns an ``IDisposable``.
+
+        :param virtual_keys: Keys to hold down, pressed in order (released in reverse order).
+        :return: A handle that releases the keys on ``release()`` or when the ``with`` block exits.
         """
-        CSKeyboard.Pressing([_.value for _ in virtual_keys])
+        return PressedKeys(CSKeyboard.Pressing([_.value for _ in virtual_keys]))
+
+
+class PressedKeys:
+    """Keys held down by :meth:`Keyboard.pressing`; releases them on ``release()`` or ``with`` exit."""
+
+    def __init__(self, cs_disposable: Any) -> None:
+        """Wrap the C# disposable returned by ``Keyboard.Pressing``.
+
+        :param cs_disposable: The C# ``IDisposable`` that releases the keys when disposed.
+        """
+        self._cs_disposable = cs_disposable
+        self._released = False
+
+    def release(self) -> None:
+        """Release the held keys. Calling it again does nothing."""
+        if not self._released:
+            self._released = True
+            self._cs_disposable.Dispose()
+
+    def __enter__(self) -> "PressedKeys":
+        """Return this handle; the keys are already held down."""
+        return self
+
+    def __exit__(self, *exc_info: Any) -> None:
+        """Release the keys when the ``with`` block exits, even on error."""
+        self.release()
 
 
 class MouseButton(Enum):

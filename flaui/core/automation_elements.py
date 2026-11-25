@@ -516,11 +516,14 @@ class AutomationElement(ElementBase):
     def draw_highlight(self, color: ColorData = Color.Red, duration: int = 2000) -> None:
         """Draw a highlight around the element with the given settings.
 
-        :param color: Color object, defaults to ColorCollection.Red
-        :param duration: Duration to highlight (in ms), defaults to 2000
+        The call returns straight away; the frame disappears on its own after ``duration``.
+
+        :param color: Frame colour, defaults to ``Color.Red``.
+        :param duration: How long to show the frame, in **milliseconds**, defaults to 2000.
         """
+        # IOverlayManager.Show takes the duration as an int of milliseconds, not a TimeSpan.
         self.raw_element.Automation.OverlayManager.Show(
-            self.raw_element.Properties.BoundingRectangle.Value, color.cs_object, TypeCast.cs_timespan(duration)
+            self.raw_element.Properties.BoundingRectangle.Value, color.cs_object, int(duration)
         )
 
     @handle_csharp_exceptions
