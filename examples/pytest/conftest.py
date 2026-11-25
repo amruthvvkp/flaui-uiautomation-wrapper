@@ -8,6 +8,7 @@ is trimmed down to a single self-contained example.
 from pathlib import Path
 from typing import Generator
 
+# --8<-- [start:bridge]
 # isort: off  -- the bridge must be initialised before any C#-backed import is used.
 from flaui.lib.pythonnet_bridge import setup_pythonnet_bridge
 
@@ -20,6 +21,7 @@ from flaui.modules.automation import Automation
 import pytest
 
 # isort: on
+# --8<-- [end:bridge]
 
 
 def find_test_app() -> Path:
@@ -35,6 +37,7 @@ def find_test_app() -> Path:
     raise FileNotFoundError("Could not locate the bundled WPF test application under test_applications/.")
 
 
+# --8<-- [start:session_fixture]
 @pytest.fixture(scope="session")
 def automation() -> Generator[Automation, None, None]:
     """Launch the WPF test application for the whole session and dispose it afterwards.
@@ -49,6 +52,9 @@ def automation() -> Generator[Automation, None, None]:
     finally:
         auto.application.kill()
         auto.automation_base.dispose()
+
+
+# --8<-- [end:session_fixture]
 
 
 @pytest.fixture
@@ -69,3 +75,34 @@ def condition_factory(automation: Automation) -> ConditionFactory:
     :return: The shared ``ConditionFactory``.
     """
     return automation.cf
+
+
+# --8<-- [start:screenshot_on_failure]
+@pytest.hookimpl(wrapper=True)
+def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo[None]) -> Generator[None, object, object]:
+    """Save a screenshot of the whole screen when a test body fails.
+
+    The file lands in ``artifacts/<test name>.png`` (git-ignored), ready to upload from CI. Only the
+    ``call`` phase is captured, so failing fixtures and teardowns don't produce extra images.
+
+    :param item: The test item being reported.
+    :param call: Information about the phase that just ran.
+    :yield: Control to pytest, which builds the report.
+    :return: The test report.
+    """
+    report = yield
+    if call.when == "call" and getattr(report, "failed", False):
+        from flaui.core.capturing import Capture
+
+        artifacts = Path("artifacts")
+        artifacts.mkdir(exist_ok=True)
+        safe_name = "".join(c if c.isalnum() or c in "-_." else "_" for c in item.name)
+        try:
+            with Capture.main_screen() as image:
+                image.to_file(str(artifacts / f"{safe_name}.png"))
+        except Exception as error:  # a broken screenshot must never hide the real failure
+            item.add_report_section("call", "screenshot", f"could not capture screen: {error}")
+    return report
+
+
+# --8<-- [end:screenshot_on_failure]

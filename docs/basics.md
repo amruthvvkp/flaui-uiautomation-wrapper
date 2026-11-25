@@ -225,5 +225,7 @@ You've covered the basics: initialize → launch → find → interact.
 - **[Example Gallery](examples/gallery.md)**: complete scripts for Calculator, Notepad, and the
   bundled apps.
 - **[Advanced](advanced.md)**: XPath, combined conditions, tree walking, caching, and retries.
+- **[Utilities](utilities.md)**: waiting, keyboard and mouse, screenshots, and the other helpers ported from C#.
+- **[Test design tips](test-design.md)**: element name maps, settings, and where to start the app.
 - **[Troubleshooting](troubleshooting.md)**: what to check when elements aren't found or tests are
   flaky.

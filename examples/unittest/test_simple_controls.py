@@ -44,6 +44,7 @@ class SimpleControlsTest(unittest.TestCase):
     window: Window
     cf: ConditionFactory
 
+    # --8<-- [start:class_setup]
     @classmethod
     def setUpClass(cls) -> None:
         """Launch the application once for every test in this class."""
@@ -58,6 +59,8 @@ class SimpleControlsTest(unittest.TestCase):
         """Kill the application and dispose the automation."""
         cls.automation.application.kill()
         cls.automation.automation_base.dispose()
+
+    # --8<-- [end:class_setup]
 
     def test_window_title(self) -> None:
         """The launched application exposes its title."""

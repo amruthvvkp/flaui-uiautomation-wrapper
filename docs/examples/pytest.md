@@ -40,6 +40,8 @@ The same fixtures also drive the recipes the docs include:
 | `test_advanced.py` | [Advanced](../advanced.md): XPath, conditions, caching, retry, `expect`, `post_wait` |
 | `test_configuration.py` | [Configuration & logging](../configuration.md): C# logging, timeouts, mouse speed |
 | `test_multi_instance.py` | [Multiple instances](../multi-instance.md): several copies of one app |
+| `test_utilities.py` | [Utilities](../utilities.md): Wait, keyboard, mouse, drawing, capture, highlight, tools |
+| `test_name_mapping.py`, `app_map.py`, `app_settings.py` | [Test design tips](../test-design.md): element name maps and pydantic settings |
 
 !!! tip "Keep skips/xfails in fixtures, not tests"
     The project's own suite (`tests/conftest.py`) launches all four combinations

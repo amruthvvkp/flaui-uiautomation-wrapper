@@ -190,3 +190,4 @@ log.txt
 .claude/settings.local.json
 
 flaui-csharp.jsonl
+artifacts/
