@@ -1,5 +1,9 @@
 # Logging
 
+!!! tip "Guide"
+    For logger names, environment variables, and complete stdlib / loguru / structlog setups, see
+    [Configuration & logging](../configuration.md).
+
 Route FlaUI's C# logging into Python's standard ``logging`` for unified telemetry. The bridge
 installs FlaUI's ``EventLogger`` as ``Logger.Default`` and forwards its events into a Python logger,
 so C# and Python log output land in one configurable destination.

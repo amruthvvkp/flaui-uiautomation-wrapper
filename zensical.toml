@@ -22,6 +22,8 @@ nav = [
     { "UIA2 vs UIA3" = "uia2-uia3.md" },
     { "Advanced" = "advanced.md" },
     { "Pythonic API" = "pythonic-api.md" },
+    { "Configuration & logging" = "configuration.md" },
+    { "Multiple instances" = "multi-instance.md" },
     { "Concepts" = "concepts.md" },
     { "Running on CI/CD" = "ci-cd.md" },
     { "Troubleshooting" = "troubleshooting.md" },
@@ -88,6 +90,7 @@ nav = [
   ] },
   { "Examples" = [
     { "Overview" = "examples/index.md" },
+    { "Gallery" = "examples/gallery.md" },
     { "Pytest" = "examples/pytest.md" },
     { "Unittest" = "examples/unittest.md" },
     { "Robot Framework" = "examples/robot-framework.md" },
@@ -102,6 +105,7 @@ nav = [
     { "Road to v1.0" = "release-plan.md" },
     { "Changelog" = "changelog.md" },
     { "Upgrade Guide" = "upgrade-guide.md" },
+    { "Security Policy" = "security.md" },
   ] },
   { "Contributing" = [
     { "Guide" = "contributing.md" },
@@ -234,6 +238,10 @@ custom_fences = [
 
 [project.markdown_extensions.pymdownx.snippets]
 base_path = ["."]
+# Fail the build when an included example file or section is missing, so docs can never drift
+# from the runnable code under examples/. Sections are dedented so they sit cleanly in tabs.
+check_paths = true
+dedent_subsections = true
 
 [project.markdown_extensions.pymdownx.highlight]
 anchor_linenums = true

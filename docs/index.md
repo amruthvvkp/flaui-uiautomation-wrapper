@@ -6,7 +6,7 @@
 
 <p class="hero-badges" markdown>
 [![PyPI version](https://img.shields.io/pypi/v/flaui-uiautomation-wrapper?color=2dd4bf&label=PyPI)](https://pypi.org/project/flaui-uiautomation-wrapper/)
-[![Python versions](https://img.shields.io/pypi/pyversions/flaui-uiautomation-wrapper?color=2dd4bf)](https://pypi.org/project/flaui-uiautomation-wrapper/)
+[![Python versions](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13%20%7C%203.14%20%7C%203.15-2dd4bf)](https://pypi.org/project/flaui-uiautomation-wrapper/)
 [![License](https://img.shields.io/pypi/l/flaui-uiautomation-wrapper?color=2dd4bf)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/blob/master/LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/amruthvvkp/flaui-uiautomation-wrapper?style=flat&color=2dd4bf)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper)
 </p>
@@ -21,7 +21,7 @@ library. No driver binaries to manage, no framework lock-in.
 
 ## Installation
 
-FlaUI for Python targets **Python 3.10–3.14** on **Windows** (the bundled FlaUI DLLs require the
+FlaUI for Python targets **Python 3.11–3.15** on **Windows** (the bundled FlaUI DLLs require the
 Windows UI Automation stack). All C# dependencies ship inside the wheel — there are no external
 drivers to install.
 
@@ -77,9 +77,10 @@ See [Road to v1.0](release-plan.md) for the beta-soak plan and how to give feedb
     from flaui.modules.automation import Automation
     from flaui.lib.enums import UIAutomationTypes
 
-    automation = Automation(UIAutomationTypes.UIA3)
-    main_window = automation.application.launch("notepad.exe").get_main_window(automation)
-    main_window.find_first_by_x_path("//Button[@Name='OK']").as_button().invoke()
+    with Automation(UIAutomationTypes.UIA3) as automation:
+        automation.application.launch_store_app("Microsoft.WindowsCalculator_8wekyb3d8bbwe!App")
+        window = automation.application.get_main_window(automation)
+        window.find_first_descendant(automation.cf.by_automation_id("num7Button")).as_button().invoke()
     ```
 
 === "C#"
@@ -88,11 +89,14 @@ See [Road to v1.0](release-plan.md) for the beta-soak plan and how to give feedb
     using FlaUI.UIA3;
     using FlaUI.Core;
 
-    var automation = new UIA3Automation();
-    var app = Application.Launch("notepad.exe");
-    var mainWindow = app.GetMainWindow(automation);
-    mainWindow.FindFirstByXPath("//Button[@Name='OK']").AsButton().Invoke();
+    using var automation = new UIA3Automation();
+    using var app = Application.LaunchStoreApp("Microsoft.WindowsCalculator_8wekyb3d8bbwe!App");
+    var window = app.GetMainWindow(automation);
+    window.FindFirstDescendant(cf => cf.ByAutomationId("num7Button")).AsButton().Invoke();
     ```
+
+The full Calculator script, plus Notepad and the bundled test apps, is in the
+[Example Gallery](examples/gallery.md). Every snippet there runs.
 
 ## Why FlaUI for Python?
 

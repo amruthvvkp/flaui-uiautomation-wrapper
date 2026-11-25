@@ -1,158 +1,237 @@
 # Element Cookbook
 
-Control-by-control snippets, organised by category. Each shows the original FlaUI **C#** call (from
-the FlaUI UITests) and its **Python** equivalent. For full, runnable suites that string these
-together, see the [Examples overview](index.md).
+Control-by-control recipes against the bundled WPF test application. Each recipe shows the
+**Python** call next to the original FlaUI **C#** call. Pick a tab once and every recipe on the
+page switches with it.
 
-All snippets assume a `window` (an automation element / `Window`) and a condition factory `cf` — see
-any [example suite](pytest.md) for how to obtain them.
+!!! success "Every Python snippet on this page runs"
+    The Python tabs are included straight from
+    [`examples/pytest/test_element_cookbook.py`](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/blob/master/examples/pytest/test_element_cookbook.py),
+    one test per recipe, and the docs build fails if a referenced section disappears. Run them all:
+
+    ```bash
+    uv run pytest examples/pytest/test_element_cookbook.py -v
+    ```
+
+All recipes assume a `window` (the main `Window`) and a condition factory `cf`. The
+[pytest example](pytest.md) shows how to get both. In C#, `cf` is the lambda parameter of
+`FindFirstDescendant(cf => …)`.
 
 ## Interactive controls
 
 ### Button
-```csharp
-var button = window.FindFirstByXPath("//Button[@Name='OK']").AsButton();
-button.Invoke();
-```
-```python
-button = window.find_first_by_x_path("//Button[@Name='OK']").as_button()
-button.invoke()
-```
+
+=== "Python"
+
+    ```python
+    --8<-- "examples/pytest/test_element_cookbook.py:button"
+    ```
+
+=== "C#"
+
+    ```csharp
+    var button = window.FindFirstDescendant(cf => cf.ByAutomationId("InvokableButton")).AsButton();
+    button.Invoke(); // Invoke pattern: no mouse movement
+    ```
 
 ### CheckBox
-```csharp
-var cb = window.FindFirstDescendant(cf => cf.ByAutomationId("accept"))?.AsCheckBox();
-cb.Toggle();
-```
-```python
-cb = window.find_first_descendant(cf.by_automation_id("accept")).as_check_box()
-cb.toggle()
-```
+
+=== "Python"
+
+    ```python
+    --8<-- "examples/pytest/test_element_cookbook.py:checkbox"
+    ```
+
+=== "C#"
+
+    ```csharp
+    var checkBox = window.FindFirstDescendant(cf => cf.ByName("Test Checkbox")).AsCheckBox();
+    checkBox.Toggle();
+    var state = checkBox.ToggleState; // ToggleState.On / Off / Indeterminate
+    ```
 
 ### RadioButton
-```csharp
-var radio = window.FindFirstDescendant(cf => cf.ByAutomationId("RadioButton1"))?.AsRadioButton();
-radio.IsChecked = true;
-```
-```python
-radio = window.find_first_descendant(cf.by_automation_id("RadioButton1")).as_radio_button()
-radio.is_checked = True
-```
+
+=== "Python"
+
+    ```python
+    --8<-- "examples/pytest/test_element_cookbook.py:radio_button"
+    ```
+
+=== "C#"
+
+    ```csharp
+    var radio = window.FindFirstDescendant(cf => cf.ByAutomationId("RadioButton1")).AsRadioButton();
+    radio.IsChecked = true;
+    ```
 
 ### ComboBox
-```csharp
-var combo = window.FindFirstDescendant(cf => cf.ByAutomationId("Countries"))?.AsComboBox();
-combo.Select("India");
-```
-```python
-combo = window.find_first_descendant(cf.by_automation_id("Countries")).as_combo_box()
-combo.select("India")
-```
+
+=== "Python"
+
+    ```python
+    --8<-- "examples/pytest/test_element_cookbook.py:combo_box"
+    ```
+
+=== "C#"
+
+    ```csharp
+    var combo = window.FindFirstDescendant(cf => cf.ByAutomationId("NonEditableCombo")).AsComboBox();
+    combo.Select("Item 2"); // or combo.Select(1)
+    var selected = combo.SelectedItem.Text;
+    ```
 
 ### TextBox
-```csharp
-var textBox = window.FindFirstDescendant(cf => cf.ByAutomationId("TextBox"))?.AsTextBox();
-textBox.Text = "hello";
-```
-```python
-text_box = window.find_first_descendant(cf.by_automation_id("TextBox")).as_text_box()
-text_box.text = "hello"
-```
+
+=== "Python"
+
+    ```python
+    --8<-- "examples/pytest/test_element_cookbook.py:text_box"
+    ```
+
+=== "C#"
+
+    ```csharp
+    var textBox = window.FindFirstDescendant(cf => cf.ByAutomationId("TextBox")).AsTextBox();
+    textBox.Text = "hello";  // Value pattern
+    textBox.Enter(" world"); // Keyboard
+    ```
 
 ### Slider
-```csharp
-var slider = window.FindFirstDescendant(cf => cf.ByAutomationId("Slider"))?.AsSlider();
-slider.Value = 7;
-```
-```python
-slider = window.find_first_descendant(cf.by_automation_id("Slider")).as_slider()
-slider.value = 7
-```
+
+=== "Python"
+
+    ```python
+    --8<-- "examples/pytest/test_element_cookbook.py:slider"
+    ```
+
+=== "C#"
+
+    ```csharp
+    var slider = window.FindFirstDescendant(cf => cf.ByAutomationId("Slider")).AsSlider();
+    slider.Value = 6;
+    Console.WriteLine($"{slider.Minimum} {slider.Value} {slider.Maximum}");
+    ```
 
 ## Containers
 
 ### ListBox
-```csharp
-var listBox = window.FindFirstDescendant(cf => cf.ByAutomationId("ListBox"))?.AsListBox();
-listBox.Select(0);
-```
-```python
-list_box = window.find_first_descendant(cf.by_automation_id("ListBox")).as_list_box()
-list_box.select(0)
-```
+
+=== "Python"
+
+    ```python
+    --8<-- "examples/pytest/test_element_cookbook.py:list_box"
+    ```
+
+=== "C#"
+
+    ```csharp
+    var listBox = window.FindFirstDescendant(cf => cf.ByAutomationId("ListBox")).AsListBox();
+    var item = listBox.Select("ListBox Item #2"); // or listBox.Select(1)
+    var names = listBox.Items.Select(i => i.Text).ToList();
+    ```
 
 ### Tree
-```csharp
-var tree = window.FindFirstDescendant(cf => cf.ByControlType(ControlType.Tree))?.AsTree();
-var node = tree.Items[0];
-node.Expand();
-```
-```python
-tree = window.find_first_descendant(cf.by_control_type(ControlType.Tree)).as_tree()
-node = tree.items[0]
-node.expand()
-```
 
-### Grid / DataGrid
-```csharp
-var grid = window.FindFirstDescendant(cf => cf.ByControlType(ControlType.DataGrid))?.AsGrid();
-var cell = grid.Rows[0].Cells[1];
-```
-```python
-grid = window.find_first_descendant(cf.by_control_type(ControlType.DataGrid)).as_grid()
-cell = grid.rows[0].cells[1]
-```
+The tree lives on the **Complex Controls** tab. The runnable test switches to that tab first.
+
+=== "Python"
+
+    ```python
+    --8<-- "examples/pytest/test_element_cookbook.py:tree"
+    ```
+
+=== "C#"
+
+    ```csharp
+    var tree = window.FindFirstDescendant(cf => cf.ByAutomationId("treeView1")).AsTree();
+    tree.Items[0].Expand();
+    tree.Items[0].Items[1].Expand();
+    tree.Items[0].Items[1].Items[0].Select();
+    var selected = tree.SelectedTreeItem.Text;
+    ```
+
+### Grid
+
+=== "Python"
+
+    ```python
+    --8<-- "examples/pytest/test_element_cookbook.py:grid"
+    ```
+
+=== "C#"
+
+    ```csharp
+    var grid = window.FindFirstDescendant(cf => cf.ByAutomationId("listView1")).AsGrid();
+    var headers = grid.Header.Columns.Select(c => c.Name).ToList(); // ["Key", "Value"]
+    var firstRow = grid.Rows[0].Cells.Select(c => c.Value).ToList(); // ["1", "10"]
+    grid.Select(1);
+    ```
 
 ### Tab
-```csharp
-var tab = window.FindFirstDescendant(cf => cf.ByControlType(ControlType.Tab))?.AsTab();
-tab.SelectTabItem("Complex Controls");
-```
-```python
-tab = window.find_first_descendant(cf.by_control_type(ControlType.Tab)).as_tab()
-tab.select_tab_item(value="Complex Controls")  # or select_tab_item(index=1)
-```
+
+=== "Python"
+
+    ```python
+    --8<-- "examples/pytest/test_element_cookbook.py:tab"
+    ```
+
+=== "C#"
+
+    ```csharp
+    tab.SelectTabItem(1); // "Complex Controls"
+    var selected = tab.SelectedTabItem.Name;
+    ```
 
 ## Display
 
 ### Label
-```csharp
-var label = window.FindFirstDescendant(cf => cf.ByAutomationId("Label"))?.AsLabel();
-var text = label.Text;
-```
-```python
-label = window.find_first_descendant(cf.by_automation_id("Label")).as_label()
-text = label.text
-```
+
+=== "Python"
+
+    ```python
+    --8<-- "examples/pytest/test_element_cookbook.py:label"
+    ```
+
+=== "C#"
+
+    ```csharp
+    var label = window.FindFirstDescendant(cf => cf.ByText("Test Label")).AsLabel();
+    var text = label.Text;
+    ```
 
 ### ProgressBar
-```csharp
-var bar = window.FindFirstDescendant(cf => cf.ByAutomationId("ProgressBar"))?.AsProgressBar();
-var value = bar.Value;
-```
-```python
-bar = window.find_first_descendant(cf.by_automation_id("ProgressBar")).as_progress_bar()
-value = bar.value
-```
+
+=== "Python"
+
+    ```python
+    --8<-- "examples/pytest/test_element_cookbook.py:progress_bar"
+    ```
+
+=== "C#"
+
+    ```csharp
+    var bar = window.FindFirstDescendant(cf => cf.ByAutomationId("ProgressBar")).AsProgressBar();
+    var progress = (bar.Value - bar.Minimum) / (bar.Maximum - bar.Minimum);
+    ```
 
 ## Windows & dialogs
 
-### Modal dialogs
-```csharp
-var dialog = window.ModalWindows.First();
-dialog.Close();
-```
-```python
-dialog = window.modal_windows[0]
-dialog.close()
-```
+=== "Python"
 
-### Title bar
-```csharp
-var titleBar = window.TitleBar;
-titleBar.MinimizeButton.Invoke();
-```
-```python
-title_bar = window.title_bar
-title_bar.minimize_button.invoke()
-```
+    ```python
+    --8<-- "examples/pytest/test_element_cookbook.py:window"
+    ```
+
+=== "C#"
+
+    ```csharp
+    Console.WriteLine(window.Title);   // "FlaUI WPF Test App"
+    var dialogs = window.ModalWindows; // empty while no modal dialog is open
+    var titleBar = window.TitleBar;    // .MinimizeButton / .MaximizeButton / .RestoreButton / .CloseButton
+    ```
+
+!!! note "Title bar buttons"
+    FlaUI finds the title bar buttons by their AutomationIds. Standard Win32 and Store windows
+    expose them; the WPF test app's title bar does not. The [Calculator gallery](gallery.md#calculator)
+    script is an example where they work.

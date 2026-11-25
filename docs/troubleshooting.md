@@ -41,6 +41,14 @@ Common issues, fixes, and known test skips/xfails.
 - `bug` GH-91 Mouse movement/drag flakiness under runners (mouse position reads may lag).
 - `bug` GH-75/others: ListBox instability on WinForms (see ListBox tests) — keep an eye on CI.
 
+## Seeing what FlaUI is doing
+- Turn on FlaUI's C# messages with `FLAUI_LOG_CSHARP=1` (or `enable_csharp_logging()`), and show
+  them live in pytest with `-o log_cli=true --log-cli-level=DEBUG`. See
+  [Configuration & logging](configuration.md#logging).
+- If `get_main_window` gives up too early on a slow machine, raise the wait with
+  `Automation(timeout=...)` or `FLAUI_MAIN_WINDOW_TIMEOUT` (milliseconds). See
+  [Timeouts](configuration.md#timeouts).
+
 ## Flakiness tips
 - Add short post_waits on mouse moves/drags.
 - Use Retry with smaller intervals (50–100ms) and bounded timeouts.

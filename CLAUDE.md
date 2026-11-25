@@ -394,10 +394,14 @@ static type checking.
 
 ## Python Compatibility & Library Preferences
 
-### Supported versions: Python 3.10+
+### Supported versions: Python 3.11+
 
-This project targets **Python 3.10 through 3.14** (`requires-python = ">=3.10,<3.15"`). On 3.10+
-the following modern syntax is **allowed**:
+This project targets **Python 3.11 through 3.15** (`requires-python = ">=3.11,<3.16"`). When the
+range changes, also update the **static** Python-versions badges in `README.md` and `docs/index.md`.
+They are hard-coded on purpose: the shields.io `pypi/pyversions` badge reads classifiers from the
+latest *published* release, so it lags behind `pyproject.toml` until the next upload.
+
+On 3.11+ the following modern syntax is **allowed**:
 
 - `|` unions (`int | None`)
 - built-in generics (`list[str]`, `dict[str, int]`)
@@ -445,10 +449,15 @@ use the C# type (`System.DateTime`) even though Python's `datetime` exists for e
    their Python equivalents.
 5. **Docstrings.** Sphinx/reST style — a one-line imperative summary, then `:param:`, `:return:`,
    `:raises:` for non-trivial APIs. Keep ≥95% coverage (`interrogate`).
-6. **Type hints everywhere**, including test fixtures. Both `typing` aliases and 3.10+ built-in
+6. **Type hints everywhere**, including test fixtures. Both `typing` aliases and 3.11+ built-in
    generics are acceptable; match the file you are editing.
 7. **PythonNet first.** Call `setup_pythonnet_bridge()` before any C# import.
-8. **Tests:** type-hint fixtures, assert against enums (not strings), and always use the `uv run`
+8. **Log through named loggers.** Use `logger = logging.getLogger(__name__)` in every module and never
+   the module-level `logging.info(...)` helpers: those configure the user's root logger behind their
+   back. `tests/unit/core/test_library_logging.py` enforces this.
+9. **Settings are `FLAUI_`-prefixed.** New user settings go on `flaui.lib.config.Settings` (which uses
+   `env_prefix="FLAUI_"`) and get a row in the environment-variable table in `docs/configuration.md`.
+10. **Tests:** type-hint fixtures, assert against enums (not strings), and always use the `uv run`
    prefix.
 
 ```python
@@ -486,6 +495,7 @@ assert element.toggle_state == ToggleState.On
 | [flaui/core/capturing.py](flaui/core/capturing.py) | Screen/element capture + video recording (`Capture`, `CaptureImage`, `VideoRecorder`) |
 | [flaui/core/overlay.py](flaui/core/overlay.py) | `OverlayManager` facade (visual-debug overlays) |
 | [flaui/core/logging.py](flaui/core/logging.py) | Opt-in C#→Python log bridge (`enable_csharp_logging`, `FLAUI_LOG_CSHARP`) |
+| [flaui/lib/config.py](flaui/lib/config.py) | User settings from `FLAUI_*` env vars (`settings`); documented in [docs/configuration.md](docs/configuration.md) |
 | [flaui/lib/pythonnet_bridge.py](flaui/lib/pythonnet_bridge.py) | PythonNet initialization, DLL loading |
 | [flaui/lib/exceptions.py](flaui/lib/exceptions.py) | C# → Python exception mapping (`handle_csharp_exceptions`, `translate_exceptions`) |
 | [flaui/lib/system/drawing.py](flaui/lib/system/drawing.py) | System.Drawing wrappers (Point, Rectangle, Color) |
@@ -506,7 +516,7 @@ CI/CD runs on a **hybrid Azure Pipelines + AppVeyor** setup. The two systems spl
   linting, the strict Zensical docs build, a hosted `windows-2022` smoke suite (unit + identifier
   tests), package builds, and gated `deploy_testpypi` / `deploy_pypi` / `deploy_docs` stages.
 - **AppVeyor** ([`.appveyor.yml`](.appveyor.yml), checks `continuous-integration/appveyor/pr`
-  and `/branch`) is the hosted Windows desktop UI gate on `Visual Studio 2022`. The gate is
+  and `/branch`) is the hosted Windows desktop UI gate on `Visual Studio 2026`. The gate is
   **trimmed**: the slow full UI suite only runs where it gates a merge — **pull requests and pushes
   to `master`** (`APPVEYOR_PULL_REQUEST_NUMBER` set, or `APPVEYOR_REPO_BRANCH == master`). Routine
   feature-branch pushes run the **fast `tests/unit` subset only**, so day-to-day turnaround does not
@@ -514,7 +524,7 @@ CI/CD runs on a **hybrid Azure Pipelines + AppVeyor** setup. The two systems spl
 - **GitHub Actions** is kept for CodeQL/labeling only; other workflows are manual-only stubs.
 
 Both runners drive tests with `uv run … pytest` and currently pin Python 3.12 x64 while the hybrid
-setup stabilizes (the 3.10–3.14 matrix is commented in both files). Azure cancels stale PR runs via
+setup stabilizes (the 3.11–3.15 matrix is commented in both files). Azure cancels stale PR runs via
 `pr.autoCancel: true`; AppVeyor relies on the project-level **Rolling builds** setting (not a yaml
 key). A conflicting/non-mergeable PR makes AppVeyor report "unable to build non-mergeable pull
 request" — rebase or merge the base branch to clear it.
@@ -528,7 +538,7 @@ Full procedural detail (scripts, artifacts, caching, deployment variables) lives
 
 - Use Sphinx-style docstrings (one-line summary, then `:param:`, `:return:`, `:raises:`).
 - Maintain ≥95% docstring coverage (`interrogate`).
-- Modern 3.10+ typing is allowed in examples (`|` unions, `match`/`case`, built-in generics);
+- Modern 3.11+ typing is allowed in examples (`|` unions, `match`/`case`, built-in generics);
   existing `typing`-style code does not need rewriting.
 - The docs site is built with **Zensical** (configured by `zensical.toml`), with API reference
   generated by **mkdocstrings**.
@@ -537,7 +547,12 @@ Full procedural detail (scripts, artifacts, caching, deployment variables) lives
   - Preview: `uv run zensical serve -f zensical.toml`
 - Update docs when adding or changing APIs: Basics for simple flows, Advanced for deep detail, API
   Reference auto-generated via mkdocstrings.
-- Prefer Python/C# tabbed examples where parity helps users.
+- Pair Python and C# in content tabs (`=== "Python"` / `=== "C#"`, Python first) wherever parity
+  helps users; `content.tabs.link` keeps the choice in sync across the page.
+- **Docs snippets must run.** Include Python code from runnable files under `examples/` with
+  `--8<-- "examples/<path>.py:<section>"` and mark the section in the file with
+  `# --8<-- [start:<section>]` / `# --8<-- [end:<section>]`. The snippets extension uses
+  `check_paths = true`, so the strict build fails if a section disappears. C# tabs stay inline.
 - Regenerate `docs/_includes/flaui_versions.md` with `scripts/extract_versions.py` whenever
   `flaui/bin/Version.md` changes.
 - `docs/changelog.md` is generated at build time by `scripts/build_changelog.py` (live GitHub

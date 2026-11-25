@@ -29,7 +29,7 @@ order we'll tackle the rest.
 | 4 | [Events](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/11) | ✅ Done | 0 / 2 |
 | 5 | [Capturing / Overlay / Video](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/12) | ✅ Done | 0 / 2 |
 | 6 | [Logging / Tools / Enhancers](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/13) | ✅ Done | 1 / 3 |
-| 7 | [Docs & Zensical](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/14) | 🟡 In progress | 5 / 0 |
+| 7 | [Docs & Zensical](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/14) | ✅ Done | 0 / 5 |
 | 8 | [Polish & v1.0](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/15) | ⏳ Pending | 5 / 0 |
 
 **Legend:** ✅ done · 🟡 in progress · ⏳ not started
@@ -81,8 +81,8 @@ order we'll tackle the rest.
 
 ## ⏳ Pending — prioritized backlog
 
-Phases 1–6 are now complete (exceptions/identifiers, patterns, elements, events, capturing/overlay/
-video, logging/tools/Pythonic enhancers). The remaining v1.0 gate is **Phase 0 → 7 → 8**, in that
+Phases 1–7 are now complete (exceptions/identifiers, patterns, elements, events, capturing/overlay/
+video, logging/tools/Pythonic enhancers, docs). The remaining v1.0 gate is **Phase 0 → 8**, in that
 priority order.
 
 ### P1 — Phase 0: Stabilize *(pre-release gate — active)*
@@ -93,13 +93,18 @@ priority order.
   `platform_limitation` / `bug(run=True)` markers and documented in
   [bug-tracking](bug-tracking.md); several are upstream Windows/.NET issues kept as known xfail/skip.
 
-### P2 — Phase 7: Docs & Zensical
+### ✅ Phase 7: Docs & Zensical *(complete)*
 - **[#86](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/86)** comprehensive docs
   (umbrella) · **[#69](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/69)** example
   gallery · sample suites: **[#48](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/48)**
   Behave · **[#49](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/49)** TestPlan ·
-  **[#50](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/50)** PyTest. *(Runnable
-  suites under `examples/` are landed; Robot Framework deferred to post-v1.)*
+  **[#50](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/50)** PyTest.
+- Python and C# sit side by side in content tabs across Basics, Advanced, the Element Cookbook, the
+  Gallery and the framework pages. Every Python snippet is included from runnable code under
+  `examples/` (pytest / unittest / behave / Testplan suites + gallery scripts for the bundled apps,
+  Calculator and Notepad); the strict docs build fails if a referenced section disappears. The
+  [Upgrade guide](upgrade-guide.md) gained a *Migrating from FlaUI C#* translation table.
+  *(Robot Framework deferred to post-v1.)*
 
 ### P3 — Phase 8: Polish & release
 - **[#85](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/85)** polish & production

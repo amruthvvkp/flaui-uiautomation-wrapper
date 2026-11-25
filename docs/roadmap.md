@@ -22,7 +22,7 @@ of truth; this page is the human-friendly summary.
 | [Phase 5 — Capturing/Overlay/Video](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/12) | Screenshots, overlays, video recording | ✅ Complete |
 | [Phase 6 — Logging/Tools/Enhancers](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/13) | Logging bridge, tools, Pythonic enhancers | ✅ Complete |
 | [Phase 0 — Stabilize](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/7) | Green CI, stable matrix, 100% core coverage | 🚧 In progress |
-| [Phase 7 — Docs & Zensical](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/14) | v1 docs, per-framework guides, API reference | 🗓️ Planned |
+| [Phase 7 — Docs & Zensical](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/14) | v1 docs, per-framework guides, API reference | ✅ Complete |
 | [Phase 8 — Polish & v1.0](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/15) | Release plumbing, beta soak, v1.0.0 | 🗓️ Planned |
 
 ## ✅ Completed
@@ -32,7 +32,7 @@ of truth; this page is the human-friendly summary.
 - [x] Upgrade to FlaUI 4/5 + PythonNet 3
 - [x] Pydantic-backed `AutomationElement` models
 - [x] `uv`-based packaging and PyPI publishing plumbing
-- [x] Python 3.10–3.14 support
+- [x] Python 3.11–3.15 support
 - [x] [Python `AutomationBase` + UIA2/UIA3 facades (#107)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/107)
 
 ### Core API surface (1:1 with FlaUI)
@@ -58,6 +58,13 @@ of truth; this page is the human-friendly summary.
 - [x] Fluent waiting + Playwright-style assertions (`expect(el).to_be_visible()`, `flaui/core/expectations.py`)
 - [x] `py.typed` marker + `ty` (Astral) type-check gate in CI
 
+### Phase 7 — Docs & Zensical ([milestone](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/14))
+- [x] [Comprehensive production docs (#86)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/86): Python / C# content tabs throughout, [C# migration guide](upgrade-guide.md#migrating-from-flaui-c)
+- [x] [Worked testing examples (#69)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/69): [Example Gallery](examples/gallery.md) and [Element Cookbook](examples/element-cookbook.md), all runnable
+- [x] [pytest sample suites (#50)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/50)
+- [x] [TestPlan sample suites (#49)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/49)
+- [x] [Behave sample suites (#48)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/48)
+
 ## 🚧 In progress
 
 ### Phase 0 — Stabilize ([milestone](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/7))
@@ -71,13 +78,6 @@ of truth; this page is the human-friendly summary.
 - [ ] Document upstream Windows/.NET limitations — [ComboBox/WinForms (#75)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/75), [Toggle on WinForms menus (#78)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/78), [UIA3 WinForms context menus (#79)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/79)
 
 ## 🗓️ Planned
-
-### Phase 7 — Docs & Zensical ([milestone](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/14))
-- [ ] [Comprehensive production docs (#86)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/86)
-- [ ] [Worked testing examples (#69)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/69)
-- [ ] [pytest sample suites (#50)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/50)
-- [ ] [TestPlan sample suites (#49)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/49)
-- [ ] [Behave sample suites (#48)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/48)
 
 ### Phase 8 — Polish & v1.0 ([milestone](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/15))
 - [ ] [v1.0.0 official release (#84)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/84)

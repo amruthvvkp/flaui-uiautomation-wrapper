@@ -52,6 +52,11 @@ See [Development Workflow](contributing/development.md) for full command referen
 - Link issues/bug markers if applicable.
 - Describe matrix coverage and any skips/xfails used.
 
+## Security issues
+Do **not** open a public issue or PR for a vulnerability. Report it privately through
+[GitHub Security Advisories](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/security/advisories/new)
+and see the [Security Policy](security.md).
+
 ## Useful references
 - `tests/test_utilities` element maps (page objects)
 - `tests/ui/core` for usage patterns
