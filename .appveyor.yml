@@ -33,9 +33,12 @@ environment:
     #   PYTHON_VERSION: "3.14"
     #   PYTHON_ARCH: "64"
     #
-    # - job_name: Python 3.15 x64
-    #   PYTHON_VERSION: "3.15"
-    #   PYTHON_ARCH: "64"
+    # Compatibility check on the newest supported Python: unit subset only (loads the
+    # pythonnet bridge + FlaUI DLLs). The full UI suite and coverage gate stay on 3.12.
+    - job_name: Python 3.15 x64 (compat)
+      PYTHON_VERSION: "3.15"
+      PYTHON_ARCH: "64"
+      COMPAT_ONLY: "1"
 
 cache:
   - "%USERPROFILE%\\.cache\\uv -> uv.lock, pyproject.toml"
@@ -81,7 +84,7 @@ test_script:
       # Trim the gate: the slow full desktop UI suite only runs where it gates a merge
       # (pull requests, and pushes to master). Routine feature-branch pushes run the fast
       # unit subset only, so day-to-day turnaround does not pay for the full serial run.
-      $runFull = ($env:APPVEYOR_REPO_BRANCH -eq 'master') -or [bool]$env:APPVEYOR_PULL_REQUEST_NUMBER
+      $runFull = (($env:APPVEYOR_REPO_BRANCH -eq 'master') -or [bool]$env:APPVEYOR_PULL_REQUEST_NUMBER) -and -not $env:COMPAT_ONLY
       if ($runFull) {
         Write-Host "Full gate: running the complete Windows desktop UI test suite with pytest..."
         Invoke-Checked { uv --no-progress run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage coverage run -m pytest --junit-xml=test-results.xml --timeout=45 --timeout-method=thread --alluredir allure-results }
