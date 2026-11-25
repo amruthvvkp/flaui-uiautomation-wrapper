@@ -86,10 +86,17 @@ of truth; this page is the human-friendly summary.
 - [ ] [Publish workflow: PR-on-release → master (#57)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/57)
 - [ ] [Link PyPI version in release notes (#66)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/66)
 
-## 💡 Wishlist (post‑v1)
+## 💡 Post‑v1 — Ecosystem & Playwright-grade polish ([milestone](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/16))
+- [ ] [Playwright-style auto-waiting for element actions (#139)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/139)
+- [ ] [Lazy, re-resolving Locator API (#140)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/140)
+- [ ] [`pytest-flaui` plugin — fixtures, backend matrix, capture-on-failure (#141)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/141)
+- [ ] [`flaui-recorder` — record-and-generate scripts, inspired by FlaUIRecorder & Playwright codegen (#142)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/142)
+- [ ] [`flaui-mcp` — MCP server for agent-driven desktop automation (#143)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/143) (see [Use with AI agents](agentic-guidelines.md#use-with-ai-agents-and-mcp))
+    - [ ] [Element-map (name mapping) schema in core (#144)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/144)
+    - [ ] [MCP `control` profile — general desktop automation (#145)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/145)
+    - [ ] [MCP `authoring` profile — explore, element maps, test generation (#146)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/146)
+    - [ ] [Isolated MCP efficiency benchmark (#147)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/147)
 - [ ] [`CustomNavigation` pattern (#121)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/121)
-- [ ] UI recorder / codegen (inspired by FlaUIRecorder & Playwright codegen)
-- [ ] Reference MCP server / agent-tool example exposing element find/click/type as tools (see [Use with AI agents](agentic-guidelines.md#use-with-ai-agents-and-mcp))
 - [ ] Async / `pytest-asyncio` ergonomics evaluation
 - [ ] Enhanced HTML/Allure reporting helpers
 

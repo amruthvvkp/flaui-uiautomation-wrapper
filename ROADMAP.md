@@ -31,6 +31,7 @@ order we'll tackle the rest.
 | 6 | [Logging / Tools / Enhancers](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/13) | ✅ Done | 1 / 3 |
 | 7 | [Docs & Zensical](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/14) | ✅ Done | 0 / 5 |
 | 8 | [Polish & v1.0](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/15) | ⏳ Pending | 5 / 0 |
+| Post-v1 | [Ecosystem & Playwright-grade polish](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/16) | ⏳ Not started | 9 / 0 |
 
 **Legend:** ✅ done · 🟡 in progress · ⏳ not started
 
@@ -133,30 +134,64 @@ priority order.
 > `flaui-uiautomation-wrapper` stays lean — mirroring how `pytest-playwright` ships alongside
 > `playwright`. The core wrapper remains the single dependency they all build on.
 
-| Package / effort | What it is | Inspiration |
-|------------------|------------|-------------|
-| **FlaUI agent skills** | Claude Code skills bundle for FlaUI development | — |
-| **`flaui-recorder`** | Record-and-generate UI script tool | [twenzel/FlaUIRecorder](https://github.com/twenzel/FlaUIRecorder), Playwright codegen |
-| **`flaui-mcp`** | MCP server exposing FlaUI automation as tools | [shanselman/FlaUI-MCP](https://github.com/shanselman/FlaUI-MCP) |
-| **`pytest-flaui`** | pytest plugin: fixtures + recorder + capture-on-failure | [`pytest-playwright`](https://github.com/microsoft/playwright-pytest) |
+Tracked in the **[Post-v1 — Ecosystem & Playwright-grade polish](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/16)** milestone.
+
+### Playwright-grade core ergonomics *(in-core, not separate packages)*
+
+`expect()`, `AutomationElementCollection`, context managers and `__repr__` (#87) already shipped.
+The remaining gaps against Playwright's developer experience:
+
+| Issue | Feature | Why |
+|-------|---------|-----|
+| [#139](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/139) | **Auto-waiting** for actions (attached / on-screen / enabled / stable before `click`, `enter`, `invoke`…) | Removes manual `post_wait` / `Retry` / sleeps; the core cause of flaky tests |
+| [#140](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/140) | **Locator API** — lazy, re-resolving, chainable (`window.locator(automation_id=…).nth(2).click()`) | Survives UI re-renders / stale elements; output format for the recorder |
+
+### Companion packages
+
+| Issue | Package / effort | What it is | Inspiration |
+|-------|------------------|------------|-------------|
+| — | **FlaUI agent skills** | Claude Code skills bundle for FlaUI development | — |
+| [#142](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/142) | **`flaui-recorder`** | Record-and-generate UI script tool | [twenzel/FlaUIRecorder](https://github.com/twenzel/FlaUIRecorder), Playwright codegen |
+| [#143](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/143) | **`flaui-mcp`** | MCP server (control + authoring profiles) — see below | [shanselman/FlaUI-MCP](https://github.com/shanselman/FlaUI-MCP), Playwright MCP |
+| [#141](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/141) | **`pytest-flaui`** | pytest plugin: fixtures + backend matrix + capture-on-failure | [`pytest-playwright`](https://github.com/microsoft/playwright-pytest) |
+
+### MCP — first goal ([#143](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/143) umbrella)
+
+One `flaui-mcp` server (own repo) with **two profiles** sharing a session / element-ref / safety layer:
+
+| Issue | Work item |
+|-------|-----------|
+| [#144](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/144) | **Element-map (name mapping) schema** in core — framework-neutral, versioned YAML/JSON contract shared by MCP authoring, the recorder, codegen and `pytest-flaui` |
+| [#145](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/145) | **`control` profile** — launch/attach, pruned snapshots, find, click/type/select, screenshot, `wait_for` for any MCP harness |
+| [#146](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/146) | **`authoring` profile** — explore the app, propose/validate element maps, generate pytest/behave/unittest/Robot tests |
+| [#147](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/147) | **Isolated efficiency benchmark** — generate the framework example suites via the MCP in a clean workspace; measure tokens, tool calls, pass rate, flakiness, human edits |
+
+**Suggested order:** #144 + #145 (parallel) → #146 → #147; in core, #139 auto-wait → #140 locators
+improve generated code as they land; then #141 pytest-flaui → #142 recorder (reuses #144 + #146
+selector strategy and codegen templates).
+
+**Repository strategy:** `flaui-mcp`, `flaui-recorder` and `pytest-flaui` each get their own repo
+(distinct deps and release cadence). Thin framework adapters (behave, unittest, TestPlan) start in
+a shared integrations workspace and split out only when they get real users. Robot Framework support
+is pursued by enhancing the existing Robot library with this SDK, coordinated with its maintainers.
 
 ### FlaUI agent skills
 A bundle of Claude Code skills (`.claude/skills/…`) packaging FlaUI development knowledge so users
 building automation get assisted workflows: element/pattern lookup, test scaffolding, and C#→Python
 test-porting helpers. Distributable as an installable skills bundle.
 
-### `flaui-recorder`
+### `flaui-recorder` ([#142](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/142))
 A Playwright-codegen-style **record-and-generate** tool: watch a user's interactions against a live
 Windows app (via UIA events / hit-testing) and emit ready-to-run Python FlaUI scripts. Lowers the
 barrier to authoring automation by hand. Builds on this wrapper's event handlers and XPath navigator;
 inspired by the C# [twenzel/FlaUIRecorder](https://github.com/twenzel/FlaUIRecorder).
 
-### `flaui-mcp`
+### `flaui-mcp` ([#143](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/143))
 An **MCP server** exposing FlaUI Python automation as callable tools so agents/LLMs can drive Windows
 desktop apps — the Python counterpart to the C#
 [shanselman/FlaUI-MCP](https://github.com/shanselman/FlaUI-MCP).
 
-### `pytest-flaui`
+### `pytest-flaui` ([#141](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/141))
 A **pytest plugin** modeled on `pytest-playwright`: ready-made `automation` / session fixtures, the
 UIA2×UIA3 matrix helpers this repo already uses, screenshots/video on failure via
 [`flaui/core/capturing.py`](flaui/core/capturing.py), and `flaui-recorder` integration for codegen.

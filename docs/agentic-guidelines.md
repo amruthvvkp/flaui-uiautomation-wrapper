@@ -14,7 +14,7 @@ straightforward — an agent can then drive arbitrary Windows applications.
 
     This library does **not** ship an MCP server or any built-in agent control. It is the
     *substrate* you would build one on. A reference MCP server / agent-tool example is tracked as a
-    post-v1 item on the [Roadmap](roadmap.md#wishlist-postv1).
+    post-v1 item on the [Roadmap](roadmap.md#postv1-ecosystem-playwright-grade-polish-milestone).
 
 !!! warning "Responsible use"
 
