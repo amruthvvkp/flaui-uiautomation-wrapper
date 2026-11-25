@@ -140,9 +140,6 @@ stages:
         # Enable this matrix after the hosted-agent smoke job is stable.
         # strategy:
         #   matrix:
-        #     Python310_Windows2022:
-        #       WINDOWS_VM_IMAGE: "windows-2022"
-        #       ACTIVE_PYTHON_VERSION: "3.10"
         #     Python311_Windows2022:
         #       WINDOWS_VM_IMAGE: "windows-2022"
         #       ACTIVE_PYTHON_VERSION: "3.11"
@@ -155,6 +152,9 @@ stages:
         #     Python314_Windows2022:
         #       WINDOWS_VM_IMAGE: "windows-2022"
         #       ACTIVE_PYTHON_VERSION: "3.14"
+        #     Python315_Windows2022:
+        #       WINDOWS_VM_IMAGE: "windows-2022"
+        #       ACTIVE_PYTHON_VERSION: "3.15"
 
         steps:
           - checkout: self
