@@ -42,6 +42,14 @@ class TestTab:
 
             assert tab == HasAttributes(selected_tab_item_index=index.value), f"Tab item {index.value} not selected."
 
+    def test_selected_tab_item(self, tab: Tab) -> None:
+        """``selected_tab_item`` is a property returning the selected TabItem (C# ``SelectedTabItem``)."""
+        tab.select_tab_item(1, post_wait=True)
+        try:
+            assert tab.selected_tab_item == HasAttributes(name=tab.tab_items[1].name)
+        finally:
+            tab.select_tab_item(0, post_wait=True)
+
     def test_exception_on_no_input_value_to_select_tab(self, tab: Tab) -> None:
         """Tests if ValueError is thrown on no index/value sent to select tab"""
         with pytest.raises(ValueError):
