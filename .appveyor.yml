@@ -107,8 +107,10 @@ after_test:
       $env:UV_NO_PROGRESS = "1"
       Write-Host "Generating coverage reports..."
       if (Test-Path ".coverage") {
-        uv --no-progress run --with coverage coverage xml
-        uv --no-progress run --with coverage coverage html
+        # -q: coverage >= 7.17 writes "Wrote ... report" to stderr, which PowerShell's
+        # NativeCommandError handling turns into a failed step.
+        uv --no-progress run --with coverage coverage xml -q
+        uv --no-progress run --with coverage coverage html -q
       } else {
         Write-Host "No coverage data found; skipping coverage report generation."
       }

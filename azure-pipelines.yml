@@ -213,8 +213,8 @@ stages:
               }
 
               if ($baseCoverage) {
-                uv run --with coverage coverage xml
-                uv run --with coverage coverage html
+                uv run --with coverage coverage xml -q
+                uv run --with coverage coverage html -q
               } else {
                 Write-Host "No coverage data found; writing placeholder coverage artifacts."
                 $coverageXml = '<?xml version="1.0" ?><coverage version="0" timestamp="0" lines-valid="0" lines-covered="0" line-rate="0" branches-covered="0" branches-valid="0" branch-rate="0" complexity="0"><sources /><packages /></coverage>'
