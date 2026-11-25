@@ -19,54 +19,29 @@ The bridge is initialised **before** any C#-backed import, then the application 
 session and disposed in teardown:
 
 ```python
-from flaui.lib.pythonnet_bridge import setup_pythonnet_bridge
-
-setup_pythonnet_bridge()  # must run before importing C#-backed FlaUI types
-
-from flaui.lib.enums import UIAutomationTypes
-from flaui.modules.automation import Automation
-import pytest
-
-
-@pytest.fixture(scope="session")
-def automation():
-    auto = Automation(UIAutomationTypes.UIA3)
-    auto.application.launch(str(find_test_app()))
-    auto.application.wait_while_main_handle_is_missing(3000)
-    try:
-        yield auto
-    finally:
-        auto.application.kill()
-        auto.automation_base.dispose()
-
-
-@pytest.fixture
-def main_window(automation):
-    return automation.application.get_main_window(automation)
-
-
-@pytest.fixture
-def condition_factory(automation):
-    return automation.cf
+--8<-- "examples/pytest/conftest.py"
 ```
 
-## A test (`test_simple_controls.py`)
+## The tests (`test_simple_controls.py`)
 
 Find → wrap → act, and leave shared state clean:
 
 ```python
-def test_toggle_checkbox(main_window, condition_factory) -> None:
-    checkbox = main_window.find_first_descendant(
-        condition=condition_factory.by_name("Test Checkbox")
-    ).as_check_box()
-    original = checkbox.is_checked
-    try:
-        checkbox.toggle()
-        assert checkbox.is_checked != original
-    finally:
-        if checkbox.is_checked != original:
-            checkbox.toggle()
+--8<-- "examples/pytest/test_simple_controls.py"
 ```
+
+## More in this folder
+
+The same fixtures also drive the recipes the docs include:
+
+| File | Docs page |
+|------|-----------|
+| `test_element_cookbook.py` | [Element Cookbook](element-cookbook.md): one test per control |
+| `test_advanced.py` | [Advanced](../advanced.md): XPath, conditions, caching, retry, `expect`, `post_wait` |
+| `test_configuration.py` | [Configuration & logging](../configuration.md): C# logging, timeouts, mouse speed |
+| `test_multi_instance.py` | [Multiple instances](../multi-instance.md): several copies of one app |
+| `test_utilities.py` | [Utilities](../utilities.md): Wait, keyboard, mouse, drawing, capture, highlight, tools |
+| `test_name_mapping.py`, `app_map.py`, `app_settings.py` | [Test design tips](../test-design.md): element name maps and pydantic settings |
 
 !!! tip "Keep skips/xfails in fixtures, not tests"
     The project's own suite (`tests/conftest.py`) launches all four combinations

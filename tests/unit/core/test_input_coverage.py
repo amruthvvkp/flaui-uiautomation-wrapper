@@ -238,18 +238,23 @@ def test_touch_pinch_transition_drag_rotate(cs_touch: MagicMock) -> None:
 # Wait
 # --------------------------------------------------------------------------- #
 def test_wait_until_responsive_variants(monkeypatch: pytest.MonkeyPatch) -> None:
-    """``until_responsive`` / ``until_responsive_hwnd`` forward defaults to the C# Wait."""
+    """Both forward to C# ``Wait.UntilResponsive`` with the raw element / IntPtr and a TimeSpan."""
+    from System import IntPtr  # type: ignore
+
     fake = MagicMock()
-    fake.UntilResponsive.return_value = True
-    fake.UntilResponsiveHwnd.return_value = False
+    fake.UntilResponsive.side_effect = [True, False]
     monkeypatch.setattr(input_module, "CSWait", fake)
 
     element = MagicMock()
-    assert Wait.until_responsive(element) is True
-    fake.UntilResponsive.assert_called_once_with(element, Wait.DEFAULT_TIMEOUT)
+    assert Wait.until_responsive(element, timeout_in_secs=2) is True
+    raw, span = fake.UntilResponsive.call_args_list[0].args
+    assert raw is element.raw_element  # the wrapper is unwrapped before crossing into C#
+    assert span.TotalSeconds == 2
 
     assert Wait.until_responsive_hwnd(123) is False
-    fake.UntilResponsiveHwnd.assert_called_once_with(123, Wait.DEFAULT_TIMEOUT)
+    handle, span = fake.UntilResponsive.call_args_list[1].args
+    assert isinstance(handle, IntPtr) and handle.ToInt64() == 123
+    assert span.TotalSeconds == Wait.DEFAULT_TIMEOUT
 
 
 def test_wait_until_input_is_processed_sleeps(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -325,3 +330,24 @@ def test_interpolation_execute_rotation_fires_action() -> None:
     )
     assert received
     assert all(isinstance(p, Point) for p in received)
+
+
+def test_keyboard_pressing_releases_keys_on_exit(cs_keyboard: MagicMock) -> None:
+    """``pressing`` returns a context manager that disposes the C# handle exactly once."""
+    key = list(VirtualKeyShort)[0]
+    with Keyboard.pressing([key]) as held:
+        cs_keyboard.Pressing.return_value.Dispose.assert_not_called()
+    cs_keyboard.Pressing.return_value.Dispose.assert_called_once_with()
+    held.release()  # releasing again is a no-op
+    cs_keyboard.Pressing.return_value.Dispose.assert_called_once_with()
+
+
+def test_keyboard_pressing_releases_keys_on_error(cs_keyboard: MagicMock) -> None:
+    """Keys are released even when the ``with`` block raises."""
+    key = list(VirtualKeyShort)[0]
+    try:
+        with Keyboard.pressing([key]):
+            raise RuntimeError("boom")
+    except RuntimeError:
+        pass
+    cs_keyboard.Pressing.return_value.Dispose.assert_called_once_with()

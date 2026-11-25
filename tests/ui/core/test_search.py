@@ -1,7 +1,6 @@
 """Tests for search and retry functionality, ported from C# SearchTests.cs."""
 
 import asyncio
-from typing import Any, cast
 
 from flaui.core.application import Application
 from flaui.core.input import Keyboard
@@ -32,10 +31,7 @@ class TestSearch:
                 """Show the help dialog after a delay."""
                 await asyncio.sleep(5.0)
                 # Simulate pressing Alt+H, Alt+A to show help dialog
-                # Keyboard.pressing expects a list of VirtualKeyShort; the
-                # typing for pressing may not declare a proper context-manager
-                # return type, so cast to Any to satisfy the type checker.
-                with cast(Any, Keyboard.pressing([VirtualKeyShort.ALT])):
+                with Keyboard.pressing([VirtualKeyShort.ALT]):
                     Keyboard.type_key(VirtualKeyShort.KEY_H)
                     Keyboard.type_key(VirtualKeyShort.KEY_A)
 

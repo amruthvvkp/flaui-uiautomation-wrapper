@@ -20,47 +20,7 @@ The bridge is initialised before any C#-backed import; the application is launch
 disposed in `teardown`:
 
 ```python
-from flaui.lib.pythonnet_bridge import setup_pythonnet_bridge
-
-setup_pythonnet_bridge()  # before any C#-backed FlaUI import
-
-from flaui.lib.enums import UIAutomationTypes
-from flaui.modules.automation import Automation
-from testplan import test_plan
-from testplan.testing.multitest import MultiTest, testcase, testsuite
-
-
-@testsuite
-class SimpleControlsSuite:
-    def setup(self, env, result):
-        self.automation = Automation(UIAutomationTypes.UIA3)
-        self.automation.application.launch(str(find_test_app()))
-        self.automation.application.wait_while_main_handle_is_missing(3000)
-        self.window = self.automation.application.get_main_window(self.automation)
-        self.cf = self.automation.cf
-
-    def teardown(self, env, result):
-        self.automation.application.kill()
-        self.automation.automation_base.dispose()
-
-    @testcase
-    def enter_text(self, env, result):
-        text_box = self.window.find_first_descendant(
-            condition=self.cf.by_automation_id("TextBox")
-        ).as_text_box()
-        text_box.text = "hello from testplan"
-        result.equal(text_box.text, "hello from testplan", description="text entered")
-
-
-@test_plan(name="FlaUI for Python TestPlan example")
-def main(plan):
-    plan.add(MultiTest(name="WPF Simple Controls", suites=[SimpleControlsSuite()]))
-
-
-if __name__ == "__main__":
-    import sys
-
-    sys.exit(not main())
+--8<-- "examples/testplan/test_plan.py"
 ```
 
 !!! tip "Testplan assertions"

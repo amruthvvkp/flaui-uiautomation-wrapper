@@ -11,6 +11,10 @@ from tests.test_utilities.elements.wpf_application import WPFApplicationElements
 class TestWindow:
     """Tests for Window control."""
 
+    def test_modal_windows(self, test_application: WinFormsApplicationElements | WPFApplicationElements) -> None:
+        """``modal_windows`` is a property (C# ``ModalWindows``) and is empty while no dialog is open."""
+        assert test_application.main_window.modal_windows == []
+
     # GH-79: Context menu of WinForms is not captured with UIA3 on newer .NET versions (upstream
     # limitation). Skipped on UIA3 + WinForms via skip_on_uia3_winforms; runs on the other three
     # matrix combinations. Tagged platform_limitation (queryable via `-m platform_limitation`)

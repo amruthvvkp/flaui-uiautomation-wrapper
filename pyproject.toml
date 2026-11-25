@@ -5,152 +5,91 @@ description = "Tool to perform UI Automation on Windows desktop applications usi
 readme = "README.md"
 requires-python = ">=3.11,<3.16"
 dependencies = [
-    "arrow>=1.3.0",
-    "pillow>=10.4.0",
-    "psutil>=6.1.1",
-    "pydantic>=2.10.6",
-    "pydantic-settings>=2.7.1",
-    "pythonnet==3.2.1",
+  "arrow>=1.3.0",
+  "pillow>=10.4.0",
+  "psutil>=6.1.1",
+  "pydantic>=2.10.6",
+  "pydantic-settings>=2.7.1",
+  "pythonnet==3.2.1",
 ]
 authors = [
-    { name = "Amruth VVKP", email = "amruthvvkp@gmail.com" },
-    { name = "Varshith VVS", email = "svvarsham@gmail.com" },
-    { name = "Tejaswani Sathish Kumar", email = "tejaswani12.92@gmail.com" },
+  { name = "Amruth VVKP", email = "amruthvvkp@gmail.com" },
+  { name = "Varshith VVS", email = "svvarsham@gmail.com" },
+  { name = "Tejaswani Sathish Kumar", email = "tejaswani12.92@gmail.com" },
 ]
 license = { text = "LGPL-3.0-or-later" }
 keywords = [
-    "testing",
-    "ui",
-    "ui-automation",
-    "automation",
-    "windows",
-    "windows automation",
-    "windows testing",
-    "desktop automation",
-    "flaui",
-    "qa",
+  "automation",
+  "desktop automation",
+  "flaui",
+  "qa",
+  "testing",
+  "ui",
+  "ui-automation",
+  "windows",
+  "windows automation",
+  "windows testing",
 ]
 classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
-    "Operating System :: Microsoft :: Windows",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3.14",
-    "Programming Language :: Python :: 3.15",
-    "Programming Language :: Python :: 3 :: Only",
-    "Topic :: Software Development :: Testing",
-    "Topic :: Software Development :: Quality Assurance",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-    "Topic :: Utilities",
-    "Typing :: Typed",
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
+  "Operating System :: Microsoft :: Windows",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Software Development :: Quality Assurance",
+  "Topic :: Software Development :: Testing",
+  "Topic :: Utilities",
+  "Typing :: Typed",
 ]
 
 [project.urls]
-Homepage = "https://amruthvvkp.github.io/flaui-uiautomation-wrapper"
-Documentation = "https://amruthvvkp.github.io/flaui-uiautomation-wrapper"
-Repository = "https://github.com/amruthvvkp/flaui-uiautomation-wrapper"
-Issues = "https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues"
 Changelog = "https://github.com/amruthvvkp/flaui-uiautomation-wrapper/releases"
+Documentation = "https://amruthvvkp.github.io/flaui-uiautomation-wrapper"
+Homepage = "https://amruthvvkp.github.io/flaui-uiautomation-wrapper"
+Issues = "https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues"
+Repository = "https://github.com/amruthvvkp/flaui-uiautomation-wrapper"
+
+[project.optional-dependencies]
+coverage = ["coverage>=7.17.5"]
+pytest-sugar = ["pytest-sugar>=1.0.0"]
 
 [dependency-groups]
 dev = [
-    "interrogate>=1.7.0",
-    "isort>=5.13.2",
-    "jupyter>=1.1.1",
-    "ty>=0.0.1a1",
-    "pre-commit>=3.5.0",
-    "ruff>=0.9.3",
+  "interrogate>=1.7.0",
+  "isort>=9.0.2",
+  "jupyter>=1.1.1",
+  "pre-commit>=4.7.0",
+  "ruff>=0.17.6",
+  "ty>=0.0.110",
 ]
 # Docs toolchain (Zensical). Docs are built on 3.12 in CI.
 docs = [
-    "zensical>=0.0.46",
-    "mkdocstrings-python>=1.18.2",
-    "pymdown-extensions>=10.20.1",
+  "mkdocstrings-python>=1.18.2",
+  "pymdown-extensions>=10.20.1",
+  "zensical>=0.0.46",
 ]
 unit-test = [
-    "dirty-equals>=0.9.0",
-    "psutil>=6.1.1",
-    "pyhamcrest>=2.1.0",
-    "pytest>=8.3.4",
-    "pytest-bug>=1.4.0",
-    "pytest-pretty>=1.2.0",
-    "pytest-reportlog>=0.4.0",
-    "pytest-timeout>=2.4.0",
-    "allure-pytest>=2.15.2",
+  "allure-pytest>=2.16.2",
+  "dirty-equals>=0.9.0",
+  "psutil>=7.2.2",
+  "pyhamcrest>=2.1.0",
+  "pytest>=9.2.0",
+  "pytest-bug>=1.7.0",
+  "pytest-pretty>=1.2.0",
+  "pytest-reportlog>=0.4.0",
+  "pytest-timeout>=2.4.0",
 ]
-
-[project.optional-dependencies]
-pytest-sugar = ["pytest-sugar>=1.0.0"]
-coverage = ["coverage>=7.6.1"]
-
-[tool.uv.sources]
-flaui = { path = "./flaui" }
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-[tool.hatch.build.targets.wheel]
-# `/flaui` already packages flaui/py.typed; the DLLs are listed explicitly because
-# they are gitignored and would otherwise be excluded from the wheel.
-only-include = ["/README.md", "/flaui", "flaui/bin/*.dll"]
-
-[tool.pytest.ini_options]
-minversion = "8.0"
-addopts = "-ra -q -p no:warnings --report-log=test-report.jsonl"
-testpaths = ["tests/"]
-# Timeout settings - prevent hanging tests in UI automation
-timeout = 30 # Default 30s per test (UI tests can be slow)
-timeout_method = "thread" # Use thread method on Windows for reliability
-session_timeout = 1800 # 30 minutes max for full suite
-markers = [
-    "wpf_only: Tests that only run on WPF applications",
-    "winforms_only: Tests that only run on WinForms applications",
-    "uia3_only: Tests that require UIA3 automation type",
-    "platform_limitation: Known C# FlaUI platform limitation",
-    "windows11: Tests affected by Windows 11 specific behavior",
-    "bug: Known bug tracked in GitHub issues (use id and url parameters)",
-]
-
-[tool.interrogate]
-ignore-init-method = true
-ignore-init-module = true
-ignore-magic = false
-ignore-semiprivate = false
-ignore-private = false
-ignore-property-decorators = false
-ignore-module = false
-ignore-nested-functions = false
-ignore-nested-classes = true
-ignore-setters = false
-fail-under = 95
-exclude = ["docs", "build"]
-ignore-regex = ["^get$", "^mock_.*", ".*BaseClass.*"]
-verbose = 2
-quiet = false
-whitelist-regex = []
-color = true
-omit-covered-files = false
-
-
-[tool.isort]
-profile = "black"
-known_third_party = ["pydantic"]
-skip = [".gitignore", ".dockerignore"]
-extend_skip = [".md", ".json"]
-line_length = 120
-skip_gitignore = true
-length_sort_straight = true
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-ensure_newline_before_comments = true
-use_parentheses = true
-py_version = 310
 
 [tool.black]
 # https://github.com/psf/black
@@ -167,78 +106,6 @@ exclude = '''
   )/
 )
 '''
-
-# Type checking is handled by `ty` (Astral's Rust type checker). Run locally with
-# `uv run ty check flaui`; CI enforces it in the Azure linting job.
-[tool.ty.environment]
-python-version = "3.11"
-
-[tool.ty.src]
-include = ["flaui"]
-
-[tool.ty.rules]
-# PythonNet loads C# namespaces (FlaUI.*, System.*) dynamically at runtime and exposes their
-# members reflectively, so these are invisible to a static checker. Relax the rules that would
-# otherwise flag every C# import and attribute access until typed interop stubs exist.
-unresolved-import = "ignore"
-unresolved-attribute = "ignore"
-# The codebase carries `# pyright: ignore` / `# type: ignore` markers for the C# interop boundary;
-# don't fail the build on ones ty considers redundant.
-unused-type-ignore-comment = "ignore"
-
-[tool.flake8]
-max-line-length = 120
-extend-ignore = ["E203"]
-max-complexity = 10
-
-
-[tool.ruff]
-# Group violations by containing file.
-respect-gitignore = true
-src = ["flaui"]
-
-# Same as Black.
-line-length = 120
-
-# Assume Python 3.11.
-target-version = "py311"
-fix = true
-
-[tool.ruff.lint.mccabe]
-# Unlike Flake8, default to a complexity level of 10.
-max-complexity = 10
-
-[tool.ruff.lint.flake8-quotes]
-docstring-quotes = "double"
-
-[tool.ruff.lint.isort]
-order-by-type = true
-combine-as-imports = true
-force-sort-within-sections = true
-lines-after-imports = 1
-force-single-line = false
-split-on-trailing-comma = false
-known-third-party = ["pydantic"]
-
-[tool.ruff.lint]
-# Allow unused variables when underscore-prefixed.
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-ignore = [
-    "E501", # line too long, handled by black
-    "B904", # Within an except clause, raise exceptions with raise ... from err or raise ... from None to distinguish them from errors in exception handling
-    "B008", # Do not perform function call {name} in argument defaults
-    "B006", # Do not use mutable data structures for argument defaults
-    "C901", # too complex
-    "E402", # Module level import not at top of file
-]
-
-select = [
-    "E", # pycodestyle errors
-    "W", # pycodestyle warnings
-    "F", # pyflakes
-    # "I",  # isort
-    "B", # flake8-bugbear
-]
 
 [tool.coverage.run]
 disable_warnings = ["no-data-collected"]
@@ -264,13 +131,144 @@ output = "coverage.lcov"
 # reach ~83%). The pragmatic gate (initial floor 85, ratcheting toward 90-95) is applied explicitly
 # via `coverage report --fail-under=85` on the AppVeyor full-suite path only (see .appveyor.yml).
 exclude_also = [
-    "if TYPE_CHECKING:",
-    "raise NotImplementedError",
-    "@(abc\\.)?abstractmethod",
+  "if TYPE_CHECKING:",
+  "raise NotImplementedError",
+  "@(abc\\.)?abstractmethod",
 ]
 # Thin enum / pure-interop modules that carry no testable Python logic in isolation.
 omit = [
-    "flaui/core/definitions.py",
-    "flaui/core/framework_types.py",
-    "flaui/core/automation_type.py",
+  "flaui/core/definitions.py",
+  "flaui/core/framework_types.py",
+  "flaui/core/automation_type.py",
 ]
+
+[tool.flake8]
+max-line-length = 120
+extend-ignore = ["E203"]
+max-complexity = 10
+
+[tool.hatch.build.targets.wheel]
+# `/flaui` already packages flaui/py.typed; the DLLs are listed explicitly because
+# they are gitignored and would otherwise be excluded from the wheel.
+only-include = ["/README.md", "/flaui", "flaui/bin/*.dll"]
+
+[tool.interrogate]
+ignore-init-method = true
+ignore-init-module = true
+ignore-magic = false
+ignore-semiprivate = false
+ignore-private = false
+ignore-property-decorators = false
+ignore-module = false
+ignore-nested-functions = false
+ignore-nested-classes = true
+ignore-setters = false
+fail-under = 95
+exclude = ["docs", "build"]
+ignore-regex = ["^get$", "^mock_.*", ".*BaseClass.*"]
+verbose = 2
+quiet = false
+whitelist-regex = []
+color = true
+omit-covered-files = false
+
+[tool.isort]
+profile = "black"
+known_third_party = ["pydantic"]
+skip = [".gitignore", ".dockerignore"]
+extend_skip = [".md", ".json"]
+line_length = 120
+skip_gitignore = true
+length_sort_straight = true
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+ensure_newline_before_comments = true
+use_parentheses = true
+py_version = 310
+
+[tool.pytest.ini_options]
+addopts = "-ra -q -p no:warnings --report-log=test-report.jsonl"
+markers = [
+  "wpf_only: Tests that only run on WPF applications",
+  "winforms_only: Tests that only run on WinForms applications",
+  "uia3_only: Tests that require UIA3 automation type",
+  "platform_limitation: Known C# FlaUI platform limitation",
+  "windows11: Tests affected by Windows 11 specific behavior",
+  "bug: Known bug tracked in GitHub issues (use id and url parameters)",
+]
+minversion = "8.0"
+testpaths = ["tests/"]
+# Timeout settings - prevent hanging tests in UI automation
+timeout = 30  # Default 30s per test (UI tests can be slow)
+timeout_method = "thread"  # Use thread method on Windows for reliability
+session_timeout = 1800  # 30 minutes max for full suite
+
+[tool.ruff]
+# Group violations by containing file.
+respect-gitignore = true
+src = ["flaui"]
+
+# Same as Black.
+line-length = 120
+
+# Assume Python 3.11.
+target-version = "py311"
+fix = true
+
+[tool.ruff.lint]
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+ignore = [
+  "E501",  # line too long, handled by black
+  "B904",  # Within an except clause, raise exceptions with raise ... from err or raise ... from None to distinguish them from errors in exception handling
+  "B008",  # Do not perform function call {name} in argument defaults
+  "B006",  # Do not use mutable data structures for argument defaults
+  "C901",  # too complex
+  "E402",  # Module level import not at top of file
+]
+
+select = [
+  "E",  # pycodestyle errors
+  "W",  # pycodestyle warnings
+  "F",  # pyflakes
+  # "I",  # isort
+  "B",  # flake8-bugbear
+]
+
+[tool.ruff.lint.mccabe]
+# Unlike Flake8, default to a complexity level of 10.
+max-complexity = 10
+
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "double"
+
+[tool.ruff.lint.isort]
+order-by-type = true
+combine-as-imports = true
+force-sort-within-sections = true
+lines-after-imports = 1
+force-single-line = false
+split-on-trailing-comma = false
+known-third-party = ["pydantic"]
+
+# Type checking is handled by `ty` (Astral's Rust type checker). Run locally with
+# `uv run ty check flaui`; CI enforces it in the Azure linting job.
+[tool.ty.environment]
+python-version = "3.11"
+
+[tool.ty.src]
+include = ["flaui"]
+
+[tool.ty.rules]
+# PythonNet loads C# namespaces (FlaUI.*, System.*) dynamically at runtime and exposes their
+# members reflectively, so these are invisible to a static checker. Relax the rules that would
+# otherwise flag every C# import and attribute access until typed interop stubs exist.
+import-not-found = "ignore"
+missing-attribute = "ignore"
+# The codebase carries `# pyright: ignore` / `# type: ignore` markers for the C# interop boundary;
+# don't fail the build on ones ty considers redundant.
+unused-type-ignore-comment = "ignore"
+
+[tool.uv.sources]
+flaui = { path = "./flaui" }

@@ -1,7 +1,7 @@
 """This module contains the wrapper for FlaUI's UIAutomation class. This class is a custom class designed to ease the usage of FlaUI's UIAutomation class in Python."""
 
 import logging
-from typing import Any
+from typing import Any, Optional
 
 from flaui.core.application import Application
 from flaui.core.automation_base import AutomationBase
@@ -9,6 +9,8 @@ from flaui.core.condition_factory import ConditionFactory
 from flaui.lib.enums import UIAutomationTypes
 from flaui.uia2 import UIA2Automation
 from flaui.uia3 import UIA3Automation
+
+logger = logging.getLogger(__name__)
 
 
 class Automation:
@@ -21,7 +23,8 @@ class Automation:
 
     Attributes:
         ui_automation_type (UIAutomationTypes): The type of UI automation to use (UIA2 or UIA3).
-        timeout (int): The timeout value in milliseconds.
+        timeout (Optional[int]): Milliseconds ``application.get_main_window`` waits for the main window;
+            ``None`` uses the ``FLAUI_MAIN_WINDOW_TIMEOUT`` setting / built-in default.
         automation_base (AutomationBase): Python facade for the C# automation (preferred for typed APIs).
         cs_automation (Any): Raw C# UIA2Automation or UIA3Automation (interop and backward compatibility).
         cf (ConditionFactory): The condition factory instance.
@@ -29,14 +32,15 @@ class Automation:
         application (Application): The application instance.
     """
 
-    def __init__(self, ui_automation_type: UIAutomationTypes, timeout: int = 1000) -> None:
+    def __init__(self, ui_automation_type: UIAutomationTypes, timeout: Optional[int] = None) -> None:
         """Initializes the UIAutomation wrapper.
 
         :param ui_automation_type: The type of UI automation to use (UIA2 or UIA3).
-        :param timeout: The timeout value in milliseconds.
+        :param timeout: Milliseconds ``application.get_main_window`` waits for the main window. ``None``
+            (default) uses ``FLAUI_MAIN_WINDOW_TIMEOUT``, else 7000 ms (20000 ms when ``CI`` is set).
         """
         self._ui_automation_types: UIAutomationTypes = ui_automation_type
-        self.timeout: int = timeout
+        self.timeout: Optional[int] = timeout
         self.automation_base: AutomationBase = (
             UIA3Automation() if ui_automation_type == UIAutomationTypes.UIA3 else UIA2Automation()
         )
@@ -68,8 +72,8 @@ class Automation:
         try:
             self.application.__exit__(exc_type, exc_value, traceback)
         except Exception:
-            logging.debug("Application cleanup failed during automation context exit", exc_info=True)
+            logger.debug("Application cleanup failed during automation context exit", exc_info=True)
         try:
             self.automation_base.dispose()
         except Exception:
-            logging.debug("Automation dispose failed during context exit", exc_info=True)
+            logger.debug("Automation dispose failed during context exit", exc_info=True)

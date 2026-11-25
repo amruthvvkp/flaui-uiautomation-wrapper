@@ -35,28 +35,36 @@ class Wait:
         time.sleep(wait_time)
 
     @staticmethod
-    def until_responsive(automation_element: AutomationElement, timeout_in_secs: Optional[float] = None):
-        """
-        Waits until the given element is responsive.
+    def until_responsive(automation_element: AutomationElement, timeout_in_secs: Optional[float] = None) -> bool:
+        """Wait until the window that owns the element accepts input again.
 
-        :param automation_element: The element that should be waited for.
-        :param timeout_in_secs: The timeout of the waiting.
-        :return: True if the element was responsive, false otherwise.
+        Mirrors C# ``Wait.UntilResponsive(AutomationElement, TimeSpan)``.
+
+        :param automation_element: The element (usually a window) to wait for. A raw C# element works too.
+        :param timeout_in_secs: How long to wait, in **seconds**, defaults to ``Wait.DEFAULT_TIMEOUT`` (1 s).
+        :return: True if the element became responsive in time, False otherwise.
         """
-        return CSWait.UntilResponsive(
-            automation_element, timeout_in_secs if timeout_in_secs is not None else Wait.DEFAULT_TIMEOUT
-        )
+        from System import TimeSpan  # pyright: ignore
+
+        raw = getattr(automation_element, "raw_element", automation_element)
+        seconds = timeout_in_secs if timeout_in_secs is not None else Wait.DEFAULT_TIMEOUT
+        return bool(CSWait.UntilResponsive(raw, TimeSpan.FromSeconds(seconds)))
 
     @staticmethod
-    def until_responsive_hwnd(hWnd: Any, timeout: Optional[float] = None):
-        """
-        Waits until the given hwnd is responsive.
+    def until_responsive_hwnd(hWnd: Any, timeout: Optional[float] = None) -> bool:
+        """Wait until the window with the given native handle accepts input again.
 
-        :param hWnd: The hwnd that should be waited for.
-        :param timeout: The timeout of the waiting.
-        :return: True if the hwnd was responsive, false otherwise.
+        Mirrors C# ``Wait.UntilResponsive(IntPtr, TimeSpan)``.
+
+        :param hWnd: The window handle, as an ``int`` (e.g. ``app.main_window_handle``) or ``IntPtr``.
+        :param timeout: How long to wait, in **seconds**, defaults to ``Wait.DEFAULT_TIMEOUT`` (1 s).
+        :return: True if the window became responsive in time, False otherwise.
         """
-        return CSWait.UntilResponsiveHwnd(hWnd, timeout if timeout is not None else Wait.DEFAULT_TIMEOUT)
+        from System import IntPtr, TimeSpan  # pyright: ignore
+
+        handle = hWnd if isinstance(hWnd, IntPtr) else IntPtr(int(hWnd))
+        seconds = timeout if timeout is not None else Wait.DEFAULT_TIMEOUT
+        return bool(CSWait.UntilResponsive(handle, TimeSpan.FromSeconds(seconds)))
 
     @staticmethod
     def while_cursor_is_busy(timeout_in_secs: float = 30.0, poll_interval_secs: float = 0.1) -> bool:
@@ -213,12 +221,46 @@ class Keyboard:
         CSKeyboard.ReleaseVirtualKeyCode(virtual_keycode)
 
     @staticmethod
-    def pressing(virtual_keys: List[VirtualKeyShort]) -> None:
-        """Presses the given keys and releases them when the returned object is disposed.
+    def pressing(virtual_keys: List[VirtualKeyShort]) -> "PressedKeys":
+        """Hold the given keys down until the returned handle is released.
 
-        :param virtual_keys: Virtual keys to enter
+        Use it as a context manager so the keys are released even if the block raises::
+
+            with Keyboard.pressing([VirtualKeyShort.CONTROL]):
+                Keyboard.type_key(VirtualKeyShort.KEY_A)  # Ctrl+A
+
+        Mirrors C# ``Keyboard.Pressing``, which returns an ``IDisposable``.
+
+        :param virtual_keys: Keys to hold down, pressed in order (released in reverse order).
+        :return: A handle that releases the keys on ``release()`` or when the ``with`` block exits.
         """
-        CSKeyboard.Pressing([_.value for _ in virtual_keys])
+        return PressedKeys(CSKeyboard.Pressing([_.value for _ in virtual_keys]))
+
+
+class PressedKeys:
+    """Keys held down by :meth:`Keyboard.pressing`; releases them on ``release()`` or ``with`` exit."""
+
+    def __init__(self, cs_disposable: Any) -> None:
+        """Wrap the C# disposable returned by ``Keyboard.Pressing``.
+
+        :param cs_disposable: The C# ``IDisposable`` that releases the keys when disposed.
+        """
+        self._cs_disposable = cs_disposable
+        self._released = False
+
+    def release(self) -> None:
+        """Release the held keys. Calling it again does nothing."""
+        if not self._released:
+            self._released = True
+            self._cs_disposable.Dispose()
+
+    def __enter__(self) -> "PressedKeys":
+        """Return this handle; the keys are already held down."""
+        return self
+
+    def __exit__(self, *exc_info: Any) -> None:
+        """Release the keys when the ``with`` block exits, even on error."""
+        self.release()
 
 
 class MouseButton(Enum):
@@ -244,13 +286,43 @@ class _MousePositionDescriptor:
         CSMouse.Position = value.raw_value
 
 
-class Mouse:
-    """Mouse class to simulate mouse input, wrapper over Mouse class in FlaUI.Core.Input namespace"""
+class _CSMouseSettingDescriptor:
+    """Class-level descriptor that reads and writes a static ``FlaUI.Core.Input.Mouse`` setting.
 
-    # The number of pixels the mouse is moved per millisecond (used to calculate duration)
-    move_pixels_per_millisecond: float = 0.5
-    # The number of pixels the mouse is moved per step (used to calculate interval)
-    move_pixels_per_step: float = 10.0
+    Assigning ``Mouse.move_pixels_per_millisecond = 2.0`` must reach the C# ``Mouse`` that performs the
+    movement, so the value lives in C#, not in a Python class attribute.
+    """
+
+    def __init__(self, cs_name: str) -> None:
+        """Bind the descriptor to a C# static property.
+
+        :param cs_name: Name of the static property on the C# ``Mouse`` class.
+        """
+        self._cs_name = cs_name
+
+    def __get__(self, obj: Any, objtype: Any = None) -> float:
+        """Return the current C# value."""
+        return float(getattr(CSMouse, self._cs_name))
+
+    def __set__(self, obj: Any, value: float) -> None:
+        """Set the C# value."""
+        setattr(CSMouse, self._cs_name, float(value))
+
+
+class _MouseMeta(type):
+    """Metaclass so the mouse settings can be assigned on the class itself (``Mouse.x = ...``)."""
+
+    move_pixels_per_millisecond = _CSMouseSettingDescriptor("MovePixelsPerMillisecond")
+    move_pixels_per_step = _CSMouseSettingDescriptor("MovePixelsPerStep")
+
+
+class Mouse(metaclass=_MouseMeta):
+    """Mouse class to simulate mouse input, wrapper over Mouse class in FlaUI.Core.Input namespace
+
+    Movement speed is controlled by two class-level settings that map straight onto FlaUI's C#
+    ``Mouse``: ``Mouse.move_pixels_per_millisecond`` (default 0.5; higher is faster) and
+    ``Mouse.move_pixels_per_step`` (default 10).
+    """
 
     position = _MousePositionDescriptor()  # The current position of the mouse cursor
 
@@ -265,7 +337,7 @@ class Mouse:
         if not post_wait:
             return
         if callable(post_wait):
-            post_wait()  # ty: ignore[call-top-callable]
+            post_wait()
             return
         if isinstance(post_wait, (int, float)):
             Wait.until_input_is_processed(float(post_wait))

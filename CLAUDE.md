@@ -396,8 +396,12 @@ static type checking.
 
 ### Supported versions: Python 3.11+
 
-This project targets **Python 3.11 through 3.15** (`requires-python = ">=3.11,<3.16"`). On 3.11+
-the following modern syntax is **allowed**:
+This project targets **Python 3.11 through 3.15** (`requires-python = ">=3.11,<3.16"`). When the
+range changes, also update the **static** Python-versions badges in `README.md` and `docs/index.md`.
+They are hard-coded on purpose: the shields.io `pypi/pyversions` badge reads classifiers from the
+latest *published* release, so it lags behind `pyproject.toml` until the next upload.
+
+On 3.11+ the following modern syntax is **allowed**:
 
 - `|` unions (`int | None`)
 - built-in generics (`list[str]`, `dict[str, int]`)
@@ -448,7 +452,12 @@ use the C# type (`System.DateTime`) even though Python's `datetime` exists for e
 6. **Type hints everywhere**, including test fixtures. Both `typing` aliases and 3.11+ built-in
    generics are acceptable; match the file you are editing.
 7. **PythonNet first.** Call `setup_pythonnet_bridge()` before any C# import.
-8. **Tests:** type-hint fixtures, assert against enums (not strings), and always use the `uv run`
+8. **Log through named loggers.** Use `logger = logging.getLogger(__name__)` in every module and never
+   the module-level `logging.info(...)` helpers: those configure the user's root logger behind their
+   back. `tests/unit/core/test_library_logging.py` enforces this.
+9. **Settings are `FLAUI_`-prefixed.** New user settings go on `flaui.lib.config.Settings` (which uses
+   `env_prefix="FLAUI_"`) and get a row in the environment-variable table in `docs/configuration.md`.
+10. **Tests:** type-hint fixtures, assert against enums (not strings), and always use the `uv run`
    prefix.
 
 ```python
@@ -486,6 +495,7 @@ assert element.toggle_state == ToggleState.On
 | [flaui/core/capturing.py](flaui/core/capturing.py) | Screen/element capture + video recording (`Capture`, `CaptureImage`, `VideoRecorder`) |
 | [flaui/core/overlay.py](flaui/core/overlay.py) | `OverlayManager` facade (visual-debug overlays) |
 | [flaui/core/logging.py](flaui/core/logging.py) | Opt-in C#→Python log bridge (`enable_csharp_logging`, `FLAUI_LOG_CSHARP`) |
+| [flaui/lib/config.py](flaui/lib/config.py) | User settings from `FLAUI_*` env vars (`settings`); documented in [docs/configuration.md](docs/configuration.md) |
 | [flaui/lib/pythonnet_bridge.py](flaui/lib/pythonnet_bridge.py) | PythonNet initialization, DLL loading |
 | [flaui/lib/exceptions.py](flaui/lib/exceptions.py) | C# → Python exception mapping (`handle_csharp_exceptions`, `translate_exceptions`) |
 | [flaui/lib/system/drawing.py](flaui/lib/system/drawing.py) | System.Drawing wrappers (Point, Rectangle, Color) |
@@ -537,7 +547,12 @@ Full procedural detail (scripts, artifacts, caching, deployment variables) lives
   - Preview: `uv run zensical serve -f zensical.toml`
 - Update docs when adding or changing APIs: Basics for simple flows, Advanced for deep detail, API
   Reference auto-generated via mkdocstrings.
-- Prefer Python/C# tabbed examples where parity helps users.
+- Pair Python and C# in content tabs (`=== "Python"` / `=== "C#"`, Python first) wherever parity
+  helps users; `content.tabs.link` keeps the choice in sync across the page.
+- **Docs snippets must run.** Include Python code from runnable files under `examples/` with
+  `--8<-- "examples/<path>.py:<section>"` and mark the section in the file with
+  `# --8<-- [start:<section>]` / `# --8<-- [end:<section>]`. The snippets extension uses
+  `check_paths = true`, so the strict build fails if a section disappears. C# tabs stay inline.
 - Regenerate `docs/_includes/flaui_versions.md` with `scripts/extract_versions.py` whenever
   `flaui/bin/Version.md` changes.
 - `docs/changelog.md` is generated at build time by `scripts/build_changelog.py` (live GitHub

@@ -11,6 +11,7 @@ fixture (see ``conftest.py``) launches the application once and disposes it at t
 
 from flaui.core.automation_elements import Window
 from flaui.core.condition_factory import ConditionFactory
+from flaui.core.tools import Retry
 
 
 def test_window_title(main_window: Window) -> None:
@@ -20,9 +21,7 @@ def test_window_title(main_window: Window) -> None:
 
 def test_enter_text(main_window: Window, condition_factory: ConditionFactory) -> None:
     """Typing into the text box round-trips through the ``text`` property."""
-    text_box = main_window.find_first_descendant(
-        condition=condition_factory.by_automation_id("TextBox")
-    ).as_text_box()
+    text_box = main_window.find_first_descendant(condition=condition_factory.by_automation_id("TextBox")).as_text_box()
     text_box.text = "hello from pytest"
     assert text_box.text == "hello from pytest"
 
@@ -32,8 +31,9 @@ def test_invoke_button(main_window: Window, condition_factory: ConditionFactory)
     button = main_window.find_first_descendant(
         condition=condition_factory.by_automation_id("InvokableButton")
     ).as_button()
-    assert button.name == "Invoke me!"
     button.invoke()  # raises if the Invoke pattern is unavailable
+    # The test app renames the button once the invoke is processed.
+    assert Retry.WhileFalse(lambda: button.name == "Invoked!", timeout=2000)
 
 
 def test_toggle_checkbox(main_window: Window, condition_factory: ConditionFactory) -> None:

@@ -1,222 +1,287 @@
 # Advanced
 
-Deep dive into element methods, XPath, TreeWalker, caching, retries, and interop patterns.
+XPath, combined conditions, tree walking, caching, retries, fluent assertions and input timing.
+Each recipe shows **Python** next to the original FlaUI **C#**.
+
+!!! success "Every Python snippet on this page runs"
+    The Python tabs are included from
+    [`examples/pytest/test_advanced.py`](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/blob/master/examples/pytest/test_advanced.py),
+    which runs against the bundled WPF app:
+
+    ```bash
+    uv run pytest examples/pytest/test_advanced.py -v
+    ```
+
+    The snippets assume `window`, `cf` (`automation.cf`) and `automation`, as in the
+    [pytest example](examples/pytest.md).
 
 ## Element methods by type
 
-Each page in the [API Reference](api/index.md) lists all methods. Highlights below (element-specific counts for discovery; pages show all methods including inherited ones).
+Each page in the [API Reference](api/index.md) lists every method, including inherited ones. The
+highlights:
 
-- **Button**: `click`, `invoke`, `right_click`, `double_click`
-- **CheckBox**: `toggle`, `toggle_state`
-- **RadioButton**: `select`, `is_selected`
-- **ComboBox / ComboBoxItem**: `select(value|index)`, `items`, `expand`/`collapse`
-- **TextBox**: `enter`, `append_text`, `clear`, `select_all`, `text`
-- **ListBox / ListBoxItem**: `select(index|name)`, `items`
-- **Slider**: `set_value`, `value`, `minimum`, `maximum`
-- **Spinner**: `increment`, `decrement`, `value`
-- **Tab / TabItem**: `select_tab_item`, `selected_tab`
-- **Tree / TreeItem**: `expand`, `collapse`, `children`, `select`
-- **Grid / DataGridView / Table**: `rows`, `cells`, `headers`, `select_cell`
-- **Window**: `close`, `pattern` accessors, `modal_dialogs`
-- **Menu / MenuItem**: `items`, `invoke`
+- **Button**: `invoke`, `click`, `right_click`, `double_click`
+- **CheckBox**: `toggle`, `toggle_state`, `is_checked`
+- **RadioButton**: `is_checked` (get / set)
+- **ComboBox / ComboBoxItem**: `select(value | index)`, `items`, `selected_item`, `expand` / `collapse`
+- **TextBox**: `text` (get / set), `enter`
+- **ListBox / ListBoxItem**: `select(index | text)`, `items`, `selected_item`
+- **Slider / Spinner**: `value` (get / set), `minimum`, `maximum`, `small_increment`, ...
+- **Tab / TabItem**: `select_tab_item`, `selected_tab_item`, `tab_items`
+- **Tree / TreeItem**: `items`, `expand`, `collapse`, `select`, `selected_tree_item`
+- **Grid / DataGridView**: `header`, `rows`, `cells`, `select`
+- **Window**: `title`, `close`, `modal_windows`, `title_bar`, `context_menu`
+- **Menu / MenuItem**: `items`, `invoke`, `expand`
 
-## Finding Elements
+## Finding elements
 
-FlaUI provides multiple strategies for finding elements. The most common are `ConditionFactory` (fast, specific) and `XPath` (flexible, structured).
+FlaUI has two main ways to find elements: the **ConditionFactory** (fast and specific) and
+**XPath** (flexible and structural).
 
-### TreeScope
+### Tree scope
 
-When searching, you define the "Scope" of the search:
+Every search has a scope:
 
-- **Element**: The element itself.
-- **Children**: Direct children only (1 level down).
-- **Descendants**: All children, grandchildren, etc. (Full subtree).
-- **Subtree**: The element + All Descendants.
-- **Ancestors**: Parents, grandparents, up to root.
+- **Children**: direct children only (one level down): `find_first_child` / `find_all_children`.
+- **Descendants**: the whole subtree: `find_first_descendant` / `find_all_descendants`.
+- **Ancestors**: walk upwards: `parent`, or the tree walker below.
 
-*Note: Descendant searches can be slow on large trees. Prefer Children or `TreeWalker` if you know the path.*
+Descendant searches can be slow on large trees. Prefer children, or start from a closer container,
+when you know the structure.
 
-### Reference: ConditionFactory vs XPath
+### ConditionFactory vs XPath
 
-| Feature | ConditionFactory | XPath |
+| | ConditionFactory | XPath |
 | --- | --- | --- |
-| **Speed** | Very Fast (Native UIA) | Slower (Parses tree) |
-| **Stability** | High (IDs, Types) | High (if using IDs) |
-| **Complexity** | Verbose for deep nested logic | Concise for relations (`//List/Button`) |
-| **Usage** | Default recommendation | Complex tree traversal |
+| **Speed** | Very fast (native UIA query) | Slower (walks the tree) |
+| **Stability** | High (IDs, control types) | High when the path uses IDs |
+| **Strength** | Single-element lookups | Relationships (`//Tab/TabItem`) |
+| **Use it for** | The default | Structural queries |
 
-## XPath reference
-
-From [FlaUI](https://github.com/FlaUI/FlaUI) C# UITests (hardcoded for accuracy):
+### XPath
 
 === "Python"
 
     ```python
-    ok = window.find_first_by_x_path("//Button[@Name='OK']")
-    items = window.find_all_by_x_path("//ListItem")
-    menu = window.find_first_by_x_path("/MenuBar/MenuItem[@Name='File']")
+    --8<-- "examples/pytest/test_advanced.py:xpath"
     ```
 
 === "C#"
 
     ```csharp
-    var element = window.FindFirstByXPath("//Button[@Name='OK']");
-    var items = window.FindAllByXPath("//ListItem");
-    var menu = window.FindFirstByXPath("/MenuBar/MenuItem[@Name='File']");
+    var button = window.FindFirstByXPath("//Button[@AutomationId='InvokableButton']").AsButton();
+    var tabs = window.FindAllByXPath("//Tab/TabItem");
+    var checkBox = window.FindFirstByXPath("//CheckBox[@Name='Test Checkbox']").AsCheckBox();
     ```
 
-## ConditionFactory (Advanced)
-
-While `basics.md` covers simple lookups, you can combine conditions for precise targeting using chaining.
-
-### Chaining Conditions (AND/OR/NOT)
-
-You can chain conditions using `.And()`, `.Or()`, and `.Not()` methods on the condition objects.
+### Combining conditions (And / Or / Not)
 
 === "Python"
 
     ```python
-    cf = main_window.condition_factory
-
-    # AND: Find a Button named "Submit"
-    # Matches: (ControlType == Button) AND (Name == "Submit")
-    submit_btn = cf.by_control_type(ControlType.Button).And(cf.by_name("Submit"))
-
-    # OR: Find element with ID "btn1" OR "btn2"
-    # Matches: (AutomationId == "btn1") OR (AutomationId == "btn2")
-    any_btn = cf.by_automation_id("btn1").Or(cf.by_automation_id("btn2"))
-
-    # NOT: Find buttons that are NOT disabled
-    # Matches: (ControlType == Button) AND NOT (IsEnabled == False)
-    # Note: Use PropertyCondition for raw properties
-    enabled_btns = cf.by_control_type(ControlType.Button).And(
-        cf.by_property("IsEnabled", False).Not()
-    )
+    --8<-- "examples/pytest/test_advanced.py:conditions"
     ```
 
 === "C#"
 
     ```csharp
-    var cf = automation.ConditionFactory;
+    var invoke = cf.ByControlType(ControlType.Button).And(cf.ByAutomationId("InvokableButton"));
+    var radios = cf.ByAutomationId("RadioButton1").Or(cf.ByAutomationId("RadioButton2"));
+    // C#'s Not() takes no argument and negates the condition it is called on:
+    var twoState = cf.ByControlType(ControlType.CheckBox).And(cf.ByAutomationId("ThreeStateCheckBox").Not());
 
-    // AND
-    var submitBtn = cf.ByControlType(ControlType.Button).And(cf.ByName("Submit"));
-
-    // OR
-    var anyBtn = cf.ByAutomationId("btn1").Or(cf.ByAutomationId("btn2"));
+    var button = window.FindFirstDescendant(invoke);
+    var radioButtons = window.FindAllDescendants(radios);
+    var checkBoxes = window.FindAllDescendants(twoState);
     ```
 
-### Property-based conditions
+!!! warning "`Not` takes an argument in Python"
+    In C#, `ConditionBase.Not()` negates the condition it is called on. The Python
+    `PropertyCondition.Not(other)` means **self AND NOT other**, which is the common case written
+    as one call.
 
-```python
-# By any property
-enabled_checkbox = main_window.find_first_descendant(
-    cf.by_property("IsEnabled", True)
-)
+Other factory methods: `by_name`, `by_text`, `by_class_name`, `by_help_text`, `by_value`,
+`by_framework_id`, `by_framework_type`, `by_process_id`, `by_localized_control_type`. See the
+[Condition Factory reference](api/condition_factory.md).
 
-# By help text
-help_element = main_window.find_first_descendant(
-    cf.by_help_text("Enter your username")
-)
+### Filtering results in Python
 
-# By framework (WinForms, WPF, etc.)
-wpf_elements = main_window.find_all_descendants(
-    cf.by_framework_id("WPF")
-)
-```
+`find_all_*` returns an `AutomationElementCollection`. It is a `list` with a few extra helpers
+(see [Pythonic API](pythonic-api.md#element-collections)):
 
-**Best practices:**
+=== "Python"
 
-- Use `by_automation_id()` for stable, reliable locators
-- Combine conditions to narrow searches: `and_condition(by_control_type(...), by_name(...))`
-- ConditionFactory is faster than XPath for simple queries
-- Cache condition objects when reusing the same search multiple times
+    ```python
+    --8<-- "examples/pytest/test_advanced.py:collections"
+    ```
 
-## TreeWalker traversal
+=== "C#"
 
-```python
-walker = automation.get_tree_walker()
-root = walker.get_first_child(main_window)
-while root:
-    # inspect or act on root
-    root = walker.get_next_sibling(root)
-```
+    ```csharp
+    var buttons = window.FindAllDescendants(cf.ByControlType(ControlType.Button));
+    var first = buttons.FirstOrDefault();
+    var enabled = buttons.Where(b => b.IsEnabled).ToArray();
+    var invokable = buttons.Where(b => b.AutomationId == "InvokableButton").ToArray();
+    ```
 
-Use TreeWalker for performance when you already know relative structure.
+## Tree walking
 
-## CacheRequest (performance)
+The tree walker steps through the tree one sibling at a time. `automation.tree_walker` is FlaUI's
+raw-view `ITreeWalker`, so its methods take and return the raw C# elements (`.raw_element`).
 
-```python
-from flaui.core.cache_request import CacheRequest
-from flaui.core.definitions import TreeScope
+=== "Python"
 
-with CacheRequest(TreeScope.Descendants, patterns=["Invoke"], properties=["Name"]):
-    cached = main_window.find_first_descendant(cf.by_control_type(ControlType.Button))
-    cached.invoke()
-```
+    ```python
+    --8<-- "examples/pytest/test_advanced.py:tree_walker"
+    ```
 
-Cache when traversing large trees repeatedly. Disable when interacting with live-updating UI.
+=== "C#"
 
-## Retry / polling
+    ```csharp
+    var walker = automation.TreeWalkerFactory.GetRawViewWalker();
+    var types = new List<ControlType>();
+    var child = walker.GetFirstChild(window);
+    while (child != null)
+    {
+        types.Add(child.ControlType);
+        child = walker.GetNextSibling(child);
+    }
+    var children = window.FindAllChildren();
+    ```
 
-```python
-from flaui.core.tools import Retry
-submit = Retry.While(
-    lambda: main_window.find_first_descendant(cf.by_name("Submit")),
-    timeout=5000,
-    interval=100,
-)
-submit.as_button().invoke()
-```
+## Caching (CacheRequest)
 
-Use Retry for slow-loading dialogs or async content. Prefer shorter intervals with modest timeouts.
+Every property read is a cross-process call. A `CacheRequest` pre-fetches chosen properties for the
+elements found while it is active, which pays off when you read many elements at once.
 
-## post_wait on input
+=== "Python"
 
-Most Mouse/Keyboard operations accept `post_wait` (bool|float|callable) to wait after the action. Examples:
+    ```python
+    --8<-- "examples/pytest/test_advanced.py:cache_request"
+    ```
 
-```python
-from flaui.core.input import Mouse, Keyboard
-point = button.get_clickable_point()
-Mouse.click(point, post_wait=True)
-Keyboard.type("Hello", post_wait=0.25)
-```
+=== "C#"
 
-## Exception translation (@handle_csharp_exceptions)
+    ```csharp
+    var cacheRequest = new CacheRequest { TreeScope = TreeScope.Element };
+    cacheRequest.Add(automation.PropertyLibrary.Element.Name);
 
-Decorate interop methods to map C# exceptions to Python ones automatically. All public element methods follow this pattern—mirror it in new additions.
+    using (cacheRequest.Activate())
+    {
+        var buttons = window.FindAllDescendants(cf.ByControlType(ControlType.Button));
+        var names = buttons.Select(b => b.Name).ToList();
+    }
+    ```
 
-## Late imports (avoid circular deps)
+Cache trees that don't change while you read them. Leave caching off for UI that updates live.
 
-Import C# types inside methods when needed:
-```python
-def as_button(self):
-    from FlaUI.Core.AutomationElements import Button as CSButton
-    return Button(raw_element=CSButton(self.framework_automation_element))
-```
+## Retry and polling
 
-## Object mapping pattern (page objects)
+=== "Python"
 
-From `tests/test_utilities` (WinForms/WPF maps):
-```python
-class SimpleControlsElements(BaseSettings):
-    main_window: Window
+    ```python
+    --8<-- "examples/pytest/test_advanced.py:retry"
+    ```
 
-    @property
-    def invoke_button(self) -> Button:
-        return self.main_window.find_first_descendant(
-            self._cf.by_automation_id("InvokeButton")
-        ).as_button()
-```
+=== "C#"
 
-Use Pydantic models to compose reusable element accessors that mirror your app structure.
+    ```csharp
+    var button = Retry.WhileNull(
+        () => window.FindFirstDescendant(cf.ByAutomationId("InvokableButton")),
+        timeout: TimeSpan.FromSeconds(5),
+        interval: TimeSpan.FromMilliseconds(100),
+        throwOnTimeout: true).Result.AsButton();
 
-## Deeper inspection tools
+    var ready = Retry.WhileFalse(() => button.IsEnabled, TimeSpan.FromSeconds(2)).Result;
+    ```
 
-- FlaUIInspect: best for pattern/property exploration (bundled with FlaUI)
-- Accessibility Insights: quick property lookup and contrast/automation checks
+!!! note "Timeouts are milliseconds in Python"
+    C# `Retry` takes `TimeSpan` values and returns a `RetryResult<T>`. The Python `Retry` methods
+    take integer **milliseconds** and return the value directly.
 
-## PythonNet bridge flow
+## Fluent assertions (`expect`)
+
+Playwright-style assertions that keep polling until the condition holds or the timeout runs out.
+This is a Python addition with no direct C# equivalent; in C# you would combine `Retry` with
+your test framework's asserts.
+
+=== "Python"
+
+    ```python
+    --8<-- "examples/pytest/test_advanced.py:expect"
+    ```
+
+=== "C#"
+
+    ```csharp
+    textBox.Text = "42";
+    Assert.That(Retry.WhileFalse(() => !textBox.IsOffscreen, TimeSpan.FromSeconds(5)).Result);
+    Assert.That(Retry.WhileFalse(() => textBox.IsEnabled, TimeSpan.FromSeconds(2)).Result);
+    Assert.That(Retry.WhileFalse(() => textBox.Text == "42", TimeSpan.FromSeconds(5)).Result);
+    ```
+
+## Input timing (`post_wait`)
+
+Mouse methods, `click`, `TextBox.enter` and `Tab.select_tab_item` accept `post_wait`:
+`True` (~100 ms), a number of seconds, or a callable.
+
+=== "Python"
+
+    ```python
+    --8<-- "examples/pytest/test_advanced.py:post_wait"
+    ```
+
+=== "C#"
+
+    ```csharp
+    Mouse.Click(textBox.GetClickablePoint());
+    Wait.UntilInputIsProcessed();
+    textBox.AsTextBox().Enter("typed");
+    Thread.Sleep(250);
+    ```
+
+## Exception translation
+
+Every method that crosses into C# is decorated with `@handle_csharp_exceptions`, which turns .NET
+exceptions into the [Python exception hierarchy](api/exceptions.md). For example, a missing
+element raises `ElementNotFound`, and an unsupported pattern raises `PatternNotSupportedException`.
+Catch those, not `System.Exception`. If you add a new wrapper method, give it the same decorator.
+
+## Page objects
+
+Group element look-ups in a small class that mirrors your app's screens. The project's own suite
+does this in `tests/test_utilities/elements/`:
+
+=== "Python"
+
+    ```python
+    class SimpleControls:
+        """Element accessors for the Simple Controls tab."""
+
+        def __init__(self, window: Window, cf: ConditionFactory) -> None:
+            self._window, self._cf = window, cf
+
+        @property
+        def invoke_button(self) -> Button:
+            return self._window.find_first_descendant(self._cf.by_automation_id("InvokableButton")).as_button()
+    ```
+
+=== "C#"
+
+    ```csharp
+    public class SimpleControls(Window window, ConditionFactory cf)
+    {
+        public Button InvokeButton =>
+            window.FindFirstDescendant(cf.ByAutomationId("InvokableButton")).AsButton();
+    }
+    ```
+
+## Inspection tools
+
+- **FlaUInspect**: best for exploring patterns and properties. It uses the same FlaUI engine.
+- **Accessibility Insights**: quick property look-ups and accessibility checks.
+
+## How the bridge works
 
 ```mermaid
 graph LR
@@ -228,8 +293,8 @@ graph LR
 
 ## When to use what
 
-- **XPath**: sibling/ancestor relationships, dynamic lists
-- **ConditionFactory**: fast, stable IDs and control types
-- **TreeWalker**: performant traversal when structure is known
-- **CacheRequest**: repeated reads on static trees
-- **Retry**: slow UI, dialogs, async operations
+- **ConditionFactory**: fast, stable lookups by ID or control type. **This is the default.**
+- **XPath**: relationships between elements and structural queries.
+- **Tree walker**: step-by-step traversal when you know the structure.
+- **CacheRequest**: reading many properties from a tree that isn't changing.
+- **Retry / `expect`**: slow dialogs, asynchronous content, and assertions that need to wait.

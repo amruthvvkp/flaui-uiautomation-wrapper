@@ -22,7 +22,7 @@ of truth; this page is the human-friendly summary.
 | [Phase 5 — Capturing/Overlay/Video](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/12) | Screenshots, overlays, video recording | ✅ Complete |
 | [Phase 6 — Logging/Tools/Enhancers](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/13) | Logging bridge, tools, Pythonic enhancers | ✅ Complete |
 | [Phase 0 — Stabilize](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/7) | Green CI, stable matrix, 100% core coverage | 🚧 In progress |
-| [Phase 7 — Docs & Zensical](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/14) | v1 docs, per-framework guides, API reference | 🗓️ Planned |
+| [Phase 7 — Docs & Zensical](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/14) | v1 docs, per-framework guides, API reference | ✅ Complete |
 | [Phase 8 — Polish & v1.0](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/15) | Release plumbing, beta soak, v1.0.0 | 🗓️ Planned |
 
 ## ✅ Completed
@@ -58,6 +58,13 @@ of truth; this page is the human-friendly summary.
 - [x] Fluent waiting + Playwright-style assertions (`expect(el).to_be_visible()`, `flaui/core/expectations.py`)
 - [x] `py.typed` marker + `ty` (Astral) type-check gate in CI
 
+### Phase 7 — Docs & Zensical ([milestone](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/14))
+- [x] [Comprehensive production docs (#86)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/86): Python / C# content tabs throughout, [C# migration guide](upgrade-guide.md#migrating-from-flaui-c)
+- [x] [Worked testing examples (#69)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/69): [Example Gallery](examples/gallery.md) and [Element Cookbook](examples/element-cookbook.md), all runnable
+- [x] [pytest sample suites (#50)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/50)
+- [x] [TestPlan sample suites (#49)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/49)
+- [x] [Behave sample suites (#48)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/48)
+
 ## 🚧 In progress
 
 ### Phase 0 — Stabilize ([milestone](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/7))
@@ -72,13 +79,6 @@ of truth; this page is the human-friendly summary.
 
 ## 🗓️ Planned
 
-### Phase 7 — Docs & Zensical ([milestone](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/14))
-- [ ] [Comprehensive production docs (#86)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/86)
-- [ ] [Worked testing examples (#69)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/69)
-- [ ] [pytest sample suites (#50)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/50)
-- [ ] [TestPlan sample suites (#49)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/49)
-- [ ] [Behave sample suites (#48)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/48)
-
 ### Phase 8 — Polish & v1.0 ([milestone](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/15))
 - [ ] [v1.0.0 official release (#84)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/84)
 - [ ] [Final polish & production readiness (#85)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/85)
@@ -86,10 +86,17 @@ of truth; this page is the human-friendly summary.
 - [ ] [Publish workflow: PR-on-release → master (#57)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/57)
 - [ ] [Link PyPI version in release notes (#66)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/66)
 
-## 💡 Wishlist (post‑v1)
+## 💡 Post‑v1 — Ecosystem & Playwright-grade polish ([milestone](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/16))
+- [ ] [Playwright-style auto-waiting for element actions (#139)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/139)
+- [ ] [Lazy, re-resolving Locator API (#140)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/140)
+- [ ] [`pytest-flaui` plugin — fixtures, backend matrix, capture-on-failure (#141)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/141)
+- [ ] [`flaui-recorder` — record-and-generate scripts, inspired by FlaUIRecorder & Playwright codegen (#142)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/142)
+- [ ] [`flaui-mcp` — MCP server for agent-driven desktop automation (#143)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/143) (see [Use with AI agents](agentic-guidelines.md#use-with-ai-agents-and-mcp))
+    - [ ] [Element-map (name mapping) schema in core (#144)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/144)
+    - [ ] [MCP `control` profile — general desktop automation (#145)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/145)
+    - [ ] [MCP `authoring` profile — explore, element maps, test generation (#146)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/146)
+    - [ ] [Isolated MCP efficiency benchmark (#147)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/147)
 - [ ] [`CustomNavigation` pattern (#121)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/121)
-- [ ] UI recorder / codegen (inspired by FlaUIRecorder & Playwright codegen)
-- [ ] Reference MCP server / agent-tool example exposing element find/click/type as tools (see [Use with AI agents](agentic-guidelines.md#use-with-ai-agents-and-mcp))
 - [ ] Async / `pytest-asyncio` ergonomics evaluation
 - [ ] Enhanced HTML/Allure reporting helpers
 

@@ -516,11 +516,14 @@ class AutomationElement(ElementBase):
     def draw_highlight(self, color: ColorData = Color.Red, duration: int = 2000) -> None:
         """Draw a highlight around the element with the given settings.
 
-        :param color: Color object, defaults to ColorCollection.Red
-        :param duration: Duration to highlight (in ms), defaults to 2000
+        The call returns straight away; the frame disappears on its own after ``duration``.
+
+        :param color: Frame colour, defaults to ``Color.Red``.
+        :param duration: How long to show the frame, in **milliseconds**, defaults to 2000.
         """
+        # IOverlayManager.Show takes the duration as an int of milliseconds, not a TimeSpan.
         self.raw_element.Automation.OverlayManager.Show(
-            self.raw_element.Properties.BoundingRectangle.Value, color.cs_object, TypeCast.cs_timespan(duration)
+            self.raw_element.Properties.BoundingRectangle.Value, color.cs_object, int(duration)
         )
 
     @handle_csharp_exceptions
@@ -2730,6 +2733,7 @@ class VerticalScrollBar(ScrollBarBase):
 class Tab(AutomationElement):
     """Class to interact with a tab element."""
 
+    @property
     @handle_csharp_exceptions
     def selected_tab_item(self) -> TabItem:
         """The currently selected TabItem
@@ -2801,7 +2805,7 @@ class Tab(AutomationElement):
             self.raw_element.SelectTabItem(index) if index is not None else self.raw_element.SelectTabItem(value)
             Mouse._apply_post_wait(post_wait)
         except Exception as e:
-            logging.error("Failed to select tab item: %s", e)
+            logging.getLogger(__name__).error("Failed to select tab item: %s", e)
 
 
 class TabItem(AutomationElement, SelectionItemAutomationElement):
@@ -2876,37 +2880,41 @@ class Thumb(AutomationElement):
 class TitleBar(AutomationElement):
     """Class to interact with a titlebar element."""
 
+    @property
     @handle_csharp_exceptions
     def minimize_button(self) -> Button:
         """Gets the minimize button element.
 
         :return: Minimize button
         """
-        return Button(raw_element=self.raw_element.MinimizeButton())
+        return Button(raw_element=self.raw_element.MinimizeButton)
 
+    @property
     @handle_csharp_exceptions
     def maximize_button(self) -> Button:
         """Gets the maximize button element.
 
         :return: Maximize button
         """
-        return Button(raw_element=self.raw_element.MaximizeButton())
+        return Button(raw_element=self.raw_element.MaximizeButton)
 
+    @property
     @handle_csharp_exceptions
     def restore_button(self) -> Button:
         """Gets the restore button element.
 
         :return: Restore button
         """
-        return Button(raw_element=self.raw_element.RestoreButton())
+        return Button(raw_element=self.raw_element.RestoreButton)
 
+    @property
     @handle_csharp_exceptions
     def close_button(self) -> Button:
         """Gets the close button element.
 
         :return: Close button
         """
-        return Button(raw_element=self.raw_element.CloseButton())
+        return Button(raw_element=self.raw_element.CloseButton)
 
 
 class ToggleButton(AutomationElement):
@@ -3081,13 +3089,14 @@ class Window(AutomationElement):
         """
         self.raw_element.IsMainWindow = value
 
+    @property
     @handle_csharp_exceptions
     def modal_windows(self) -> List[Window]:
         """Gets a list of all modal child windows.
 
         :return: List of window elements
         """
-        return [Window(raw_element=_) for _ in self.raw_element.ModalWindows()]
+        return [Window(raw_element=_) for _ in self.raw_element.ModalWindows]
 
     @property
     @handle_csharp_exceptions

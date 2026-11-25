@@ -16,16 +16,7 @@ uv run behave examples/behave/features
 ## The feature (`features/simple_controls.feature`)
 
 ```gherkin
-Feature: WPF simple controls
-  Scenario: Enter text into the text box
-    Given the WPF test application is running
-    When I enter "hello from behave" into the text box
-    Then the text box contains "hello from behave"
-
-  Scenario: Toggle the test checkbox
-    Given the WPF test application is running
-    When I toggle the test checkbox
-    Then the test checkbox state is inverted
+--8<-- "examples/behave/features/simple_controls.feature"
 ```
 
 ## Setup (`features/environment.py`)
@@ -34,47 +25,13 @@ Feature: WPF simple controls
 factory on the behave `context`:
 
 ```python
-from flaui.lib.pythonnet_bridge import setup_pythonnet_bridge
-
-setup_pythonnet_bridge()  # before any C#-backed FlaUI import / step module
-
-from flaui.lib.enums import UIAutomationTypes
-from flaui.modules.automation import Automation
-
-
-def before_all(context):
-    context.automation = Automation(UIAutomationTypes.UIA3)
-    context.automation.application.launch(str(find_test_app()))
-    context.automation.application.wait_while_main_handle_is_missing(3000)
-    context.window = context.automation.application.get_main_window(context.automation)
-    context.cf = context.automation.cf
-
-
-def after_all(context):
-    context.automation.application.kill()
-    context.automation.automation_base.dispose()
+--8<-- "examples/behave/features/environment.py"
 ```
 
 ## Steps (`features/steps/simple_controls_steps.py`)
 
 ```python
-from behave import given, then, when
-
-
-@when('I enter "{value}" into the text box')
-def step_enter_text(context, value):
-    text_box = context.window.find_first_descendant(
-        condition=context.cf.by_automation_id("TextBox")
-    ).as_text_box()
-    text_box.text = value
-
-
-@then('the text box contains "{value}"')
-def step_text_box_contains(context, value):
-    text_box = context.window.find_first_descendant(
-        condition=context.cf.by_automation_id("TextBox")
-    ).as_text_box()
-    assert text_box.text == value
+--8<-- "examples/behave/features/steps/simple_controls_steps.py"
 ```
 
 !!! note "Bridge before steps"

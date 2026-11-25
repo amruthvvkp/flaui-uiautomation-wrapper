@@ -17,8 +17,8 @@ from flaui.modules.automation import Automation
 from flaui.lib.enums import UIAutomationTypes
 
 with Automation(UIAutomationTypes.UIA3) as automation:
-    app = automation.application.launch("notepad.exe")
-    main_window = app.get_main_window(automation)
+    automation.application.launch("notepad.exe")
+    main_window = automation.application.get_main_window(automation)
     ...
 # automation is disposed and the app is closed automatically here
 ```

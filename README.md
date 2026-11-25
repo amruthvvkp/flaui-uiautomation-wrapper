@@ -1,9 +1,9 @@
-# flaui-uiautomation-wrapper
+# FlaUI for Python
 
 > Pythonic, type-safe Windows UI automation — the full FlaUI API in Python.
 
 [![PyPI - Version](https://img.shields.io/pypi/v/flaui-uiautomation-wrapper)](https://pypi.org/project/flaui-uiautomation-wrapper/)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/flaui-uiautomation-wrapper)](https://pypi.org/project/flaui-uiautomation-wrapper/)
+[![PyPI - Python Version](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13%20%7C%203.14%20%7C%203.15-blue)](https://pypi.org/project/flaui-uiautomation-wrapper/)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/flaui-uiautomation-wrapper)](https://pypi.org/project/flaui-uiautomation-wrapper/)
 [![License](https://img.shields.io/github/license/amruthvvkp/flaui-uiautomation-wrapper)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/blob/master/LICENSE)
 
@@ -14,12 +14,12 @@
 
 [FlaUI](https://github.com/FlaUI/FlaUI) is a .NET library for UI automated testing of Windows
 desktop applications — Win32, WinForms, WPF, and Store apps — built on top of Microsoft's UI
-Automation technology. **flaui-uiautomation-wrapper** brings the complete FlaUI API to Python via
+Automation technology. **FlaUI for Python** brings the complete FlaUI API to Python via
 [Python.NET](https://github.com/pythonnet/pythonnet), so you get the full power of FlaUI without
 leaving the Python ecosystem.
 
-Unlike existing Python integrations that are tied to a single test runner, this is a plug-and-play
-wrapper that works with **any** Python framework — [pytest](https://docs.pytest.org/),
+Unlike existing Python integrations that are tied to a single test runner, FlaUI for Python is
+plug-and-play and works with **any** Python framework — [pytest](https://docs.pytest.org/),
 [Behave](https://behave.readthedocs.io/), [TestPlan](https://github.com/morganstanley/testplan),
 `unittest`, or your own tooling — with first-class IDE intellisense backed by Pydantic models.
 
@@ -33,8 +33,9 @@ wrapper that works with **any** Python framework — [pytest](https://docs.pytes
 
 ## Installation
 
-Windows-only · Python 3.10–3.14. The required C# DLLs are bundled in the wheel — no separate driver
-binaries to manage.
+Windows-only · Python 3.11–3.15. FlaUI for Python is published on PyPI as
+`flaui-uiautomation-wrapper`. The required C# DLLs are bundled in the wheel, so there are no
+separate driver binaries to manage.
 
 ```bash
 pip install flaui-uiautomation-wrapper
@@ -85,7 +86,7 @@ Have an idea or feature request? Join the
 ## Inspirations & Credits
 
 - **[FlaUI](https://github.com/FlaUI/FlaUI)** — the C# library this project wraps; its core logic and
-  test applications are the foundation of this wrapper.
+  test applications are the foundation of FlaUI for Python.
 - **[robotframework-flaui](https://github.com/GDATASoftwareAG/robotframework-flaui)** (GDATA) — the
   prior-art Python integration for FlaUI that influenced this project's direction.
 - **[Python.NET](https://github.com/pythonnet/pythonnet)** — the interop bridge that makes calling
@@ -98,6 +99,13 @@ Have an idea or feature request? Join the
 
 Contributions are welcome! See [docs/contributing.md](docs/contributing.md) for the development
 workflow, coding standards, and testing guidelines.
+
+## Security
+
+Please report vulnerabilities **privately** through
+[GitHub Security Advisories](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/security/advisories/new),
+not as public issues. See [SECURITY.md](SECURITY.md) for supported versions, scope, and response
+targets.
 
 ## License
 

@@ -67,3 +67,19 @@ def test_mouse_move_to_requires_coordinates() -> None:
 def test_mouse_button_enum_has_values() -> None:
     """Each MouseButton member maps to a backing C# value."""
     assert all(member.value is not None for member in MouseButton)
+
+
+@pytest.mark.parametrize(
+    ("attribute", "cs_property"),
+    [("move_pixels_per_millisecond", "MovePixelsPerMillisecond"), ("move_pixels_per_step", "MovePixelsPerStep")],
+)
+def test_mouse_speed_settings_reach_csharp(monkeypatch: pytest.MonkeyPatch, attribute: str, cs_property: str) -> None:
+    """Assigning a mouse speed setting on the class writes the C# Mouse static property."""
+    fake = MagicMock()
+    setattr(fake, cs_property, 1.0)
+    monkeypatch.setattr(input_module, "CSMouse", fake)
+
+    setattr(Mouse, attribute, 3.5)
+
+    assert getattr(fake, cs_property) == 3.5
+    assert getattr(Mouse, attribute) == 3.5

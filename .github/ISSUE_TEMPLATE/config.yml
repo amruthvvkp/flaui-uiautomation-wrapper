@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/amruthvvkp/flaui-uiautomation-wrapper/security/advisories/new
+    about: Please report security issues privately, not as a public issue. See SECURITY.md.
+  - name: Questions and discussion
+    url: https://github.com/amruthvvkp/flaui-uiautomation-wrapper/discussions
+    about: Ask usage questions and share ideas in GitHub Discussions.

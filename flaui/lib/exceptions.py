@@ -27,7 +27,7 @@ The Python exceptions mirror the C# ``FlaUI.Core.Exceptions`` inheritance tree s
 
 from contextlib import contextmanager
 from functools import wraps
-from typing import Any, Callable, Iterator, Optional, Union
+from typing import Any, Callable, Generator, Optional, Union
 
 from FlaUI.Core.Exceptions import (  # type: ignore
     ElementNotAvailableException as CSharpElementNotAvailableException,
@@ -322,7 +322,7 @@ def _raise_translated(exception: Any, context: str) -> None:
 
 
 @contextmanager
-def _translate_exceptions_block(context: str) -> Iterator[None]:
+def _translate_exceptions_block(context: str) -> Generator[None, None, None]:
     """Context manager body that translates C# exceptions raised inside the block.
 
     :param context: Human-readable description used in the raised exception message.
