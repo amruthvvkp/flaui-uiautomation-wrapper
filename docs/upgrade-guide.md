@@ -13,7 +13,7 @@ to the modern **1.x** line.
 
 | Area | 0.x (old) | 1.x (new) |
 |------|-----------|-----------|
-| Python support | 3.8-era | **3.10–3.14** |
+| Python support | 3.8-era | **3.11–3.15** |
 | API surface | thin, partial | **1:1 FlaUI parity** (elements, patterns, events, capturing) |
 | Types | minimal | **Pydantic models** end to end, IDE autocomplete |
 | Methods | mixed | **snake_case**, mirroring the C# API |
@@ -23,7 +23,7 @@ to the modern **1.x** line.
 
 ## Before you upgrade
 
-1. **Check your Python version.** 1.x requires Python **3.10+**. Upgrade your interpreter first if
+1. **Check your Python version.** 1.x requires Python **3.11+**. Upgrade your interpreter first if
    you are on 3.8/3.9.
 2. **Pin your old version** while you migrate, so existing scripts keep working:
    ```bash
@@ -75,7 +75,7 @@ New in 1.x and worth adopting:
 
 ## Migration checklist
 
-- [ ] Move to Python 3.10+.
+- [ ] Move to Python 3.11+.
 - [ ] Add `setup_pythonnet_bridge()` as the first import-time call.
 - [ ] Replace old entry points with `flaui.modules.automation.Automation`.
 - [ ] Convert any PascalCase calls to **snake_case** (`Click()` → `click()`).

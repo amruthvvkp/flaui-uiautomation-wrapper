@@ -20,8 +20,8 @@ Common issues, fixes, and known test skips/xfails.
 - Ensure interop methods use `@handle_csharp_exceptions`; otherwise raw C# exceptions may leak.
 
 ## Python compatibility
-- Targets Python 3.10–3.14 (`requires-python = ">=3.10,<3.15"`); modern syntax (`|` unions, `match`, built-in generics) is supported.
-- If you hit syntax errors, confirm you are running Python ≥ 3.10.
+- Targets Python 3.11–3.15 (`requires-python = ">=3.11,<3.16"`); modern syntax (`|` unions, `match`, built-in generics) is supported.
+- If you hit syntax errors, confirm you are running Python ≥ 3.11.
 
 ## DLL loading
 - Confirm `flaui/bin` is packaged and reachable; rerun `setup_pythonnet_bridge()`.

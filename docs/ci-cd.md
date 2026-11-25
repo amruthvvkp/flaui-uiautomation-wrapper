@@ -55,7 +55,7 @@ No special configuration is needed for the desktop itself; a minimal `appveyor.y
 your deps and runs pytest is enough:
 
 ```yaml
-image: Visual Studio 2022
+image: Visual Studio 2026
 build: off
 install:
   - cmd: curl -LsSf https://astral.sh/uv/install.ps1 | powershell -c -
@@ -113,7 +113,7 @@ This repository uses a **hybrid CI** that splits the work by what each runner is
 
 - **Azure Pipelines** (Microsoft‑hosted `windows-2022`) owns the fast gates — Ruff + Interrogate
   linting, the strict docs build, a small unit/identifier smoke suite, and package/deploy stages.
-- **AppVeyor** (`Visual Studio 2022`) is the **interactive desktop gate** that runs the full
+- **AppVeyor** (`Visual Studio 2026`) is the **interactive desktop gate** that runs the full
   UIA2/UIA3 × WinForms/WPF UI suite, where a real logged‑in session is available.
 
 This is a good template to copy: run lint/unit/build anywhere, and pin the **desktop UI suite** to a
