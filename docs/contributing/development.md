@@ -105,7 +105,7 @@ Azure currently runs three PR validation jobs in parallel:
 - Strict documentation build
 - Windows hosted smoke tests on Microsoft-hosted `windows-2022`
 
-AppVeyor runs on `Visual Studio 2022`. It runs the full Windows desktop UI suite on pull requests
+AppVeyor runs on `Visual Studio 2026`. It runs the full Windows desktop UI suite on pull requests
 and on `master`, and the fast `tests/unit` subset on routine feature-branch pushes (the gate is
 selected in `test_script` from `APPVEYOR_PULL_REQUEST_NUMBER` / `APPVEYOR_REPO_BRANCH`).
 

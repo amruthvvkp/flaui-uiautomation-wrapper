@@ -506,7 +506,7 @@ CI/CD runs on a **hybrid Azure Pipelines + AppVeyor** setup. The two systems spl
   linting, the strict Zensical docs build, a hosted `windows-2022` smoke suite (unit + identifier
   tests), package builds, and gated `deploy_testpypi` / `deploy_pypi` / `deploy_docs` stages.
 - **AppVeyor** ([`.appveyor.yml`](.appveyor.yml), checks `continuous-integration/appveyor/pr`
-  and `/branch`) is the hosted Windows desktop UI gate on `Visual Studio 2022`. The gate is
+  and `/branch`) is the hosted Windows desktop UI gate on `Visual Studio 2026`. The gate is
   **trimmed**: the slow full UI suite only runs where it gates a merge — **pull requests and pushes
   to `master`** (`APPVEYOR_PULL_REQUEST_NUMBER` set, or `APPVEYOR_REPO_BRANCH == master`). Routine
   feature-branch pushes run the **fast `tests/unit` subset only**, so day-to-day turnaround does not
