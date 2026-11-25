@@ -177,7 +177,7 @@ for detailed pytest diagnostics.
 ### Python compatibility matrix
 
 Both CI systems start with Python 3.12 x64 only to avoid slowing development while the migration is
-validated. The supported Python 3.10 through 3.14 x64 matrix is kept commented in both
+validated. The supported Python 3.11 through 3.15 x64 matrix is kept commented in both
 `azure-pipelines.yml` and `.appveyor.yml` and can be enabled after the hybrid setup is stable.
 
 Azure caches both the UV runtime/download cache and the project virtualenv with `Cache@2`, keyed by

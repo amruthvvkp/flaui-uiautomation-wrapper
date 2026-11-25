@@ -18,7 +18,7 @@ Welcome! Follow these steps to keep parity with FlaUI C# and maintain quality.
 - Use snake_case for methods/properties; keep class names PascalCase.
 - Add `as_*()` conversion in `AutomationElement` when introducing a new element class.
 - Decorate interop methods with `@handle_csharp_exceptions`; use late imports to avoid cycles.
-- Add docstrings (Sphinx style) and type hints. The project targets Python 3.10+, so `|` unions, `match`/`case`, and built-in generics (`list[str]`) are allowed.
+- Add docstrings (Sphinx style) and type hints. The project targets Python 3.11+, so `|` unions, `match`/`case`, and built-in generics (`list[str]`) are allowed.
 
 ## Tests (matrix: UIA2/UIA3 × WinForms/WPF)
 - Use fixtures from `tests/conftest.py` (`test_application`, `ui_automation_type`, `test_application_type`).
@@ -31,7 +31,7 @@ See [Testing](contributing/testing.md) for the full fixture walkthrough, `post_w
 ## Code quality
 - `ruff check --fix .` and `ruff format .`
 - Docstring coverage 95%+ (`interrogate`)
-- Python 3.10+ typing (modern `|` unions / `match`/`case` allowed; existing `typing` imports are fine too)
+- Python 3.11+ typing (modern `|` unions / `match`/`case` allowed; existing `typing` imports are fine too)
 
 See [Development Workflow](contributing/development.md) for full command reference, pre-commit hooks, and CI/CD.
 

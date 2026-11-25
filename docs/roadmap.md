@@ -32,7 +32,7 @@ of truth; this page is the human-friendly summary.
 - [x] Upgrade to FlaUI 4/5 + PythonNet 3
 - [x] Pydantic-backed `AutomationElement` models
 - [x] `uv`-based packaging and PyPI publishing plumbing
-- [x] Python 3.10–3.14 support
+- [x] Python 3.11–3.15 support
 - [x] [Python `AutomationBase` + UIA2/UIA3 facades (#107)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/107)
 
 ### Core API surface (1:1 with FlaUI)

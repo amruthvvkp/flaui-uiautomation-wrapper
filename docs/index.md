@@ -21,7 +21,7 @@ library. No driver binaries to manage, no framework lock-in.
 
 ## Installation
 
-FlaUI for Python targets **Python 3.10–3.14** on **Windows** (the bundled FlaUI DLLs require the
+FlaUI for Python targets **Python 3.11–3.15** on **Windows** (the bundled FlaUI DLLs require the
 Windows UI Automation stack). All C# dependencies ship inside the wheel — there are no external
 drivers to install.
 
