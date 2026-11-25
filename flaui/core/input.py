@@ -244,13 +244,43 @@ class _MousePositionDescriptor:
         CSMouse.Position = value.raw_value
 
 
-class Mouse:
-    """Mouse class to simulate mouse input, wrapper over Mouse class in FlaUI.Core.Input namespace"""
+class _CSMouseSettingDescriptor:
+    """Class-level descriptor that reads and writes a static ``FlaUI.Core.Input.Mouse`` setting.
 
-    # The number of pixels the mouse is moved per millisecond (used to calculate duration)
-    move_pixels_per_millisecond: float = 0.5
-    # The number of pixels the mouse is moved per step (used to calculate interval)
-    move_pixels_per_step: float = 10.0
+    Assigning ``Mouse.move_pixels_per_millisecond = 2.0`` must reach the C# ``Mouse`` that performs the
+    movement, so the value lives in C#, not in a Python class attribute.
+    """
+
+    def __init__(self, cs_name: str) -> None:
+        """Bind the descriptor to a C# static property.
+
+        :param cs_name: Name of the static property on the C# ``Mouse`` class.
+        """
+        self._cs_name = cs_name
+
+    def __get__(self, obj: Any, objtype: Any = None) -> float:
+        """Return the current C# value."""
+        return float(getattr(CSMouse, self._cs_name))
+
+    def __set__(self, obj: Any, value: float) -> None:
+        """Set the C# value."""
+        setattr(CSMouse, self._cs_name, float(value))
+
+
+class _MouseMeta(type):
+    """Metaclass so the mouse settings can be assigned on the class itself (``Mouse.x = ...``)."""
+
+    move_pixels_per_millisecond = _CSMouseSettingDescriptor("MovePixelsPerMillisecond")
+    move_pixels_per_step = _CSMouseSettingDescriptor("MovePixelsPerStep")
+
+
+class Mouse(metaclass=_MouseMeta):
+    """Mouse class to simulate mouse input, wrapper over Mouse class in FlaUI.Core.Input namespace
+
+    Movement speed is controlled by two class-level settings that map straight onto FlaUI's C#
+    ``Mouse``: ``Mouse.move_pixels_per_millisecond`` (default 0.5; higher is faster) and
+    ``Mouse.move_pixels_per_step`` (default 10).
+    """
 
     position = _MousePositionDescriptor()  # The current position of the mouse cursor
 
@@ -265,7 +295,7 @@ class Mouse:
         if not post_wait:
             return
         if callable(post_wait):
-            post_wait()  # ty: ignore[call-top-callable]
+            post_wait()
             return
         if isinstance(post_wait, (int, float)):
             Wait.until_input_is_processed(float(post_wait))

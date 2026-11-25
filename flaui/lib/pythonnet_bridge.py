@@ -7,6 +7,8 @@ from System.Reflection import Assembly  # pyright: ignore[reportMissingImports]
 
 import flaui.lib.config as config
 
+logger = logging.getLogger(__name__)
+
 # Global variable to hold the FlaUI C# version
 FLAUI_CSHARP_VERSION = None
 
@@ -20,7 +22,8 @@ def setup_pythonnet_bridge() -> None:
     :raises err: On failure to load the existing C# dependencies listed under flaui/bin
     """
     BIN_HOME = config.settings.BIN_HOME
-    # logging.info("Looking for valid binaries at - %s", BIN_HOME)
+    if BIN_HOME != config.DEFAULT_BIN_HOME:
+        logger.warning("Loading FlaUI assemblies from FLAUI_BIN_HOME=%s instead of the bundled DLLs", BIN_HOME)
     global FLAUI_CSHARP_VERSION
     try:
         for _ in BIN_HOME.glob("*.dll"):
@@ -28,13 +31,13 @@ def setup_pythonnet_bridge() -> None:
             clr.AddReference(_.stem)  # pyright: ignore
             assembly = Assembly.LoadFile(_.as_posix())
             version = assembly.GetName().Version
-            logging.info("Added %s v%s DLL to Python.NET bridge", _.name, version)
+            logger.debug("Added %s v%s DLL to Python.NET bridge", _.name, version)
             if _.name == "FlaUI.Core.dll":
                 FLAUI_CSHARP_VERSION = str(version)
     except Exception as err:
-        logging.exception("Failed to setup Python.NET bridge: %s", err)
+        logger.exception("Failed to setup Python.NET bridge: %s", err)
         raise err
-    logging.info("Python.NET bridge setup complete")
+    logger.info("Python.NET bridge setup complete (FlaUI %s)", FLAUI_CSHARP_VERSION)
 
     # Opt-in: route C# logging into Python logging when FLAUI_LOG_CSHARP is set. Imported lazily
     # because it depends on the FlaUI DLLs that were just loaded above.

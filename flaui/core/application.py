@@ -19,6 +19,9 @@ from FlaUI.Core import AutomationBase as CSAutomationBase  # pyright: ignore
 
 from flaui.core.automation_base import AutomationBase as PyAutomationBase
 from flaui.lib.collections import TypeCast
+from flaui.lib.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 def _coerce_cs_automation(automation: Any) -> Any:
@@ -33,6 +36,29 @@ def _coerce_cs_automation(automation: Any) -> Any:
         "Invalid automation object: expected C# AutomationBase, flaui.core.automation_base.AutomationBase, "
         "or an object with attribute cs_automation"
     )
+
+
+#: Main-window wait used when neither ``Automation(timeout=...)`` nor ``FLAUI_MAIN_WINDOW_TIMEOUT`` is set.
+DEFAULT_MAIN_WINDOW_TIMEOUT_MS = 7000
+#: Same default on CI hosts (the ``CI`` environment variable is set), which are slower to show windows.
+DEFAULT_CI_MAIN_WINDOW_TIMEOUT_MS = 20000
+
+
+def _main_window_timeout_ms(automation: Any) -> int:
+    """Resolve how long ``get_main_window`` waits, in milliseconds.
+
+    Precedence: the high-level ``Automation(timeout=...)`` value, then the ``FLAUI_MAIN_WINDOW_TIMEOUT``
+    setting, then the built-in default (longer when the ``CI`` environment variable is set).
+
+    :param automation: The automation object passed to ``get_main_window``.
+    :return: The wait in milliseconds.
+    """
+    explicit = getattr(automation, "timeout", None)
+    if isinstance(explicit, int) and not isinstance(explicit, bool):
+        return explicit
+    if settings.MAIN_WINDOW_TIMEOUT is not None:
+        return settings.MAIN_WINDOW_TIMEOUT
+    return DEFAULT_CI_MAIN_WINDOW_TIMEOUT_MS if os.environ.get("CI") else DEFAULT_MAIN_WINDOW_TIMEOUT_MS
 
 
 class Application:
@@ -72,7 +98,7 @@ class Application:
             try:
                 self.dispose()
             except Exception:
-                logging.debug("Application cleanup failed during context exit", exc_info=True)
+                logger.debug("Application cleanup failed during context exit", exc_info=True)
 
     @property
     def name(self) -> str:
@@ -152,19 +178,22 @@ class Application:
     def get_main_window(self, automation: Any) -> Window:
         """Gets the main window of the applications process.
 
+        The wait is ``Automation(timeout=...)`` when the high-level ``Automation`` is passed and has a
+        timeout, else the ``FLAUI_MAIN_WINDOW_TIMEOUT`` setting, else 7000 ms (20000 ms when the ``CI``
+        environment variable is set, because CI hosts are slower to show windows).
+
         :param automation: The automation object to use.
-        :return: The main window object as Window element or null if no main window was found within the timeout.
+        :return: The main window object as Window element.
+        :raises RuntimeError: If the process exits or no main window appears within the timeout.
         """
         _automation = _coerce_cs_automation(automation)
-        # Robust retrieval with retries and process checks
-        # CI hosts (AppVeyor, etc.) often need longer than local desktops for main window.
-        total_timeout_ms = 20000 if os.environ.get("CI") else 7000
+        total_timeout_ms = _main_window_timeout_ms(automation)
         poll_interval_ms = 200
         deadline = time.time() + (total_timeout_ms / 1000.0)
 
-        # Initial wait for main handle
+        # Initial wait for main handle (never longer than the overall budget)
         try:
-            self.wait_while_main_handle_is_missing(time_out=3000)
+            self.wait_while_main_handle_is_missing(time_out=min(3000, total_timeout_ms))
         except Exception:
             pass
 
@@ -208,7 +237,7 @@ class Application:
         except Exception as e:
             last_err = e
 
-        logging.exception("Failed to get main window after retries: %s", last_err)
+        logger.debug("No main window after %s ms: %s", total_timeout_ms, last_err)
         if last_err:
             raise last_err
         raise RuntimeError("Failed to get main window: unknown error")
