@@ -21,7 +21,7 @@ investigation as a genuine wrapper bug; **Env** = environment guard.
 > **Note on #80 vs #81.** [#81](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/81)
 > is a **closed duplicate** of #80. The in-code markers now reference `GH-80` (the canonical open
 > issue); any lingering `GH-81` references should be treated as `GH-80`.
-| [#82](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/82) | test_get_control_type Tab not found during setup | test_value_converter.py::test_get_control_type | UIA2 + WinForms | Flaky |
+| ~~[#82](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/82)~~ | test_get_control_type Tab not found during setup | test_value_converter.py::test_get_control_type | UIA2 + WinForms | ✅ Resolved (test pollution from `test_context_menu`) |
 | [#83](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/83) | ListBox select_by_index fails | test_listbox.py::test_select_by_index | UIA3 + WPF | Not reproducible — CI flake (monitor `run=True`) |
 | [#89](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/89) | Notepad tests on Windows 11 (Store app) | Notepad-based tests (test_getter/search/xpath/keyboard) | Windows 11 | Env (guarded via `skip_notepad_on_win11`) |
 
@@ -86,9 +86,24 @@ Investigation results from running each item against the local UIA2/UIA3 × WinF
   skipped via `skip_on_uia2` + `platform_limitation`. The `find_all` test also used
   `by_class_name("TabControl")` (WPF-only); switched to `by_control_type(ControlType.Tab)` so it
   passes on UIA3 + WinForms too. Now passes on UIA3 (both frameworks) and skips on UIA2.
-- **#82** (test_get_control_type) and **#83** (ListBox select_by_index) — **not reproducible**.
-  Both pass on all four matrix combos locally (the conftest tab-navigation retry already mitigates
-  the #82 setup flakiness). Kept as `bug(run=True)` monitors; close once CI confirms green.
+- **#82** (test_get_control_type) — **root-caused and fixed; not a wrapper defect.** Reproduced
+  deterministically by running `test_window.py` before the converter tests on UIA2 + WinForms.
+  `test_context_menu` left the WinForms context menu open: reading `items[1].items` expands the
+  "Inner Context" submenu, and nothing dismissed it. The leftover `DropDown` popup is an unowned,
+  visible top-level window of the process, so .NET's `Process.MainWindowHandle`, which FlaUI's
+  `Application.GetMainWindow` uses, returned the 195x80 popup instead of the form. Every later
+  class-scoped `test_application` fixture then searched that popup for the Tab control and raised
+  `ElementNotFound`. C# FlaUI restarts the app per test fixture, so it never hits this. The test
+  now presses Escape until no context menu is left, and brings its own window to the foreground
+  before right-clicking. The `bug` monitor was removed from `test_get_control_type`.
+- **#83** (ListBox select_by_index) — **no wrapper defect found; still open.** `ListBox.select`
+  hands the Python `int`/`str` straight to the C# `Select(int)` / `Select(string)` overloads, the
+  same as FlaUI, and the selection assertions pass whenever they are reached. The test passes on
+  every combo in isolation, in two-combo runs, and in AppVeyor master builds 1.0.256 and 1.0.260.
+  One local full-matrix run did fail, but on the test's *precondition*: `selected_items` already
+  held one item before `select()` was called. Some earlier test in the shared, session-scoped
+  UIA3 + WPF app leaves a ListBox item selected (likely a stray click from an overlapping matrix
+  window). The polluting test has not been pinned down yet. Kept as a `bug(run=True)` monitor.
 
 ## Usage Examples
 
