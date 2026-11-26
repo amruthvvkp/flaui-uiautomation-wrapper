@@ -11,7 +11,7 @@ investigation as a genuine wrapper bug; **Env** = environment guard.
 | Issue | Title | Tests Affected | Platform | Category |
 |-------|-------|----------------|----------|----------|
 | [#74](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/74) | Spinner (WinForms NumericUpDown) UIA peer not exposed | test_spinner.py (3 tests) | UIA3 + WinForms | Upstream |
-| [#75](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/75) | Combobox broken on WinForms | test_combobox.py, test_listbox.py, test_pop_up.py (22 tests) | UIA2/UIA3 + WinForms | Upstream |
+| [#75](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/75) | Combobox broken on WinForms | test_combobox.py (WinForms combos skipped; WPF combos run) | UIA2/UIA3 + WinForms | Upstream |
 | [#76](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/76) | Tree test flaky on AppVeyor CI | test_tree.py::test_selection (4 tests) | All (CI only) | Flaky |
 | ~~[#77](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/77)~~ | RegisterAutomationEvent not ported | test_invoke_pattern.py::test_invoke_with_event | All | ✅ Resolved (ported) |
 | [#78](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/78) | Toggle pattern unsupported on WinForms menus | test_menu.py::test_checked_menu_item (2 tests) | UIA2/UIA3 + WinForms | Upstream |
@@ -50,9 +50,9 @@ Current assignments after the Phase 0 marker-hygiene pass:
   `try/except AssertionError → pytest.xfail`.
 - **#78** (menu Toggle, WinForms only) and **#79** (context menu, UIA3+WinForms only):
   `platform_limitation` + conditional skip fixture — replaced the previous in-body `pytest.skip`.
-- **#75** (combobox, WinForms): `platform_limitation` + `bug` + class-level `xfail`. Restoring real
-  WPF combobox coverage (skip on WinForms only) is deferred to the coverage PR so it can be
-  validated against the full matrix.
+- **#75** (combobox, WinForms): `platform_limitation` + a WinForms-only skip fixture. The class-level
+  `bug` + `xfail` (which also skipped every WPF combo) was removed, so the WPF ComboBox tests run
+  for real again.
 - **#89** (`test_application.py`): aligned to `skip_notepad_on_win11` (was a `windows11` +
   conditional `xfail`), which also avoids the Win11 Store-notepad launch hanging until timeout.
 
@@ -81,6 +81,23 @@ Investigation results from running each item against the local UIA2/UIA3 × WinF
   absent (instead of erroring), while still running the real value/increment/decrement assertions
   wherever the peer *is* exposed. The class is marked `platform_limitation` (the `bug(run=True)`
   monitor and `xfail` are removed), so the run is deterministic — green with a clear skip reason.
+- **#75** (ComboBox, WinForms) — **confirmed upstream limitation; WPF coverage restored.** With the
+  skips removed, every WinForms ComboBox test fails on both UIA2 and UIA3: `Items` is empty,
+  `Select(int)` raises `IndexOutOfRangeException` and `Expand()` leaves the state `Collapsed`.
+  Upstream FlaUI comments out its WinForms `ComboBoxTests` fixtures for the same reason ("heavily
+  broken with UIA2/WinForms due to bugs in Windows / .NET"), so only the WinForms combos are
+  skipped. The class-level `bug` marker had been skipping the WPF combos too; they now run, after
+  three test fixes:
+  1. `test_editable_text` only *read* `editable_text`; it now sets it to `"Item 3"` and checks the
+     selection, as upstream does.
+  2. `test_combo_box_item_is_not_offscreen` checked the combo box itself; it now checks items 0–3.
+  3. A WPF drop-down closes as soon as its window loses activation, and the four matrix windows
+     overlap. The fixtures now call `set_foreground()` on their own window, and the expand/collapse
+     and offscreen checks wait up to 2 s for the drop-down animation.
+
+  The `test_listbox.py` large-list and `test_pop_up.py` WinForms skips were labelled as #75 but are
+  unrelated: those controls exist only in the WPF test app (upstream runs those tests WPF-only too).
+  Their skip reasons now say so.
 - **#80** (find_*_with_options) — **fixed / reclassified, not a wrapper bug**. FlaUI's own UIA2
   layer raises `NotSupportedByFrameworkException` (these methods don't exist in UIA2), so UIA2 is
   skipped via `skip_on_uia2` + `platform_limitation`. The `find_all` test also used
