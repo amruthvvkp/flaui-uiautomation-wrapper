@@ -60,7 +60,7 @@ class StylesPattern(PatternBase):
     def style(self) -> AutomationProperty:
         """Return the style identifier of the element.
 
-        :return: An :class:`AutomationProperty` wrapping the ``StyleType`` value.
+        :return: An :class:`AutomationProperty` whose value is a :class:`~flaui.core.definitions.StyleType`.
         """
         return AutomationProperty(raw_property=self.raw_pattern.Style)
 

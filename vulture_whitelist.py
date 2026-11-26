@@ -75,6 +75,14 @@ _.grid  # unused method
 _.horizontal_scroll_bar  # unused method
 _.vertical_scroll_bar  # unused method
 
+# --- flaui/core/definitions.py ----------------------------------------------------------------------
+# VisualEffects is an IntFlag with plain int values, so vulture sees its members as unused variables.
+_.Shadow  # unused variable
+_.Reflection  # unused variable
+_.Glow  # unused variable
+_.SoftEdges  # unused variable
+_.Bevel  # unused variable
+
 # --- flaui/core/event_handlers.py --------------------------------------------------------------------
 # `_callback` keeps the Python callback alive for as long as the C# handler is registered.
 _._callback  # unused attribute

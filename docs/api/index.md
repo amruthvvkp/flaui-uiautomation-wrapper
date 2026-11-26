@@ -7,6 +7,7 @@ Auto-generated with mkdocstrings from the FlaUI Python wrapper. Element-specific
 - [Application](application.md) — launch/attach, main window
 - [Automation Element](automation_element.md) — base element operations and `as_*` conversions
 - [Condition Factory](condition_factory.md) — build search conditions
+- [Definitions](definitions.md) — `FlaUI.Core.Definitions` enums, converted at the boundary
 
 ## Input
 - [Mouse](mouse.md) — 15 mouse operations with `post_wait`

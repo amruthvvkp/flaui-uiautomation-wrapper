@@ -29,9 +29,9 @@ elsewhere are usually intentional. 🟡 can also be an API-shape difference (e.g
 
 | Status | Types | % |
 | --- | ---: | ---: |
-| ✅ Covered | 168 | 33% |
+| ✅ Covered | 182 | 35% |
 | 🟡 Partial | 21 | 4% |
-| ❌ Missing | 317 | 62% |
+| ❌ Missing | 303 | 59% |
 | **Total** | **506** | 100% |
 
 ## FlaUI.Core
@@ -141,34 +141,34 @@ elsewhere are usually intentional. 🟡 can also be an API-shape difference (e.g
 
 | Type | Kind | Status | Notes |
 | --- | --- | --- | --- |
-| AnnotationType | enum | ❌ | no Python class |
+| AnnotationType | enum | ✅ |  |
 | AutomationElementMode | enum | ✅ |  |
-| CoalesceEventsOptions | enum | ❌ | no Python class |
-| ConnectionRecoveryBehaviorOptions | enum | ❌ | no Python class |
+| CoalesceEventsOptions | enum | ✅ |  |
+| ConnectionRecoveryBehaviorOptions | enum | ✅ |  |
 | ControlType | enum | ✅ |  |
 | DockPosition | enum | ✅ |  |
 | ExpandCollapseState | enum | ✅ |  |
-| FrameworkIds | class | ❌ | no Python class |
-| HeadingLevel | enum | ❌ | no Python class |
-| LandmarkType | enum | ❌ | no Python class |
-| LiveSetting | enum | ❌ | no Python class |
-| NotificationKind | enum | ❌ | no Python class |
-| NotificationProcessing | enum | ❌ | no Python class |
-| OrientationType | enum | ❌ | no Python class |
+| FrameworkIds | class | ✅ |  |
+| HeadingLevel | enum | ✅ |  |
+| LandmarkType | enum | ✅ |  |
+| LiveSetting | enum | ✅ |  |
+| NotificationKind | enum | ✅ |  |
+| NotificationProcessing | enum | ✅ |  |
+| OrientationType | enum | ✅ |  |
 | PropertyConditionFlags | enum | ✅ |  |
 | RowOrColumnMajor | enum | ✅ |  |
 | ScrollAmount | enum | ✅ |  |
-| StructureChangeType | enum | ❌ | no Python class |
-| StyleType | enum | ❌ | no Python class |
+| StructureChangeType | enum | ✅ |  |
+| StyleType | enum | ✅ |  |
 | SupportedTextSelection | enum | ✅ |  |
 | SynchronizedInputType | enum | ✅ |  |
-| TextEditChangeType | enum | ❌ | no Python class |
+| TextEditChangeType | enum | ✅ |  |
 | TextPatternRangeEndpoint | enum | ✅ |  |
 | TextUnit | enum | ✅ |  |
 | ToggleState | enum | ✅ |  |
 | TreeScope | enum | ✅ |  |
 | TreeTraversalOptions | enum | ✅ |  |
-| VisualEffects | enum | ❌ | no Python class |
+| VisualEffects | enum | ✅ |  |
 | WindowInteractionState | enum | ✅ |  |
 | WindowVisualState | enum | ✅ |  |
 | ZoomUnit | enum | ✅ |  |
