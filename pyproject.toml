@@ -88,8 +88,14 @@ unit-test = [
 ]
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["uv_build>=0.13,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+# Flat layout: the package lives at ./flaui, not ./src/flaui. Everything under flaui/ is packaged,
+# including py.typed and the bundled C# DLLs in flaui/bin/ (uv_build does not read .gitignore).
+module-name = "flaui"
+module-root = ""
 
 [tool.black]
 # https://github.com/psf/black
@@ -146,11 +152,6 @@ omit = [
 max-line-length = 120
 extend-ignore = ["E203"]
 max-complexity = 10
-
-[tool.hatch.build.targets.wheel]
-# `/flaui` already packages flaui/py.typed and the DLLs; the DLLs are also listed explicitly
-# so they stay in the wheel even if a global or local .gitignore ever matches *.dll.
-only-include = ["/README.md", "/flaui", "flaui/bin/*.dll"]
 
 [tool.interrogate]
 ignore-init-method = true

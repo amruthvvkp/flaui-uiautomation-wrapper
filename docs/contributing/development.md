@@ -28,6 +28,11 @@ uv run --no-project --with coverage coverage html
 
 Always prefix commands with `uv run` so the correct environment is used.
 
+The package builds with uv's own build backend (`uv_build`, configured under
+`[tool.uv.build-backend]` in `pyproject.toml`). It packages everything under `flaui/`, including
+`py.typed` and the C# DLLs in `flaui/bin/`. After changing the build settings, confirm that
+`uv build` still puts all five DLLs in the wheel.
+
 ## Code quality
 
 ```bash
