@@ -29,25 +29,49 @@ def test_xpath(main_window: Window) -> None:
 
 
 def test_combined_conditions(main_window: Window, condition_factory: ConditionFactory) -> None:
-    """Combine conditions with And / Or / Not."""
+    """Combine conditions with ``&`` / ``|`` / ``~`` (or ``and_`` / ``or_`` / ``not_``)."""
     window, cf = main_window, condition_factory
     # --8<-- [start:conditions]
     # AND: a Button whose AutomationId is "InvokableButton"
-    invoke = cf.by_control_type(ControlType.Button).And(cf.by_automation_id("InvokableButton"))
+    invoke = cf.by_control_type(ControlType.Button) & cf.by_automation_id("InvokableButton")
 
     # OR: either radio button
-    radios = cf.by_automation_id("RadioButton1").Or(cf.by_automation_id("RadioButton2"))
+    radios = cf.by_automation_id("RadioButton1") | cf.by_automation_id("RadioButton2")
 
-    # NOT: "x.Not(y)" means x AND NOT y -- every check box except the three-state one
-    two_state = cf.by_control_type(ControlType.CheckBox).Not(cf.by_automation_id("ThreeStateCheckBox"))
+    # NOT: every check box except the three-state one
+    two_state = cf.by_control_type(ControlType.CheckBox) & ~cf.by_automation_id("ThreeStateCheckBox")
+
+    # The same with methods: and_() / or_() / not_()
+    same_invoke = cf.by_control_type(ControlType.Button).and_(cf.by_automation_id("InvokableButton"))
 
     button = window.find_first_descendant(invoke)
     radio_buttons = window.find_all_descendants(radios)
     check_boxes = window.find_all_descendants(two_state)
     # --8<-- [end:conditions]
+    assert str(same_invoke) == str(invoke)
     assert button.automation_id == "InvokableButton"
     assert len(radio_buttons) == 2
     assert all(cb.automation_id != "ThreeStateCheckBox" for cb in check_boxes)
+
+
+def test_true_condition(main_window: Window, condition_factory: ConditionFactory) -> None:
+    """Build a condition up from ``true_condition()``."""
+    window, cf = main_window, condition_factory
+    # --8<-- [start:true_condition]
+    # false_condition() matches nothing, so it is the neutral start for a chain of "|"
+    wanted = ["InvokableButton", "RadioButton1", "ThreeStateCheckBox"]
+    any_of = ConditionFactory.false_condition()
+    for automation_id in wanted:
+        any_of = any_of | cf.by_automation_id(automation_id)
+
+    # true_condition() matches everything, so it is the neutral start for a chain of "&"
+    button_condition = ConditionFactory.true_condition() & cf.by_control_type(ControlType.Button)
+
+    found = window.find_all_descendants(any_of)
+    buttons = window.find_all_descendants(button_condition)
+    # --8<-- [end:true_condition]
+    assert {e.automation_id for e in found} == set(wanted)
+    assert buttons and all(b.control_type == ControlType.Button for b in buttons)
 
 
 def test_collection_helpers(main_window: Window, condition_factory: ConditionFactory) -> None:
