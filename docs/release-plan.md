@@ -65,8 +65,11 @@ the whole point of this stage.
 Releases are **tag-driven**, which sidesteps the protected-`master` problem (no workflow needs to
 push commits to `master`):
 
-PyPI publishing runs entirely on **GitHub Actions** using the repository `PYPI_API_TOKEN` /
-`TEST_PYPI_API_TOKEN` secrets. `publish-pypi.yml` is the single PyPI publish path (it builds the
+PyPI publishing runs entirely on **GitHub Actions** with
+[Trusted Publishing](https://docs.pypi.org/trusted-publishers/): the workflow authenticates to PyPI
+through GitHub's OIDC token, so no API token is stored in the repository, and every upload carries
+[PEP 740 attestations](https://docs.pypi.org/attestations/). PyPI shows them as **provenance** on
+each file. `publish-pypi.yml` is the single PyPI publish path (it builds the
 package at a tag and uploads it); `publish-testpypi.yml` handles pull-request dev builds.
 
 | Event | What happens | Where |
@@ -91,8 +94,17 @@ Each GitHub release links back to its PyPI version and the docs site (see `.gith
     published` event fires normally.
 
 !!! note "Enabling / disabling the automation"
-    - **PyPI / TestPyPI**: gated on the repository `PYPI_API_TOKEN` / `TEST_PYPI_API_TOKEN` secrets
-      (Settings → Secrets and variables → Actions → Secrets) — already configured.
+    - **PyPI / TestPyPI**: gated on the trusted publishers registered for this repository
+      (project → Settings → Publishing on pypi.org and test.pypi.org):
+
+        | Index | Workflow | Environment |
+        |-------|----------|-------------|
+        | PyPI | `publish-pypi.yml` | `pypi` |
+        | PyPI | `release-beta.yml` | `pypi` |
+        | TestPyPI | `publish-testpypi.yml` | `testpypi` |
+
+        Betas reach `publish-pypi.yml` through `release-beta.yml`, and PyPI matches the calling
+        workflow, so both need an entry.
     - **Betas**: set the repository variable `ENABLE_BETA_RELEASES` to `true`
       (Settings → Secrets and variables → Actions → Variables).
     - The legacy Azure `deploy_testpypi` / `deploy_pypi` stages remain in `azure-pipelines.yml` but

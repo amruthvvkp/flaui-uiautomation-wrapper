@@ -73,7 +73,10 @@ jobs:
   # (skipped automatically when ENABLE_BETA_RELEASES is not 'true', since cut-beta is then skipped).
   publish-pypi:
     needs: cut-beta
+    # A called workflow can't hold more permissions than its caller grants.
+    permissions:
+      contents: read
+      id-token: write # Trusted Publishing + attestations
     uses: ./.github/workflows/publish-pypi.yml
     with:
       tag: ${{ needs.cut-beta.outputs.tag }}
-    secrets: inherit

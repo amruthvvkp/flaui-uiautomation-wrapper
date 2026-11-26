@@ -312,6 +312,10 @@ Azure also builds package distributions and contains gated deployment stages:
 - `deploy_docs` runs only when `PUBLISH_DOCS=true` on a non-PR run and requires
   `GITHUB_PAGES_TOKEN`.
 
+These Azure stages are legacy and stay off. They upload with an API token through `twine`, so their
+uploads carry no provenance. GitHub Actions publishes with Trusted Publishing and attestations (see
+[Release plan](../release-plan.md#how-releases-are-automated)).
+
 Use Azure Environments named `test-pypi`, `pypi`, and `github-pages` for approvals before enabling
 these deployment variables.
 

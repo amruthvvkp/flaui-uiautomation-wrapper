@@ -7,8 +7,9 @@ name: Publish dev build to TestPyPI
 #
 # Each run mints a unique 1.0.0.dev<run_id>, so uploads never collide (skip-existing guards re-runs).
 #
-# NOTE: pull_request only exposes secrets for branches in THIS repository (the maintainer's own
-# branches). PRs from forks have no access to TEST_PYPI_API_TOKEN and the upload step is skipped.
+# Uploads use Trusted Publishing (OIDC, no API token): TestPyPI must list this repository as a
+# trusted publisher for `publish-testpypi.yml` with environment `testpypi`. PRs from forks can't
+# mint an OIDC token, so the upload step is skipped for them.
 
 on:
   pull_request:
@@ -16,6 +17,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write # Trusted Publishing + attestations
 
 concurrency:
   group: testpypi-${{ github.event.pull_request.number }}
@@ -25,6 +27,9 @@ jobs:
   testpypi:
     name: Build and publish to TestPyPI
     runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/flaui-uiautomation-wrapper/
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,10 +48,10 @@ jobs:
           echo "Built dev version ${VERSION}"
 
       - name: Publish to TestPyPI
-        # Skipped automatically for fork PRs, where the secret is not available.
+        # Skipped for fork PRs, which can't mint an OIDC token.
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          attestations: true
           repository-url: https://test.pypi.org/legacy/
           skip-existing: true
