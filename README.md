@@ -45,6 +45,10 @@ pip install flaui-uiautomation-wrapper
 uv add flaui-uiautomation-wrapper
 ```
 
+Requires 64-bit CPython 3.11–3.15 and the .NET Framework 4.8 runtime (built into current Windows).
+If the install or the first `setup_pythonnet_bridge()` call fails, see
+[Installation problems](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/blob/master/docs/troubleshooting.md#installation-problems).
+
 ## Quick start
 
 ```python

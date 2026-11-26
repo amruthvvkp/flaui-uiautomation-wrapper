@@ -37,6 +37,13 @@ drivers to install.
     uv add flaui-uiautomation-wrapper
     ```
 
+!!! tip "Install not working?"
+    Use **64-bit** CPython 3.11–3.15 with the **.NET Framework 4.8** runtime (built into
+    Windows 10 1903+, Windows 11 and Windows Server 2022+). On Python 3.10 or older, pip quietly
+    installs a legacy `0.x` release instead of failing. For that, missing runtimes, blocked DLLs,
+    proxies and offline installs, see
+    [Installation problems](troubleshooting.md#installation-problems).
+
 ### Trying a beta
 
 We publish `1.0.0bN` betas on the road to v1.0. Pre-releases are **not** installed by default —

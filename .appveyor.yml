@@ -14,29 +14,43 @@ skip_branch_with_pr: true
 environment:
   UV_FROZEN: "1"
   UV_NO_PROGRESS: "1"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  # Every supported Python runs on every build. FULL_UI marks the jobs that run the slow full
+  # desktop UI suite where it gates a merge (pull requests and master; see test_script): the oldest
+  # and newest supported versions plus 3.12. The 3.13 and 3.14 jobs always run the fast tests/unit
+  # subset. WHEEL_SMOKE installs the built wheel into clean venvs outside the checkout and drives
+  # the test apps from site-packages (scripts/wheel_smoke.py).
+  # AppVeyor runs the jobs one after another, so the full-UI jobs come first and fast_finish stops
+  # the build at the first failure.
   matrix:
-    # Keep the full UI suite on one Python version while the Azure migration
-    # stabilizes. Enable the remaining supported versions when ready.
-    # - job_name: Python 3.11 x64
-    #   PYTHON_VERSION: "3.11"
-    #   PYTHON_ARCH: "64"
-    #
     - job_name: Python 3.12 x64
       PYTHON_VERSION: "3.12"
       PYTHON_ARCH: "64"
-    #
-    # - job_name: Python 3.13 x64
-    #   PYTHON_VERSION: "3.13"
-    #   PYTHON_ARCH: "64"
-    #
-    # - job_name: Python 3.14 x64
-    #   PYTHON_VERSION: "3.14"
-    #   PYTHON_ARCH: "64"
-    #
-    # Compatibility check on the newest supported Python: same gate as 3.12.
+      FULL_UI: "true"
+      WHEEL_SMOKE: "true"
+
+    - job_name: Python 3.11 x64
+      PYTHON_VERSION: "3.11"
+      PYTHON_ARCH: "64"
+      FULL_UI: "true"
+
     - job_name: Python 3.15 x64
       PYTHON_VERSION: "3.15"
       PYTHON_ARCH: "64"
+      FULL_UI: "true"
+
+    - job_name: Python 3.13 x64 (unit)
+      PYTHON_VERSION: "3.13"
+      PYTHON_ARCH: "64"
+      FULL_UI: "false"
+
+    - job_name: Python 3.14 x64 (unit)
+      PYTHON_VERSION: "3.14"
+      PYTHON_ARCH: "64"
+      FULL_UI: "false"
+
+matrix:
+  fast_finish: true
 
 cache:
   - "%USERPROFILE%\\.cache\\uv -> uv.lock, pyproject.toml"
@@ -49,6 +63,8 @@ init:
       $env:UV_CACHE_DIR = "$env:USERPROFILE\.cache\uv"
       $env:UV_NO_PROGRESS = "1"
       Write-Host "AppVeyor full UI suite: Python $env:PYTHON_VERSION x$env:PYTHON_ARCH"
+      $os = Get-CimInstance Win32_OperatingSystem
+      Write-Host "Image: $env:APPVEYOR_BUILD_WORKER_IMAGE - $($os.Caption) $($os.Version) (build $($os.BuildNumber))"
 
 install:
   - ps: |
@@ -82,7 +98,9 @@ test_script:
       # Trim the gate: the slow full desktop UI suite only runs where it gates a merge
       # (pull requests, and pushes to master). Routine feature-branch pushes run the fast
       # unit subset only, so day-to-day turnaround does not pay for the full serial run.
-      $runFull = ($env:APPVEYOR_REPO_BRANCH -eq 'master') -or [bool]$env:APPVEYOR_PULL_REQUEST_NUMBER
+      # Only the FULL_UI jobs (3.11, 3.12, 3.15) run it; 3.13 and 3.14 always run the unit subset.
+      $gatesMerge = ($env:APPVEYOR_REPO_BRANCH -eq 'master') -or [bool]$env:APPVEYOR_PULL_REQUEST_NUMBER
+      $runFull = $gatesMerge -and ($env:FULL_UI -eq 'true')
       if ($runFull) {
         Write-Host "Full gate: running the complete Windows desktop UI test suite with pytest..."
         Invoke-Checked { uv --no-progress run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage coverage run -m pytest --junit-xml=test-results.xml --timeout=45 --timeout-method=thread --alluredir allure-results }
@@ -94,8 +112,66 @@ test_script:
         Write-Host "Enforcing coverage gate (--fail-under=95)..."
         Invoke-Checked { uv --no-progress run --extra coverage coverage report --fail-under=95 }
       } else {
-        Write-Host "Fast gate: running the unit subset only (the full UI suite runs on pull requests and on master)..."
+        Write-Host "Fast gate: running the unit subset only (the full UI suite runs on 3.11/3.12/3.15 for pull requests and master)..."
         Invoke-Checked { uv --no-progress run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage coverage run -m pytest tests/unit --junit-xml=test-results.xml --timeout=45 --timeout-method=thread --alluredir allure-results }
+      }
+
+  # Clean wheel install: build the wheel, install it with no dev dependencies into fresh venvs
+  # outside the checkout (a uv-managed CPython via uv pip, and the image's python.org Python via
+  # pip), then run scripts/wheel_smoke.py in isolated mode so flaui can only come from
+  # site-packages. The script checks the bundled DLLs, py.typed and the FlaUI version, then drives
+  # the WPF/WinForms test apps on UIA2 and UIA3.
+  - ps: |
+      if ($env:WHEEL_SMOKE -ne 'true') { Write-Host "Wheel smoke runs on the 3.12 job only."; return }
+
+      function Invoke-Checked {
+        param([scriptblock] $Command)
+        & $Command
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      }
+
+      $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
+      $env:UV_CACHE_DIR = "$env:USERPROFILE\.cache\uv"
+      $env:UV_NO_PROGRESS = "1"
+      Remove-Item Env:UV_PYTHON -ErrorAction SilentlyContinue
+      Remove-Item Env:UV_PROJECT_ENVIRONMENT -ErrorAction SilentlyContinue
+
+      $repo = $env:APPVEYOR_BUILD_FOLDER
+      $smokeRoot = Join-Path $env:TEMP "flaui-wheel-smoke"
+      if (Test-Path $smokeRoot) { Remove-Item -Recurse -Force $smokeRoot }
+      New-Item -ItemType Directory -Force -Path $smokeRoot | Out-Null
+
+      Invoke-Checked { uv --no-progress build -q --wheel --out-dir "$smokeRoot\dist" $repo }
+      $wheel = (Get-ChildItem "$smokeRoot\dist\*.whl" | Select-Object -First 1).FullName
+      Write-Host "Built $wheel"
+
+      # 1) uv-managed CPython, installed with uv pip.
+      Invoke-Checked { uv --no-progress venv -q --managed-python --python $env:PYTHON_VERSION "$smokeRoot\uv-managed" }
+      Invoke-Checked { uv --no-progress pip install -q --python "$smokeRoot\uv-managed\Scripts\python.exe" $wheel }
+
+      # 2) The image's python.org install (C:\Python3XY-x64): the newest supported one, with pip.
+      $system = Get-ChildItem "C:\Python3*-x64\python.exe" -ErrorAction SilentlyContinue |
+        Where-Object { ($_.Directory.Name -match '^Python3(\d+)-x64$') -and ([int]$Matches[1] -ge 11) -and ([int]$Matches[1] -le 15) } |
+        Sort-Object { [int]($_.Directory.Name -replace '^Python3(\d+)-x64$', '$1') } |
+        Select-Object -Last 1
+      if (-not $system) {
+        Write-Host "No python.org Python 3.11-3.15 found under C:\Python3*-x64 on this image:"
+        Get-ChildItem "C:\Python*" -Directory -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  $($_.FullName)" }
+        exit 1
+      }
+      Write-Host "System Python: $($system.FullName)"
+      Invoke-Checked { & $system.FullName -m venv "$smokeRoot\system-pip" }
+      Invoke-Checked { & "$smokeRoot\system-pip\Scripts\python.exe" -m pip install -q $wheel }
+
+      # Run from outside the checkout in isolated mode (-I: no script dir, no user site, no PYTHON* env).
+      Push-Location $smokeRoot
+      try {
+        foreach ($venv in @("uv-managed", "system-pip")) {
+          Write-Host "=== Wheel smoke: $venv ==="
+          Invoke-Checked { & "$smokeRoot\$venv\Scripts\python.exe" -I "$repo\scripts\wheel_smoke.py" --apps-dir "$repo\test_applications" }
+        }
+      } finally {
+        Pop-Location
       }
 
 after_test:

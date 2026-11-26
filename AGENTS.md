@@ -98,8 +98,8 @@ When working on this project:
 - ⚠️ **Always** convert C# exceptions with `@handle_csharp_exceptions`
 - ⚠️ **CI is hybrid**: Azure Pipelines (`azure-pipelines.yml`, check `flaui-uiautomation-wrapper-ci`)
   gates linting/docs/smoke/packaging; AppVeyor (`.appveyor.yml`) is the Windows UI gate. AppVeyor is
-  **trimmed**: the full UI suite runs only on pull requests and on `master`; routine feature-branch
-  pushes run the fast `tests/unit` subset. A PR with merge conflicts fails AppVeyor as
+  **trimmed**: the full UI suite runs only on pull requests and on `master`, on Python 3.11, 3.12 and
+  3.15; 3.13/3.14 and routine feature-branch pushes run the fast `tests/unit` subset. A PR with merge conflicts fails AppVeyor as
   "non-mergeable" — rebase/merge the base to clear it.
 - ⚠️ **No AI attribution on commits/PRs**: never add `Co-Authored-By: Claude …` (or any AI co-author)
   trailers, nor "🤖 Generated with …" footers, to commit messages or pull-request descriptions.

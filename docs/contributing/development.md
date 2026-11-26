@@ -99,15 +99,19 @@ The project uses a hybrid CI setup:
 - GitHub Actions workflows are retained as manual-only stubs while CI/CD ownership moves to Azure
   and AppVeyor.
 
-Azure currently runs three PR validation jobs in parallel:
+Azure runs these PR validation jobs in parallel:
 
 - Ruff and Interrogate checks
 - Strict documentation build
-- Windows hosted smoke tests on Microsoft-hosted `windows-2022`
+- Windows hosted smoke tests, a matrix over Python versions and Windows images (see below)
+- Clean wheel install smoke (`wheel_install_smoke`, see below)
 
-AppVeyor runs on `Visual Studio 2026`. It runs the full Windows desktop UI suite on pull requests
-and on `master`, and the fast `tests/unit` subset on routine feature-branch pushes (the gate is
-selected in `test_script` from `APPVEYOR_PULL_REQUEST_NUMBER` / `APPVEYOR_REPO_BRANCH`).
+AppVeyor runs on `Visual Studio 2026`, one job per supported Python. The full Windows desktop UI
+suite runs on the `FULL_UI` jobs (Python 3.11, 3.12 and 3.15) for pull requests and `master`.
+Every other job, and routine feature-branch pushes, run the fast `tests/unit` subset. The gate is
+selected in `test_script` from `FULL_UI`, `APPVEYOR_PULL_REQUEST_NUMBER` and
+`APPVEYOR_REPO_BRANCH`. AppVeyor runs jobs one after another, so the full-UI jobs go first and
+`matrix.fast_finish` stops at the first failure.
 
 ### Stale build cancellation
 
@@ -133,8 +137,9 @@ when a newer commit is pushed.
 
 ```yaml
 - ps: |
-    # Full UI suite only where it gates a merge; fast unit subset otherwise.
-    $runFull = ($env:APPVEYOR_REPO_BRANCH -eq 'master') -or [bool]$env:APPVEYOR_PULL_REQUEST_NUMBER
+    # Full UI suite only on the FULL_UI jobs, where it gates a merge; fast unit subset otherwise.
+    $gatesMerge = ($env:APPVEYOR_REPO_BRANCH -eq 'master') -or [bool]$env:APPVEYOR_PULL_REQUEST_NUMBER
+    $runFull = $gatesMerge -and ($env:FULL_UI -eq 'true')
     if ($runFull) {
       uv run --group unit-test --no-dev --package flaui-uiautomation-wrapper --extra coverage \
         coverage run -m pytest --timeout=45 --timeout-method=thread \
@@ -176,12 +181,66 @@ for detailed pytest diagnostics.
 
 ### Python compatibility matrix
 
-Both CI systems start with Python 3.12 x64 only to avoid slowing development while the migration is
-validated. The supported Python 3.11 through 3.15 x64 matrix is kept commented in both
-`azure-pipelines.yml` and `.appveyor.yml` and can be enabled after the hybrid setup is stable.
+Every supported Python (3.11–3.15, 64-bit CPython) runs in CI. To keep turnaround reasonable, only
+the oldest, newest and 3.12 pay for the slow full UI suite:
+
+| Python | AppVeyor (Visual Studio 2026) | Azure hosted smoke |
+|--------|-------------------------------|--------------------|
+| 3.11 | full UI suite on PRs/`master`, unit subset otherwise | `windows-2022`, `windows-2025` |
+| 3.12 | full UI suite on PRs/`master`, unit subset otherwise, plus wheel smoke | `windows-2022` |
+| 3.13 | unit subset | `windows-2022` |
+| 3.14 | unit subset | `windows-2022` |
+| 3.15 | full UI suite on PRs/`master`, unit subset otherwise | `windows-2022`, `windows-2025` |
+
+The Azure smoke legs install a uv-managed CPython (`uv python install`), so a new Python release
+does not wait for the hosted image's tool cache.
+
+### Windows versions covered
+
+| Where | Image | Windows version | What runs |
+|-------|-------|-----------------|-----------|
+| AppVeyor | `Visual Studio 2026` | Windows Server 2025 | Full desktop UI suite, wheel smoke with UI checks |
+| Azure | `windows-2022` | Windows Server 2022 | Hosted smoke on every Python, clean wheel install smoke |
+| Azure | `windows-2025` | Windows Server 2025 | Hosted smoke on 3.11 and 3.15 |
+| Contributors | local machines | Windows 10 / 11 | Full suite locally (`uv run pytest`) |
+
+Each Azure smoke leg logs the exact OS caption and build number in its *Install and show Python*
+step. Windows 11-specific behavior (the Store Notepad and the new Paint) is handled by the markers
+listed in [Troubleshooting](../troubleshooting.md#known-pytest-skipsxfails-manual-list).
+
+### Clean wheel install smoke
+
+`scripts/wheel_smoke.py` checks the wheel as users get it. CI builds the wheel, installs it with
+no dev dependencies into fresh virtual environments *outside* the checkout, and runs the script
+with `python -I` from that directory, so `flaui` can only resolve from site-packages. The script
+asserts that:
+
+- `flaui` is imported from site-packages, not a source tree;
+- the five bundled DLLs and `py.typed` are installed;
+- `setup_pythonnet_bridge()` loads FlaUI 5.x.
+
+With `--apps-dir test_applications` it also launches the WPF and WinForms test apps on UIA2 and
+UIA3, toggles a checkbox and sets text in the TextBox.
+
+| Job | Installation types | UI checks |
+|-----|--------------------|-----------|
+| Azure `wheel_install_smoke` (`windows-2022`) | tool-cache CPython 3.12 + `pip`; uv-managed CPython 3.11 and 3.15 + `uv pip` | no (no interactive desktop) |
+| AppVeyor 3.12 job (`WHEEL_SMOKE`) | uv-managed CPython 3.12 + `uv pip`; the image's newest python.org `C:\Python3XY-x64` + `pip` | yes |
+
+Run it locally against a fresh venv:
+
+```powershell
+$repo = (Get-Location).Path
+uv build --wheel
+uv venv $env:TEMP\flaui-smoke --python 3.12
+uv pip install --python $env:TEMP\flaui-smoke\Scripts\python.exe (Get-ChildItem dist\*.whl).FullName
+Push-Location $env:TEMP
+& $env:TEMP\flaui-smoke\Scripts\python.exe -I "$repo\scripts\wheel_smoke.py" --apps-dir "$repo\test_applications"
+Pop-Location
+```
 
 Azure caches both the UV runtime/download cache and the project virtualenv with `Cache@2`, keyed by
-OS, Python version, `uv.lock`, and `pyproject.toml`. AppVeyor caches the UV download cache and
+OS (the image name for the venv), Python version, `uv.lock`, and `pyproject.toml`. AppVeyor caches the UV download cache and
 `.venv` with the same lockfile inputs. The bundled FlaUI DLLs and test application executables are
 already tracked in the repository, so there is no separate FlaUI build cache in the initial jobs.
 
