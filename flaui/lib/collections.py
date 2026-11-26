@@ -41,9 +41,10 @@ class TypeCast:
         return TimeSpan.FromMilliseconds(value)
 
     @staticmethod
-    def cs_datetime(date: date):
+    def cs_datetime(date: date) -> CSDateTime:
         """Parses Python date as C# Datetime object
 
         :param date: Python date
+        :return: Equivalent C# ``System.DateTime``
         """
         return CSDateTime.Parse(arrow.get(date).strftime("%Y-%m-%d"))

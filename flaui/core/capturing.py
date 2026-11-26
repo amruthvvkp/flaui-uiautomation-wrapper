@@ -284,6 +284,7 @@ class VideoRecorder(BaseModel):
                 return result.raw_image if isinstance(result, CaptureImage) else result
 
         delegate = Func[CSVideoRecorder, CSCaptureImage](_frame)
+        # pylint: disable-next=too-many-function-args  # C# ctor; pylint resolves FlaUI.Core.Capturing to this module on case-insensitive file systems
         raw = CSVideoRecorder(settings.cs_object, delegate)
         return cls(raw_recorder=raw, keep_alive=(_frame, delegate))
 

@@ -27,7 +27,7 @@ The Python exceptions mirror the C# ``FlaUI.Core.Exceptions`` inheritance tree s
 
 from contextlib import contextmanager
 from functools import wraps
-from typing import Any, Callable, Generator, Optional, Union
+from typing import Any, Callable, Generator, Optional, TypeVar, Union, cast
 
 from FlaUI.Core.Exceptions import (  # type: ignore
     ElementNotAvailableException as CSharpElementNotAvailableException,
@@ -365,7 +365,10 @@ def translate_exceptions(arg: Union[Callable[..., Any], str, None] = None) -> An
     return _translate_exceptions_block(arg or "operation")
 
 
-def handle_csharp_exceptions(func):
+_F = TypeVar("_F", bound=Callable[..., Any])
+
+
+def handle_csharp_exceptions(func: _F) -> _F:
     """Wrap a function so C# FlaUI exceptions are re-raised as their Python equivalents.
 
     The C# exception text is preserved in the re-raised message, and the offending
@@ -391,11 +394,11 @@ def handle_csharp_exceptions(func):
     """
 
     @wraps(func)
-    def wrapper(*args, **kwargs) -> Any:
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         """Invoke ``func`` and translate any C# exception into its Python equivalent."""
         try:
             return func(*args, **kwargs)
         except System.Exception as e:
             _raise_translated(e, func.__name__)
 
-    return wrapper
+    return cast(_F, wrapper)

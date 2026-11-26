@@ -24,6 +24,7 @@ class PatternBase(BaseModel, abc.ABC):  # pragma: no cover
     raw_pattern: Any = Field(..., description="The underlying C# FlaUI pattern object")
 
     @field_validator("raw_pattern")
+    @classmethod
     def validate_pattern_exists(cls, v: Any, info: ValidationInfo) -> Any:
         """Validate the native pattern object exists.
 

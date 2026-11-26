@@ -90,6 +90,29 @@ stages:
             displayName: Publish Interrogate badge artifact
             artifact: interrogate-badge
 
+          # Static analysis (GH-85). Configuration lives in pyproject.toml ([tool.pylint.*],
+          # [tool.bandit], [tool.vulture]); the vulture public-API whitelist is vulture_whitelist.py.
+          - bash: |
+              uv run --group dev pylint flaui --fail-under=9.5
+            displayName: Run Pylint (score >= 9.5)
+            env:
+              UV_FROZEN: "$(UV_FROZEN)"
+              UV_CACHE_DIR: "$(UV_CACHE_DIR)"
+
+          - bash: |
+              uv run --group dev bandit -c pyproject.toml -r flaui
+            displayName: Run Bandit (security lint)
+            env:
+              UV_FROZEN: "$(UV_FROZEN)"
+              UV_CACHE_DIR: "$(UV_CACHE_DIR)"
+
+          - bash: |
+              uv run --group dev vulture
+            displayName: Run Vulture (dead code)
+            env:
+              UV_FROZEN: "$(UV_FROZEN)"
+              UV_CACHE_DIR: "$(UV_CACHE_DIR)"
+
       - job: docs_strict
         displayName: Build documentation strict
         pool:

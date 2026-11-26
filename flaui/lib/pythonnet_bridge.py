@@ -5,7 +5,7 @@ import logging
 import clr
 from System.Reflection import Assembly  # pyright: ignore[reportMissingImports]
 
-import flaui.lib.config as config
+from flaui.lib import config
 
 logger = logging.getLogger(__name__)
 
@@ -21,12 +21,12 @@ def setup_pythonnet_bridge() -> None:
 
     :raises err: On failure to load the existing C# dependencies listed under flaui/bin
     """
-    BIN_HOME = config.settings.BIN_HOME
-    if BIN_HOME != config.DEFAULT_BIN_HOME:
-        logger.warning("Loading FlaUI assemblies from FLAUI_BIN_HOME=%s instead of the bundled DLLs", BIN_HOME)
+    bin_home = config.settings.BIN_HOME
+    if bin_home != config.DEFAULT_BIN_HOME:
+        logger.warning("Loading FlaUI assemblies from FLAUI_BIN_HOME=%s instead of the bundled DLLs", bin_home)
     global FLAUI_CSHARP_VERSION
     try:
-        for _ in BIN_HOME.glob("*.dll"):
+        for _ in bin_home.glob("*.dll"):
             clr.AddReference(_.as_posix())  # pyright: ignore
             clr.AddReference(_.stem)  # pyright: ignore
             assembly = Assembly.LoadFile(_.as_posix())
