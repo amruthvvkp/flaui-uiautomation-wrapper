@@ -251,9 +251,49 @@ UIA2/UIA3 framework-adapter internals are out of scope by design.
 | Docstring coverage (`interrogate`) | 95%+ | ~99% ✅ |
 | Ruff lint | 0 errors | clean ✅ |
 | Pattern parity | 34/34 | ✅ |
-| Element finding | < 100ms avg | — |
-| Action execution | < 50ms avg | — |
-| Wheel size | < 10MB | — |
+| Wrapper overhead vs FlaUI C# | < 5ms avg per call | −8 to +2ms across UIA2/UIA3 × WinForms/WPF ✅ |
+| Wheel size | < 10MB | 0.39MB (386KB, DLLs included) ✅ |
+
+**Absolute latency is reference-only, not a gate.** `scripts/benchmark.py` (GH-85) times each
+operation through the wrapper and through the raw C# object it wraps. The wrapper adds nothing
+measurable. The absolute numbers depend on Windows UIA and the app under test, so a Python wrapper
+cannot gate them. Measured on Windows 11 (26200), Python 3.11, 100 iterations, wrapper mean in ms:
+
+| Operation | UIA2 WinForms | UIA2 WPF | UIA3 WinForms | UIA3 WPF |
+|-----------|---------------|----------|---------------|----------|
+| Find descendant by automation id | 113 | 18 | 111 | 18 |
+| Find descendant by name | 37 | 26 | 36 | 27 |
+| Find all children | 16 | 4 | 16 | 3 |
+| Read a property | 0.07 | 0.15 | 0.07 | 0.16 |
+| Select radio button / toggle checkbox | 0.1 / 2.1 | 0.4 / 1.0 | 0.1 / 1.8 | 0.4 / 3.6 |
+| Mouse click | 130 | 113 | 129 | 113 |
+
+The original "< 100ms find" target is missed only by the WinForms descendant-by-id search, where FlaUI
+C# alone takes 112–119ms. The original "< 50ms action" target is missed only by mouse clicks. Those
+include FlaUI's built-in wait for input to be processed, and the same call through C# takes just as
+long. Clicking one spot repeatedly is slower still (~525ms), because FlaUI waits out the system
+double-click time. Re-measure with `uv run python scripts/benchmark.py`, which exits 1 on an overhead miss. User-facing
+write-up: [docs/performance.md](docs/performance.md).
+
+**Element name maps add no measurable latency.** `scripts/benchmark_name_map.py` times a lookup of
+the Simple Controls `TextBox` four ways: a direct wrapper `find_first_descendant`, the test-suite map
+(`tests/test_utilities/elements`), the documented `examples/pytest/app_map.py` recipe, and the
+suite map's lookup chain written out without map classes. Results are means from 200 iterations,
+in ms, with the Simple Controls tab already selected:
+
+| | UIA2 WinForms | UIA2 WPF | UIA3 WinForms | UIA3 WPF |
+|-|---------------|----------|---------------|----------|
+| Direct wrapper find | 54 | 9.2 | 52 | 7.8 |
+| Suite map vs direct | −12 | −0.4 | −9 | +0.0 |
+| Docs map vs direct | −0.9 | +0.7 | −0.0 | +0.4 |
+| Building one page class | 0.17 | 0.15 | 0.15 | 0.15 |
+
+The suite map is *faster* on WinForms. It searches only the tab item's direct children, while the
+direct call searches every descendant of the window. Building a page class costs about 0.15ms for the
+suite's `BaseSettings` classes, which re-read environment variables, and under 0.01ms for the docs
+recipe's `BaseModel`. Run-to-run noise is about ±5ms on WinForms. The one real cost is outside this
+table: when the tab is not selected, the suite map selects it with `post_wait=True`, a deliberate
+100ms+ wait.
 
 ---
 

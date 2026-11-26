@@ -24,6 +24,7 @@ class TextRange(BaseModel):
     raw_text_range: Any = Field(..., description="The underlying C# ITextRange object")
 
     @field_validator("raw_text_range")
+    @classmethod
     def validate_text_range_exists(cls, v: Any, info: ValidationInfo) -> Any:
         """Validate the native text range exists.
 

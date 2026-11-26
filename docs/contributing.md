@@ -31,6 +31,7 @@ See [Testing](contributing/testing.md) for the full fixture walkthrough, `post_w
 ## Code quality
 - `ruff check --fix .` and `ruff format .`
 - Docstring coverage 95%+ (`interrogate`)
+- Static analysis: `ty`, Pylint (score 9.5+), Bandit and Vulture, all configured in `pyproject.toml`
 - Python 3.11+ typing (modern `|` unions / `match`/`case` allowed; existing `typing` imports are fine too)
 
 See [Development Workflow](contributing/development.md) for full command reference, pre-commit hooks, and CI/CD.

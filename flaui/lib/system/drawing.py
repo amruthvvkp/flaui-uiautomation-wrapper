@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from math import pow, sqrt
+from math import sqrt
 from typing import Any, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -565,21 +565,20 @@ class Color:
         ):  # Check if all components are provided (including None)
             # ARGB with all components provided
             return ColorData(cs_object=CSColor.FromArgb(alpha, red, green, blue))
-        elif all(x is not None for x in [red, green, blue]) and alpha is None:
+        if all(x is not None for x in [red, green, blue]) and alpha is None:
             # RGB with implicit alpha 255
             return ColorData(cs_object=CSColor.FromArgb(red, green, blue))
-        elif alpha is not None and base_color is not None:
+        if alpha is not None and base_color is not None:
             # Set alpha for existing color
             return ColorData(cs_object=CSColor.FromArgb(alpha, base_color.cs_object))
-        elif argb is not None and any([alpha, red, green, blue]) is False:
+        if argb is not None and any([alpha, red, green, blue]) is False:
             # Single ARGB value
             alpha = (argb >> 24) & 0xFF  # Extract alpha (shift 24 bits and mask with 0xFF)
             red = (argb >> 16) & 0xFF  # Extract red (shift 16 bits and mask with 0xFF)
             green = (argb >> 8) & 0xFF  # Extract green (shift 8 bits and mask with 0xFF)
             blue = argb & 0xFF  # Extract blue (mask with 0xFF)
             return ColorData(cs_object=CSColor.FromArgb(alpha, red, green, blue))
-        else:
-            raise ValueError("Invalid arguments sent as input, cannot create ColorData object.")
+        raise ValueError("Invalid arguments sent as input, cannot create ColorData object.")
 
     @staticmethod
     def from_known_color(known_color: KnownColor) -> ColorData:
@@ -698,7 +697,10 @@ class Point(BaseModel):
         :param y: y-coordinate, defaults to None
         :param point: Point object, defaults to None
         """
-        self.raw_value.Offset(x, y) if point is None else self.raw_value.Offset(point.raw_value)  # type: ignore
+        if point is None:
+            self.raw_value.Offset(x, y)  # type: ignore
+        else:
+            self.raw_value.Offset(point.raw_value)  # type: ignore
 
     def subtract(self, point: Point, size: Size) -> Point:
         """Returns the result of subtracting specified Size from the specified Point.
@@ -724,8 +726,7 @@ class Point(BaseModel):
         """
         if isinstance(other, Size):
             return Point(raw_value=self.raw_value.Add(self.raw_value, other.raw_value))  # type: ignore
-        else:
-            raise TypeError(f"Unsupported operand type(s) for +: 'Point' and '{type(other)}'")
+        raise TypeError(f"Unsupported operand type(s) for +: 'Point' and '{type(other)}'")
 
     def __eq__(self, other: object) -> bool:
         """Compares two Point objects for equality
@@ -776,13 +777,12 @@ class Point(BaseModel):
         :return: Distance calculated
         """
         if other_x is not None and other_y is not None:
-            return sqrt((pow(self.x - other_x, 2) + pow(self.y - other_y, 2)))
-        elif other_point is not None:
-            return sqrt((pow(self.x - other_point.x, 2) + pow(self.y - other_point.y, 2)))
-        else:
-            raise ValueError(
-                "Invalid arguments passed to measure distance, you need to pass x-coordinate & y-coordinate or Point object"
-            )
+            return sqrt((self.x - other_x) ** 2 + (self.y - other_y) ** 2)
+        if other_point is not None:
+            return sqrt((self.x - other_point.x) ** 2 + (self.y - other_point.y) ** 2)
+        raise ValueError(
+            "Invalid arguments passed to measure distance, you need to pass x-coordinate & y-coordinate or Point object"
+        )
 
 
 class Size(BaseModel):
@@ -955,7 +955,7 @@ class Rectangle(BaseModel):
             return v
         if isinstance(v, List) and len(v) == 4:
             return CSRectangle(*v)
-        elif (isinstance(v, List) or isinstance(v, Tuple)) and (
+        if isinstance(v, (List, Tuple)) and (
             len(v) == 2 and isinstance(v[0], Point) and isinstance(v[1], Size)
         ):
             return CSRectangle(v[0].raw_value, v[1].raw_value)
@@ -1098,7 +1098,7 @@ class Rectangle(BaseModel):
         """
         return (
             self.raw_value.Contains(other.raw_value)  # type: ignore
-            if (isinstance(other, Point) or isinstance(other, Rectangle))
+            if isinstance(other, (Point, Rectangle))
             else self.raw_value.Contains(other[0], other[1])  # type: ignore
         )
 
@@ -1171,7 +1171,10 @@ class Rectangle(BaseModel):
         :param y: y-coordinate, defaults to None
         :param point: Point object, defaults to None
         """
-        self.raw_value.Offset(x, y) if point is None else self.raw_value.Offset(point.raw_value)  # type: ignore
+        if point is None:
+            self.raw_value.Offset(x, y)  # type: ignore
+        else:
+            self.raw_value.Offset(point.raw_value)  # type: ignore
 
     def to_string(self) -> str:
         """Converts the attributes of this Rectangle to a human-readable string.
@@ -1316,8 +1319,7 @@ class Rectangle(BaseModel):
             if self.height % 2 == 1:
                 self.height -= 1
 
-        except AttributeError:  # Handle cases where width/height are not modifiable
-            raise ValueError("Something went wrong modifying width/height for the rectangle making it even.")
-        else:
-            # Create a new self if in-place modification is not possible
-            return Rectangle(raw_value=self.raw_value)
+        except AttributeError as exc:  # Handle cases where width/height are not modifiable
+            raise ValueError("Something went wrong modifying width/height for the rectangle making it even.") from exc
+        # Create a new self if in-place modification is not possible
+        return Rectangle(raw_value=self.raw_value)

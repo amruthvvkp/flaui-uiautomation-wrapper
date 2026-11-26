@@ -89,11 +89,11 @@ def disable_csharp_logging() -> None:
 
     global _active_sink
     if _active_sink is not None:
-        event_logger, delegate, _callback = _active_sink
+        event_logger, delegate, _callback = _active_sink  # pylint: disable=unpacking-non-sequence  # narrowed by the None check
         try:
             event_logger.OnLog -= delegate
         except Exception:  # pragma: no cover - best-effort detach
-            pass
+            logging.getLogger(__name__).debug("Failed to detach the C# log sink", exc_info=True)
         _active_sink = None
     CSLogger.Default = NullLogger()
 

@@ -27,6 +27,7 @@ nav = [
     { "Configuration & logging" = "configuration.md" },
     { "Multiple instances" = "multi-instance.md" },
     { "Concepts" = "concepts.md" },
+    { "Performance" = "performance.md" },
     { "Running on CI/CD" = "ci-cd.md" },
     { "Troubleshooting" = "troubleshooting.md" },
   ] },
