@@ -17,7 +17,8 @@ authors = [
   { name = "Varshith VVS", email = "svvarsham@gmail.com" },
   { name = "Tejaswani Sathish Kumar", email = "tejaswani12.92@gmail.com" },
 ]
-license = { text = "LGPL-3.0-or-later" }
+license = "LGPL-3.0-or-later"
+license-files = ["LICENSE", "COPYING"]
 keywords = [
   "automation",
   "desktop automation",
@@ -33,7 +34,6 @@ keywords = [
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
   "Operating System :: Microsoft :: Windows",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
@@ -88,8 +88,14 @@ unit-test = [
 ]
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["uv_build>=0.13,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+# Flat layout: the package lives at ./flaui, not ./src/flaui. Everything under flaui/ is packaged,
+# including py.typed and the bundled C# DLLs in flaui/bin/ (uv_build does not read .gitignore).
+module-name = "flaui"
+module-root = ""
 
 [tool.black]
 # https://github.com/psf/black
@@ -146,11 +152,6 @@ omit = [
 max-line-length = 120
 extend-ignore = ["E203"]
 max-complexity = 10
-
-[tool.hatch.build.targets.wheel]
-# `/flaui` already packages flaui/py.typed; the DLLs are listed explicitly because
-# they are gitignored and would otherwise be excluded from the wheel.
-only-include = ["/README.md", "/flaui", "flaui/bin/*.dll"]
 
 [tool.interrogate]
 ignore-init-method = true

@@ -200,6 +200,10 @@ uv, the Microsoft Store, conda, ...).
   `Automation(timeout=...)` or `FLAUI_MAIN_WINDOW_TIMEOUT` (milliseconds). See
   [Timeouts](configuration.md#timeouts).
 
+## Slow tests
+- Narrow searches to a container and prefer patterns (`invoke()`, `toggle()`) to mouse clicks.
+  See [Performance](performance.md) for measured costs.
+
 ## Flakiness tips
 - Add short post_waits on mouse moves/drags.
 - Use Retry with smaller intervals (50–100ms) and bounded timeouts.
