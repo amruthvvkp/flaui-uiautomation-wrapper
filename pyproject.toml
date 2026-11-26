@@ -17,7 +17,8 @@ authors = [
   { name = "Varshith VVS", email = "svvarsham@gmail.com" },
   { name = "Tejaswani Sathish Kumar", email = "tejaswani12.92@gmail.com" },
 ]
-license = { text = "LGPL-3.0-or-later" }
+license = "LGPL-3.0-or-later"
+license-files = ["LICENSE", "COPYING"]
 keywords = [
   "automation",
   "desktop automation",
@@ -33,7 +34,6 @@ keywords = [
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
   "Operating System :: Microsoft :: Windows",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
@@ -148,8 +148,8 @@ extend-ignore = ["E203"]
 max-complexity = 10
 
 [tool.hatch.build.targets.wheel]
-# `/flaui` already packages flaui/py.typed; the DLLs are listed explicitly because
-# they are gitignored and would otherwise be excluded from the wheel.
+# `/flaui` already packages flaui/py.typed and the DLLs; the DLLs are also listed explicitly
+# so they stay in the wheel even if a global or local .gitignore ever matches *.dll.
 only-include = ["/README.md", "/flaui", "flaui/bin/*.dll"]
 
 [tool.interrogate]

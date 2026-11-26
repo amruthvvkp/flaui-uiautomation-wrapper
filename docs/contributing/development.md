@@ -52,6 +52,27 @@ pre-commit install        # install hooks
 pre-commit run --all-files  # run manually
 ```
 
+## Performance benchmark
+
+`scripts/benchmark.py` times element finding and actions against the bundled WinForms and WPF test
+apps on all four UIA2/UIA3 combinations. It runs each operation through the wrapper and through the
+raw C# object, so the table shows how much the wrapper adds on top of FlaUI:
+
+```bash
+uv run python scripts/benchmark.py              # 50 iterations per operation
+uv run python scripts/benchmark.py -n 200 --json results.json
+```
+
+`scripts/benchmark_name_map.py` (same flags, minus `--json`) does the same for element name maps. It
+compares a direct find with the test-suite map and the documented `examples/pytest/app_map.py`
+recipe, and splits the difference into extra UIA lookups and map-class cost. It only reports, so it
+always exits 0.
+
+Both scripts need an interactive desktop, because they launch the apps and click controls, so they
+are not run in CI. The v1 gate is wrapper overhead under 5 ms mean per operation, and
+`benchmark.py` exits 1 when any operation misses it. Absolute timings are printed for reference only: they come from Windows UIA and
+the app under test. Current numbers are on the [Performance](../performance.md) page.
+
 ## Exception handling
 
 All C# interop must use the `@handle_csharp_exceptions` decorator (from `flaui/lib/exceptions.py`),
