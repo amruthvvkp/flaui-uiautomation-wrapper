@@ -65,6 +65,19 @@ main_window = automation.application.launch("notepad.exe").get_main_window(autom
 main_window.find_first_by_x_path("//Button[@Name='OK']").as_button().invoke()
 ```
 
+## Performance
+
+| | Measured median |
+|-|-----------------|
+| Overhead over calling FlaUI C# directly | None measurable (under the 5 ms gate on every operation) |
+| Element lookup vs pywinauto's `uia` backend | 1.5–5.6× faster (35 ms vs 198 ms by name on WinForms) |
+| Mouse click vs pywinauto | 4.5–5× faster (127 ms vs 566 ms on WinForms)¹ |
+
+*Setup:* Windows 11, Python 3.11, the bundled WinForms and WPF test apps, wrapper on UIA3, 100 runs,
+default timings on both sides. ¹ pywinauto waits out the double-click time before every click.
+pywinauto's `win32` backend beats both libraries' UIA paths on finds and checkbox/radio actions
+where it applies (WinForms only, no AutomationId); its clicks take as long as `uia`'s. Full numbers: [Performance](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/blob/master/docs/performance.md#compared-with-pywinauto).
+
 ## Documentation
 
 Full documentation lives at

@@ -74,7 +74,7 @@ when you know the structure.
     var checkBox = window.FindFirstByXPath("//CheckBox[@Name='Test Checkbox']").AsCheckBox();
     ```
 
-### Combining conditions (And / Or / Not)
+### Combining conditions
 
 === "Python"
 
@@ -95,10 +95,48 @@ when you know the structure.
     var checkBoxes = window.FindAllDescendants(twoState);
     ```
 
-!!! warning "`Not` takes an argument in Python"
-    In C#, `ConditionBase.Not()` negates the condition it is called on. The Python
-    `PropertyCondition.Not(other)` means **self AND NOT other**, which is the common case written
-    as one call.
+| Python operator | Python method | C# | Result type |
+| --- | --- | --- | --- |
+| `a & b` | `a.and_(b)` | `a.And(b)` | `AndCondition` |
+| `a \| b` | `a.or_(b)` | `a.Or(b)` | `OrCondition` |
+| `~a` | `a.not_()` | `a.Not()` | `NotCondition` |
+
+Python precedence applies: `~` binds tighter than `&`, and `&` tighter than `|`, so
+`a & ~b | c` is `(a & (~b)) | c`. Add parentheses when you mean something else. Either side of `&`
+and `|` may also be a raw C# condition.
+
+!!! note "The C#-named `And` / `Or` / `Not` still work"
+    They are kept as aliases so existing code keeps running. `a.Not()` with no argument negates
+    `a`, like C#. `a.Not(b)` keeps its older Python meaning, **a AND NOT b** (that is, `a & ~b`).
+    New code should use the operators or `and_` / `or_` / `not_`.
+
+### True and false conditions
+
+`ConditionFactory.true_condition()` matches every element and `ConditionFactory.false_condition()`
+matches none. They wrap C# `TrueCondition.Default` and `FalseCondition.Default`, and you can call them
+without a factory instance. They are a handy neutral start when you build a condition in a loop.
+
+=== "Python"
+
+    ```python
+    --8<-- "examples/pytest/test_advanced.py:true_condition"
+    ```
+
+=== "C#"
+
+    ```csharp
+    var wanted = new[] { "InvokableButton", "RadioButton1", "ThreeStateCheckBox" };
+    ConditionBase anyOf = FalseCondition.Default;
+    foreach (var automationId in wanted)
+    {
+        anyOf = anyOf.Or(cf.ByAutomationId(automationId));
+    }
+
+    var buttonCondition = TrueCondition.Default.And(cf.ByControlType(ControlType.Button));
+
+    var found = window.FindAllDescendants(anyOf);
+    var buttons = window.FindAllDescendants(buttonCondition);
+    ```
 
 Other factory methods: `by_name`, `by_text`, `by_class_name`, `by_help_text`, `by_value`,
 `by_framework_id`, `by_framework_type`, `by_process_id`, `by_localized_control_type`. See the

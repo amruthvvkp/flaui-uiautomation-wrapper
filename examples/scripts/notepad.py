@@ -38,7 +38,7 @@ def main() -> None:
 
         # Classic Notepad exposes an Edit control; Store Notepad a Document. Take whichever exists.
         editor = window.find_first_descendant(
-            cf.by_control_type(ControlType.Document).Or(cf.by_control_type(ControlType.Edit))
+            cf.by_control_type(ControlType.Document) | cf.by_control_type(ControlType.Edit)
         )
         # Set the text through the Value pattern: no keystrokes, so nothing else on the desktop can
         # interleave with it. Use `Keyboard.type(...)` instead when you need real key events.

@@ -21,9 +21,9 @@ of truth; this page is the human-friendly summary.
 | [Phase 4 — Events](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/11) | Event handler system, automation events | ✅ Complete |
 | [Phase 5 — Capturing/Overlay/Video](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/12) | Screenshots, overlays, video recording | ✅ Complete |
 | [Phase 6 — Logging/Tools/Enhancers](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/13) | Logging bridge, tools, Pythonic enhancers | ✅ Complete |
-| [Phase 0 — Stabilize](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/7) | Green CI, stable matrix, 100% core coverage | 🚧 In progress |
+| [Phase 0 — Stabilize](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/7) | Green CI, stable matrix, 95% core coverage gate | ✅ Complete |
 | [Phase 7 — Docs & Zensical](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/14) | v1 docs, per-framework guides, API reference | ✅ Complete |
-| [Phase 8 — Polish & v1.0](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/15) | Release plumbing, beta soak, v1.0.0 | 🗓️ Planned |
+| [Phase 8 — Polish & v1.0](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/15) | Release plumbing, beta soak, v1.0.0 | 🚧 In progress |
 
 ## ✅ Completed
 
@@ -65,26 +65,26 @@ of truth; this page is the human-friendly summary.
 - [x] [TestPlan sample suites (#49)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/49)
 - [x] [Behave sample suites (#48)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/48)
 
-## 🚧 In progress
-
 ### Phase 0 — Stabilize ([milestone](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/7))
-- [ ] [Achieve ~90–95% `flaui.core` coverage + enforce a coverage gate (#88)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/88)
-- [ ] [Spinner AutomationID flakiness (#74)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/74) — harden locator
+- [x] [Achieve ~90–95% `flaui.core` coverage + enforce a coverage gate (#88)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/88)
+- [x] [Spinner AutomationID flakiness (#74)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/74) — locator hardened; upstream peer bug skipped with a reason
 - [x] [Tree-item flakiness on CI (#76)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/76) — wait for items to materialize
 - [x] [`test_get_control_type` setup flakiness (#82)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/82) — leftover context menu from `test_context_menu`; now dismissed
-- [ ] [`find_all/first_with_options` matrix failures (#80)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/80) — investigate `TreeTraversalOptions`
+- [x] [`find_all/first_with_options` matrix failures (#80)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/80) — UIA2 doesn't implement them (skipped); test fixed for UIA3
 - [x] [`ListBox.select_by_index` on UIA3/WPF (#83)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/83) — fix selection
-- [ ] [Notepad tests on Windows 11 Store app (#89)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/89) — environment guard
+- [x] [Notepad tests on Windows 11 Store app (#89)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/89) — environment guard in place; full support moved to Post-v1
 - [x] Document upstream Windows/.NET limitations — [ComboBox/WinForms (#75)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/75), [Toggle on WinForms menus (#78)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/78), [UIA3 WinForms context menus (#79)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/79)
 
-## 🗓️ Planned
+## 🚧 In progress
 
 ### Phase 8 — Polish & v1.0 ([milestone](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/15))
+- [ ] [Final polish & production readiness (#85)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/85) — benchmarks, integration suite, Python/Windows matrix, static analysis and packaging done; code-review fixes and caching left
+- [ ] C# parity gaps: [Definitions enums (#157)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/157), [condition combinators (#158)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/158), [`FlaUI.Core.Debug` (#159)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/159), [capture settings & overlays (#160)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/160), [small Core gaps (#161)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/161) — in review
+- [ ] [Bump bundled DLLs to FlaUI 5.1 (#162)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/162) — waits for the NuGet release
+- [x] [release-drafter on PR merge (#65)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/65)
+- [x] [Publish workflow: PR-on-release → master (#57)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/57)
+- [x] [Link PyPI version in release notes (#66)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/66)
 - [ ] [v1.0.0 official release (#84)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/84)
-- [ ] [Final polish & production readiness (#85)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/85)
-- [ ] [release-drafter on PR merge (#65)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/65)
-- [ ] [Publish workflow: PR-on-release → master (#57)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/57)
-- [ ] [Link PyPI version in release notes (#66)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/66)
 
 ## 💡 Post‑v1 — Ecosystem & Playwright-grade polish ([milestone](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/16))
 - [ ] [Playwright-style auto-waiting for element actions (#139)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/139)

@@ -56,6 +56,13 @@ _.VideoQuality  # unused attribute
 _.EncodeWithLowPriority  # unused attribute
 _.LogMissingFrames  # unused attribute
 keep_alive  # unused variable
+# `InfoOverlayPosition` enum members (GH-160), mirroring the C# enum; only `TopLeft` is the default.
+TopLeft  # unused variable
+TopRight  # unused variable
+TopCenter  # unused variable
+BottomLeft  # unused variable
+BottomRight  # unused variable
+BottomCenter  # unused variable
 
 # --- flaui/core/condition_factory.py -----------------------------------------------------------------
 # Public API (C# parity), used by callers and tests rather than inside the package.
