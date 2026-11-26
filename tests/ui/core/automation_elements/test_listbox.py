@@ -4,7 +4,7 @@ from typing import Any, Generator
 
 from dirty_equals import HasAttributes, HasLen, IsList
 from flaui.core.automation_elements import ListBox, ListBoxItem
-from flaui.lib.exceptions import ElementNotFound
+from flaui.lib.exceptions import ElementNotFound, SystemException
 import pytest
 
 from tests.test_utilities.elements.winforms_application import WinFormsApplicationElements
@@ -42,20 +42,26 @@ class TestListBox:
         """Tests the items property."""
         assert list_box == HasAttributes(items=HasLen(2)), "List box should have 2 items."
 
-    @pytest.mark.bug(
-        "GH-83",
-        "test_select_by_index fails on UIA3+WPF - ListBox.select(index) not working",
-        run=True,
-    )
     def test_select_by_index(self, list_box: ListBox) -> None:
         """Tests the select_by_index method."""
         assert list_box.items == HasLen(2), "List box should have 2 items."
         assert all([isinstance(_, ListBoxItem) for _ in list_box.items]), "All items should be ListBoxItem instances."
-        assert list_box.selected_items == IsList(length=0), "No item should be selected."
-        with pytest.raises(
-            ElementNotFound
-        ):  # This is needed since Python layer explicitly validates if element is found or not
-            assert list_box.selected_item
+        # GH-83: upstream FlaUI restarts the app for every fixture, but the matrix apps here are
+        # session-scoped, so an earlier test (or a stray click on an overlapping matrix window) can
+        # leave an item selected. Clear any leftover selection so the "nothing selected" check is
+        # about this test, not about whatever ran before it. A WinForms single-select list box
+        # refuses to go back to "no selection" ("Selection container requires one selection"), so
+        # there the check only runs when the list box starts out clean.
+        for selected in list_box.selected_items:
+            try:
+                selected.remove_from_selection()
+            except SystemException:
+                break
+        if not list_box.selected_items:
+            with pytest.raises(
+                ElementNotFound
+            ):  # This is needed since Python layer explicitly validates if element is found or not
+                assert list_box.selected_item
         for index in range(2):
             item = list_box.select(index)
             assert item == HasAttributes(text=f"ListBox Item #{index + 1}")
