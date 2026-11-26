@@ -254,6 +254,10 @@ UIA2/UIA3 framework-adapter internals are out of scope by design.
 | Pattern parity | 34/34 | ✅ |
 | Wrapper overhead vs FlaUI C# | < 5ms avg per call | −8 to +2ms across UIA2/UIA3 × WinForms/WPF ✅ |
 | Compared with pywinauto | measured | median/p95 on the same apps; wrapper UIA descendant searches 1.4–5.6× faster than pywinauto `uia`, pywinauto `win32` fastest on WinForms ✅ |
+| Agent tree snapshot (whole main window, 5 properties per element) | measured | WPF 62–71ms cached subtree (~0.9ms/element), WinForms 190–320ms by any method (UIA-bound); wrapper ≈ raw C# ✅ |
+| Agent cold start (fresh process → first find) | measured | ~2.0–2.6s, ~1.3s of it importing (CLR + pydantic_settings); pywinauto ~0.9s ⚠️ keep one long-lived process |
+| Agent screenshot (window → PNG bytes) | measured | 17–33ms (one or two display frames), 2–4× faster than Pillow `ImageGrab` ✅ |
+| Agent reliability (find + toggle) | 100% | 500/500 on all four UIA2/UIA3 × WinForms/WPF combos ✅ |
 | Wheel size | < 10MB | 0.39MB (386KB, DLLs included) ✅ |
 
 **Absolute latency is reference-only, not a gate.** `scripts/benchmark.py` (GH-85) times each
@@ -316,6 +320,19 @@ pywinauto's `win32` backend beats the wrapper wherever it applies (WinForms only
 descendant, filter in Python, insist on a unique match): the same `FindFirst` through its comtypes
 object matches FlaUI. pywinauto's clicks wait out the double-click time since the last input on every
 click, plus 90ms. Full tables and caveats: [docs/performance.md](docs/performance.md#compared-with-pywinauto).
+
+
+**Agent workloads.** `scripts/benchmark_agent.py` times what an AI computer-use agent does on each step
+(GH-85, groundwork for the MCP server in #145). It covers a full accessibility-tree snapshot (wrapper,
+`CacheRequest`, cached subtree, raw C#, pywinauto `descendants()` and raw comtypes), cold start in 10
+fresh processes, window and element capture to PNG bytes, `find_all_descendants` on the largest lists
+and grids, and 500 find-plus-toggle cycles. Snapshots are UIA-bound and the wrapper adds nothing. On WPF
+a cached-subtree walk halves the cost and beats pywinauto and comtypes. On WinForms every method costs
+3.4–5.8ms per element. Cold start (~2s, mostly imports) is the weak spot against pywinauto (~0.9s).
+Follow-ups that would help, not done in the benchmark PR: a snapshot helper that returns plain Python
+data from a cached subtree (`cached_children` returns raw C# today), a `CaptureImage` to-PNG-bytes
+helper, and lazy imports of `pydantic_settings` and the CLR. Full tables:
+[docs/performance.md](docs/performance.md#workloads-for-ai-agents).
 
 ---
 
