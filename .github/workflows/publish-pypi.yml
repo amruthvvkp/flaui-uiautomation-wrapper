@@ -1,7 +1,12 @@
 name: Publish to PyPI
 
-# Builds the package at a given tag and uploads it to PyPI using the repository
-# `PYPI_API_TOKEN` secret. This is the single PyPI publish path; it is invoked three ways:
+# Builds the package at a given tag and uploads it to PyPI with Trusted Publishing (OIDC, no API
+# token). The upload carries PEP 740 attestations, so PyPI shows provenance for every file.
+# PyPI must list this repository as a trusted publisher, with environment `pypi`, for both
+# `publish-pypi.yml` (stable releases and backfills) and `release-beta.yml` (betas call this
+# workflow, and PyPI matches the calling workflow).
+#
+# This is the single PyPI publish path; it is invoked three ways:
 #
 #   1. workflow_call  — from release-beta.yml after a beta pre-release + tag is cut on merge to
 #                       master (the beta is published via GITHUB_TOKEN, which by design does NOT
@@ -33,6 +38,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write # Trusted Publishing + attestations
 
 concurrency:
   group: publish-pypi-${{ inputs.tag || github.event.release.tag_name }}
@@ -42,6 +48,9 @@ jobs:
   publish:
     name: Build and publish to PyPI
     runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/flaui-uiautomation-wrapper/${{ steps.tag.outputs.version }}/
     steps:
       - name: Resolve tag and version
         id: tag
@@ -76,5 +85,5 @@ jobs:
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
+          attestations: true
           skip-existing: true
