@@ -42,7 +42,7 @@ class TestListBox:
         """Tests the items property."""
         assert list_box == HasAttributes(items=HasLen(2)), "List box should have 2 items."
 
-    def test_select_by_index(self, list_box: ListBox) -> None:
+    def test_select_by_index(self, list_box: ListBox, test_application_type: str) -> None:
         """Tests the select_by_index method."""
         assert list_box.items == HasLen(2), "List box should have 2 items."
         assert all([isinstance(_, ListBoxItem) for _ in list_box.items]), "All items should be ListBoxItem instances."
@@ -51,13 +51,16 @@ class TestListBox:
         # leave an item selected. Clear any leftover selection so the "nothing selected" check is
         # about this test, not about whatever ran before it. A WinForms single-select list box
         # refuses to go back to "no selection" ("Selection container requires one selection"), so
-        # there the check only runs when the list box starts out clean.
+        # on WinForms the check only runs when the list box starts out clean.
         for selected in list_box.selected_items:
             try:
                 selected.remove_from_selection()
             except SystemException:
+                if test_application_type != "WinForms":
+                    raise
                 break
-        if not list_box.selected_items:
+        if test_application_type != "WinForms" or not list_box.selected_items:
+            assert list_box.selected_items == IsList(length=0), "No item should be selected."
             with pytest.raises(
                 ElementNotFound
             ):  # This is needed since Python layer explicitly validates if element is found or not
