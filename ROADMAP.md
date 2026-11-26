@@ -252,7 +252,7 @@ UIA2/UIA3 framework-adapter internals are out of scope by design.
 | Ruff lint | 0 errors | clean ✅ |
 | Pattern parity | 34/34 | ✅ |
 | Wrapper overhead vs FlaUI C# | < 5ms avg per call | −8 to +2ms across UIA2/UIA3 × WinForms/WPF ✅ |
-| Compared with pywinauto | measured | median/p95 on the same apps; wrapper UIA descendant searches 1.4–5.7× faster than pywinauto `uia`, pywinauto `win32` fastest on WinForms ✅ |
+| Compared with pywinauto | measured | median/p95 on the same apps; wrapper UIA descendant searches 1.4–5.6× faster than pywinauto `uia`, pywinauto `win32` fastest on WinForms ✅ |
 | Wheel size | < 10MB | 0.39MB (386KB, DLLs included) ✅ |
 
 **Absolute latency is reference-only, not a gate.** `scripts/benchmark.py` (GH-85) times each

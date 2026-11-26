@@ -91,9 +91,41 @@ The table shows each map's average time minus the direct find:
 in the same process and session as the wrapper: its `uia` backend on both apps, and its `win32`
 backend on WinForms (WPF controls have no window handles, so `win32` cannot see them). pywinauto
 code is written the way its documentation shows, for example
-`window.child_window(auto_id="SimpleCheckBox").wrapper_object()`. Each cell is the **median / p95**
-in milliseconds over 100 runs. The "UIA FindFirst" column makes the same `FindFirst` call FlaUI
-makes, through pywinauto's own comtypes UI Automation object, so it shows what COM itself costs.
+`window.child_window(auto_id="SimpleCheckBox").wrapper_object()`. Both libraries use their default
+timings.
+
+### Summary
+
+Median in milliseconds over 100 runs. The fastest cell in each row is in bold. The last column is
+pywinauto `uia` time divided by wrapper UIA3 time, so 5.6× means the wrapper took a fifth of the
+time and 0.95× means pywinauto was slightly faster. n/a means the backend cannot do that operation
+on that app.
+
+| Operation | App | Wrapper UIA2 | Wrapper UIA3 | pywinauto `uia` | pywinauto `win32` | Wrapper UIA3 vs pywinauto `uia` |
+|-----------|-----|--------------|--------------|-----------------|-------------------|---------------------------------|
+| Find descendant by AutomationId | WinForms | 132 | **114** | 189 | n/a | 1.7× |
+| Find descendant by AutomationId | WPF | 19 | **18** | 54 | n/a | 3.0× |
+| Find descendant by Name | WinForms | 43 | 35 | 198 | **1.7** | 5.6× |
+| Find descendant by Name | WPF | 29 | **25** | 49 | n/a | 2.0× |
+| Find all children | WinForms | 19 | 16 | 23 | **0.23** | 1.5× |
+| Find all children | WPF | 4.1 | **3.3** | 4.8 | n/a | 1.5× |
+| Read a property | WinForms | 0.07 | 0.07 | 0.10 | **0.04** | 1.5× |
+| Read a property | WPF | **0.14** | 0.14 | 0.49 | n/a | 3.4× |
+| Select a radio button | WinForms | 0.10 | 0.09 | 2.6 | **0.06** | 29× |
+| Select a radio button | WPF | **0.34** | 0.36 | 3.4 | n/a | 9.3× |
+| Toggle a checkbox | WinForms | 1.8 | 2.1 | 2.3 | **0.06** | 1.1× |
+| Toggle a checkbox | WPF | **0.95** | 4.0 | 3.8 | n/a | 0.95× |
+| Mouse click | WinForms | 127 | **127** | 566 | 566 | 4.5× |
+| Mouse click | WPF | **111** | 111 | 561 | n/a | 5.0× |
+
+Where two cells look equal, the bold one had the lower unrounded median. The mouse-click gap comes
+from pywinauto's built-in wait before each click, explained below.
+
+### Full results
+
+Each cell is the **median / p95** in milliseconds over 100 runs. The "UIA FindFirst" column makes
+the same `FindFirst` call FlaUI makes, through pywinauto's own comtypes UI Automation object, so it
+shows what COM itself costs.
 
 **WinForms**
 
