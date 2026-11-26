@@ -82,6 +82,16 @@ When working on this project:
 5. Add matrix skip logic if needed (see [docs/contributing/testing.md](docs/contributing/testing.md))
 6. Run all 4 parametrizations to verify
 
+### Updating the Agent Skills
+
+The user-facing agent skills live in `plugins/flaui/skills/` and ship as a Claude Code and Codex plugin
+(see [docs/ai-agents.md](docs/ai-agents.md)).
+
+1. Copy Python snippets verbatim from a runnable file under `examples/`; never write new code in a skill
+2. Name only real `flaui.*` paths; `tests/unit/test_agent_plugin.py` checks snippets, names and manifests
+3. Keep the `version` in both `plugins/flaui/.claude-plugin/plugin.json` and `.codex-plugin/plugin.json` equal to `pyproject.toml`
+4. Validate with `claude plugin validate . --strict` and `claude plugin validate ./plugins/flaui --strict`
+
 ### Debugging PythonNet Issues
 
 1. Verify `setup_pythonnet_bridge()` is called first

@@ -16,6 +16,11 @@ straightforward — an agent can then drive arbitrary Windows applications.
     *substrate* you would build one on. A reference MCP server / agent-tool example is tracked as a
     post-v1 item on the [Roadmap](roadmap.md#postv1-ecosystem-playwright-grade-polish-milestone).
 
+!!! tip "Agent skills and llms.txt"
+
+    To teach an agent how to *use* FlaUI, install the `flaui` plugin for Claude Code or Codex, or
+    point the agent at `llms.txt`. See [Use with AI agents](ai-agents.md).
+
 !!! warning "Responsible use"
 
     Letting an agent click and type into live applications is powerful and risky. If you build

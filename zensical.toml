@@ -29,6 +29,7 @@ nav = [
     { "Concepts" = "concepts.md" },
     { "Performance" = "performance.md" },
     { "Running on CI/CD" = "ci-cd.md" },
+    { "Use with AI agents" = "ai-agents.md" },
     { "Troubleshooting" = "troubleshooting.md" },
   ] },
   { "API Reference" = [

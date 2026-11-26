@@ -1,0 +1,20 @@
+{
+  "name": "flaui-uiautomation-wrapper",
+  "interface": {
+    "displayName": "FlaUI for Python"
+  },
+  "plugins": [
+    {
+      "name": "flaui",
+      "source": {
+        "source": "local",
+        "path": "./plugins/flaui"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

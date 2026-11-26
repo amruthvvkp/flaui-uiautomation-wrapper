@@ -1,0 +1,18 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "flaui-uiautomation-wrapper",
+  "description": "Agent skills for FlaUI for Python: Windows desktop UI automation with UIA2/UIA3.",
+  "owner": {
+    "name": "Amruth VVKP",
+    "url": "https://github.com/amruthvvkp"
+  },
+  "plugins": [
+    {
+      "name": "flaui",
+      "source": "./plugins/flaui",
+      "description": "Skills for setting up FlaUI for Python, finding and driving Windows UI elements, writing pytest UI tests and debugging flaky automation.",
+      "category": "testing",
+      "tags": ["windows", "ui-automation", "flaui", "testing", "computer-use"]
+    }
+  ]
+}
