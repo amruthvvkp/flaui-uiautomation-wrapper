@@ -45,6 +45,7 @@ nav = [
       { "Event Handlers" = "api/event_handlers.md" },
       { "Capturing & Video" = "api/capturing.md" },
       { "Overlay" = "api/overlay.md" },
+      { "Debug" = "api/debug.md" },
       { "Logging" = "api/logging.md" },
     ] },
     { "Input" = [

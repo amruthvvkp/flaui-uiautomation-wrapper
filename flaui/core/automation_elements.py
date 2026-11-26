@@ -676,6 +676,31 @@ class AutomationElement(ElementBase):
 
         return AutomationElementXPathNavigator.from_element(self)
 
+    def get_xpath_to_element(self, root_element: Optional[AutomationElement] = None) -> str:
+        """Return an XPath to this element from the desktop, or from ``root_element``.
+
+        Delegates to :func:`flaui.core.debug.get_xpath_to_element` (``FlaUI.Core.Debug``), which
+        leaves out the step for the root's direct child. Pass the desktop to get a path relative to
+        the top-level window.
+
+        :param root_element: An ancestor to stop at; the desktop when omitted.
+        :return: The XPath.
+        """
+        from flaui.core.debug import get_xpath_to_element
+
+        return get_xpath_to_element(self, root_element)
+
+    def details(self) -> str:
+        """Return a multi-line text dump of this element's properties and supported patterns.
+
+        Delegates to :func:`flaui.core.debug.details` (``FlaUI.Core.Debug.Details``).
+
+        :return: The details text.
+        """
+        from flaui.core.debug import details
+
+        return details(self)
+
     @handle_csharp_exceptions
     def find_first_child(self, condition: Optional[PropertyCondition] = None) -> AutomationElement:
         """Finds the first child.

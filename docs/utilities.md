@@ -23,6 +23,7 @@ FlaUI for Python ports all of them. This page shows each one next to its C# orig
 | [Drawing types](#drawing-types) | `flaui.lib.system.drawing` | `System.Drawing` | points, sizes, rectangles, colours |
 | [Capturing](#screenshots-and-video) | `flaui.core.capturing` | `FlaUI.Core.Capturing` | screenshots and screen recordings |
 | [Highlighting](#highlighting-elements) | `draw_highlight`, `OverlayManager` | `DrawHighlight`, `IOverlayManager` | see which element a locator found |
+| [Debug](#debugging-elements) | `flaui.core.debug` | `FlaUI.Core.Debug` | dump an element, get an XPath to it |
 | [Tools](#other-tools) | `flaui.core.tools` | `FlaUI.Core.Tools` | virtualized lists, MSAA text, system info |
 | [TypeCast](#converting-values-typecast) | `flaui.lib.collections.TypeCast` | n/a | convert values at the Python/.NET boundary |
 
@@ -242,6 +243,48 @@ When you're not sure which element a locator found, draw a frame around it:
 
 `show()` returns straight away; `show_blocking()` waits until the frame has disappeared. Durations
 are in milliseconds.
+
+## Debugging elements
+
+`flaui.core.debug` wraps `FlaUI.Core.Debug`. `details()` dumps an element's properties and
+supported patterns (and those of its children) as text, which is useful in a failure message or a
+log. `get_xpath_to_element()` turns an element you already found into an XPath locator. Both are
+also methods on every element.
+
+=== "Python"
+
+    ```python
+    --8<-- "examples/pytest/test_utilities.py:debug"
+    ```
+
+=== "C#"
+
+    ```csharp
+    Console.WriteLine(Debug.Details(button));
+
+    var desktop = automation.GetDesktop();
+    var xpath = Debug.GetXPathToElement(button, desktop);
+    var sameButton = window.FindFirstByXPath(xpath);
+    ```
+
+How the root changes the path:
+
+| Call | Example result | Search it from |
+|------|----------------|----------------|
+| `get_xpath_to_element(element)` | `/Window[1]/Tab/TabItem[1]/Button[2]` | the desktop |
+| `get_xpath_to_element(element, desktop)` | `/Tab/TabItem[1]/Button[2]` | the top-level window |
+| `get_xpath_to_element(element, window)` | `/TabItem[1]/Button[2]` | the window's `Tab` child |
+
+!!! note "A root leaves out the step for its direct child"
+    Like FlaUI C#, passing `root_element` drops the step for the root's direct child. Pass the
+    desktop to get a path you can hand to `window.find_first_by_x_path()`. Without a root, FlaUI
+    indexes the window among every top-level window, which is slower on a busy desktop and depends
+    on what else is open, so prefer the desktop-rooted form for locators.
+
+!!! warning "`details()` can return an empty string"
+    FlaUI returns `""` when it cannot read one of the properties it dumps. This happens now and then
+    on WinForms, where the MSAA proxy rejects a cached `HelpText` or `AutomationId`. FlaUI's error
+    text is logged as a warning on the `flaui.core.debug` logger.
 
 ## Other tools
 
