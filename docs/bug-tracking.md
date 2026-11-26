@@ -11,8 +11,8 @@ investigation as a genuine wrapper bug; **Env** = environment guard.
 | Issue | Title | Tests Affected | Platform | Category |
 |-------|-------|----------------|----------|----------|
 | [#74](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/74) | Spinner (WinForms NumericUpDown) UIA peer not exposed | test_spinner.py (3 tests) | UIA3 + WinForms | Upstream |
-| ~~[#76](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/76)~~ | Tree test flaky on AppVeyor CI | test_tree.py::test_selection (4 tests) | All (CI only) | ✅ Resolved (no CI failure in 15 full runs; test waits for lazily realised items) |
 | [#75](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/75) | Combobox broken on WinForms | test_combobox.py (WinForms combos skipped; WPF combos run) | UIA2/UIA3 + WinForms | Upstream |
+| ~~[#76](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/76)~~ | Tree test flaky on AppVeyor CI | test_tree.py::test_selection (4 tests) | All (CI only) | ✅ Resolved (no CI failure in 15 full runs; test waits for lazily realised items) |
 | ~~[#77](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/77)~~ | RegisterAutomationEvent not ported | test_invoke_pattern.py::test_invoke_with_event | All | ✅ Resolved (ported) |
 | [#78](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/78) | Toggle pattern unsupported on WinForms menus | test_menu.py::test_checked_menu_item (2 tests) | UIA2/UIA3 + WinForms | Upstream |
 | [#79](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/79) | Context menu broken with UIA3 + WinForms | test_window.py::test_context_menu (1 test) | UIA3 + WinForms | Upstream |
