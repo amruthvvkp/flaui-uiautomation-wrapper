@@ -339,10 +339,14 @@ class Mouse(metaclass=_MouseMeta):
         if callable(post_wait):
             post_wait()
             return
+        if post_wait is True:
+            Wait.until_input_is_processed()
+            return
+        # bool is a subclass of int, so True must be handled before the numeric branch
         if isinstance(post_wait, (int, float)):
             Wait.until_input_is_processed(float(post_wait))
             return
-        # post_wait is True
+        # any other truthy value falls back to the default wait
         Wait.until_input_is_processed()
 
     @staticmethod

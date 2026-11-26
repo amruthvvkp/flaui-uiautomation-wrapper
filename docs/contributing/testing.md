@@ -226,7 +226,7 @@ Many UI operations require a wait for input to be processed afterward. Rather th
 `post_wait` accepts:
 
 - `True` — wait the default 100ms (`Wait.until_input_is_processed()`)
-- a `float` — wait that many seconds (`Wait.for_seconds(value)`)
+- a `float` — wait that many seconds (`Wait.until_input_is_processed(value)`)
 - a `callable` — invoke a custom wait function
 
 ```python

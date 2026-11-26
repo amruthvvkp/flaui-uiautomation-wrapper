@@ -7,7 +7,6 @@ from math import sqrt
 from typing import Any, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from pydantic_settings import BaseSettings
 from System.Drawing import (  # pyright: ignore
     Color as CSColor,
     KnownColor as CSKnownColor,
@@ -218,8 +217,10 @@ class KnownColor(Enum):
     YellowGreen = CSKnownColor.YellowGreen
 
 
-class ColorData(BaseSettings):
+class ColorData(BaseModel):
     """Represents an ARGB (alpha, red, green, blue) System.Drawing.Color color object."""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     cs_object: Any = Field(...)
 
@@ -274,7 +275,7 @@ class ColorData(BaseSettings):
         return self.cs_object.Name
 
     @property
-    def a(self) -> bytes:
+    def a(self) -> int:
         """Gets the alpha component value of this System.Drawing.Color structure.
 
         :return: The alpha component value of this System.Drawing.Color.
@@ -282,7 +283,7 @@ class ColorData(BaseSettings):
         return self.cs_object.A
 
     @property
-    def b(self) -> bytes:
+    def b(self) -> int:
         """Gets the blue component value of this System.Drawing.Color structure.
 
         :return: The blue component value of this System.Drawing.Color.
@@ -290,7 +291,7 @@ class ColorData(BaseSettings):
         return self.cs_object.B
 
     @property
-    def r(self) -> bytes:
+    def r(self) -> int:
         """Gets the red component value of this System.Drawing.Color structure.
 
         :return: The red component value of this System.Drawing.Color.
@@ -298,7 +299,7 @@ class ColorData(BaseSettings):
         return self.cs_object.R
 
     @property
-    def g(self) -> bytes:
+    def g(self) -> int:
         """Gets the green component value of this System.Drawing.Color structure.
 
         :return: The green component value of this System.Drawing.Color.
@@ -955,9 +956,7 @@ class Rectangle(BaseModel):
             return v
         if isinstance(v, List) and len(v) == 4:
             return CSRectangle(*v)
-        if isinstance(v, (List, Tuple)) and (
-            len(v) == 2 and isinstance(v[0], Point) and isinstance(v[1], Size)
-        ):
+        if isinstance(v, (List, Tuple)) and (len(v) == 2 and isinstance(v[0], Point) and isinstance(v[1], Size)):
             return CSRectangle(v[0].raw_value, v[1].raw_value)
 
         raise ValueError(f"Unable to parse input value to Rectable C# object, invalid input - {v}")

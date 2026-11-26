@@ -335,7 +335,7 @@ Input methods (all `Mouse` methods, `AutomationElement.click`, `Tab.select_tab_i
 `TextBox.enter`) accept an optional `post_wait` to wait for input to be processed:
 
 - `True` → 100ms (`Wait.until_input_is_processed()`)
-- `float` → that many seconds (`Wait.for_seconds`)
+- `float` → that many seconds (`Wait.until_input_is_processed(seconds)`)
 - `callable` → invoked directly
 
 The shared helper is `Mouse._apply_post_wait` in `flaui/core/input.py`. Because

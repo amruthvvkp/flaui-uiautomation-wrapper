@@ -279,8 +279,8 @@ def test_while_cursor_is_busy_returns_bool() -> None:
 def test_apply_post_wait_truthy_non_numeric_uses_default(monkeypatch: pytest.MonkeyPatch) -> None:
     """A truthy, non-callable, non-numeric post_wait falls through to the default wait.
 
-    Note ``True`` itself is an ``int`` subclass, so it is handled by the numeric branch;
-    only a value like a non-empty container/sentinel reaches the final default branch.
+    ``True`` is handled before the numeric branch (see ``test_input_units``); only a value
+    like a non-empty container/sentinel reaches the final default branch.
     """
     recorded: list[object] = []
     monkeypatch.setattr(Wait, "until_input_is_processed", lambda *a: recorded.append(a))

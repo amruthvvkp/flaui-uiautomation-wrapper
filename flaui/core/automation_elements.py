@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import abc
 from datetime import date
-import logging
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Tuple, TypeVar, Union, overload
 
 import arrow
@@ -1827,28 +1826,28 @@ class Grid(AutomationElement):
 
     # --- Overloads for select ---
     @overload
-    def select(self, row_index: int, column_index: None = None, text_to_find: None = None) -> "GridRow": ...
+    def select(self, row_index: int, column_index: None = None, text_to_find: None = None) -> "GridRow":
+        """Select the first row by text in the given Row index or a combination of Column index along with text_to_find.
 
-    """Select the first row by text in the given Row index or a combination of Column index along with text_to_find.
-
-    :param row_index: Row index
-    :param column_index: Column index
-    :param text_to_find: Text to find in the column
-    :raises ValueError: On invalid input combination
-    :return: GridRow element
-    """
+        :param row_index: Row index
+        :param column_index: Column index
+        :param text_to_find: Text to find in the column
+        :raises ValueError: On invalid input combination
+        :return: GridRow element
+        """
+        ...
 
     @overload
-    def select(self, row_index: None = None, column_index: int = ..., text_to_find: str = ...) -> "GridRow": ...
+    def select(self, row_index: None = None, column_index: int = ..., text_to_find: str = ...) -> "GridRow":
+        """Select the first row by text in the given Row index or a combination of Column index along with text_to_find.
 
-    """Select the first row by text in the given Row index or a combination of Column index along with text_to_find.
-
-    :param row_index: Row index
-    :param column_index: Column index
-    :param text_to_find: Text to find in the column
-    :raises ValueError: On invalid input combination
-    :return: GridRow element
-    """
+        :param row_index: Row index
+        :param column_index: Column index
+        :param text_to_find: Text to find in the column
+        :raises ValueError: On invalid input combination
+        :return: GridRow element
+        """
+        ...
 
     @handle_csharp_exceptions
     def select(
@@ -1880,30 +1879,28 @@ class Grid(AutomationElement):
 
     # --- Overloads for add_to_selection ---
     @overload
-    def add_to_selection(self, row_index: int, column_index: None = None, text_to_find: None = None) -> "GridRow": ...
+    def add_to_selection(self, row_index: int, column_index: None = None, text_to_find: None = None) -> "GridRow":
+        """Add a row to the selection by index or by text in the given column.
 
-    """Add a row to the selection by index or by text in the given column.
-
-    :param row_index: Row index
-    :param column_index: Column index
-    :param text_to_find: Text to find in the column
-    :raises ValueError: On invalid input combination
-    :return: GridRow element
-    """
+        :param row_index: Row index
+        :param column_index: Column index
+        :param text_to_find: Text to find in the column
+        :raises ValueError: On invalid input combination
+        :return: GridRow element
+        """
+        ...
 
     @overload
-    def add_to_selection(
-        self, row_index: None = None, column_index: int = ..., text_to_find: str = ...
-    ) -> "GridRow": ...
+    def add_to_selection(self, row_index: None = None, column_index: int = ..., text_to_find: str = ...) -> "GridRow":
+        """Add a row to the selection by index or by text in the given column.
 
-    """Add a row to the selection by index or by text in the given column.
-
-    :param row_index: Row index
-    :param column_index: Column index
-    :param text_to_find: Text to find in the column
-    :raises ValueError: On invalid input combination
-    :return: GridRow element
-    """
+        :param row_index: Row index
+        :param column_index: Column index
+        :param text_to_find: Text to find in the column
+        :raises ValueError: On invalid input combination
+        :return: GridRow element
+        """
+        ...
 
     @handle_csharp_exceptions
     def add_to_selection(
@@ -1936,14 +1933,31 @@ class Grid(AutomationElement):
 
     # --- Overloads for remove_from_selection ---
     @overload
-    def remove_from_selection(
-        self, row_index: int, column_index: None = None, text_to_find: None = None
-    ) -> "GridRow": ...
+    def remove_from_selection(self, row_index: int, column_index: None = None, text_to_find: None = None) -> "GridRow":
+        """Remove a row from the selection by index or by text in the given column.
+
+        :param row_index: Row index
+        :param column_index: Column index
+        :param text_to_find: Text to find in the column
+        :raises ValueError: On invalid input combination
+        :return: GridRow element
+        """
+        ...
 
     @overload
     def remove_from_selection(
         self, row_index: None = None, column_index: int = ..., text_to_find: str = ...
-    ) -> "GridRow": ...
+    ) -> "GridRow":
+        """Remove a row from the selection by index or by text in the given column.
+
+        :param row_index: Row index
+        :param column_index: Column index
+        :param text_to_find: Text to find in the column
+        :raises ValueError: On invalid input combination
+        :return: GridRow element
+        """
+        ...
+
     @handle_csharp_exceptions
     def remove_from_selection(
         self, row_index: Optional[int] = None, column_index: Optional[int] = None, text_to_find: Optional[str] = None
@@ -2520,22 +2534,22 @@ class Slider(AutomationElement):
         self.raw_element.Value = value
 
     @handle_csharp_exceptions
-    def small_increment(self):
+    def small_increment(self) -> None:
         """Performs a small increment."""
         self.raw_element.SmallIncrement()
 
     @handle_csharp_exceptions
-    def small_decrement(self):
+    def small_decrement(self) -> None:
         """Performs a small decrement."""
         self.raw_element.SmallDecrement()
 
     @handle_csharp_exceptions
-    def large_increment(self):
+    def large_increment(self) -> None:
         """Performs a large increment."""
         self.raw_element.LargeIncrement()
 
     @handle_csharp_exceptions
-    def large_decrement(self):
+    def large_decrement(self) -> None:
         """Performs a large decrement."""
         self.raw_element.LargeDecrement()
 
@@ -2615,12 +2629,12 @@ class Spinner(AutomationElement):
         self.raw_element.Value = value
 
     @handle_csharp_exceptions
-    def increment(self):
+    def increment(self) -> None:
         """Performs a increment."""
         self.raw_element.Increment()
 
     @handle_csharp_exceptions
-    def decrement(self):
+    def decrement(self) -> None:
         """Performs a decrement."""
         self.raw_element.Decrement()
 
@@ -2764,26 +2778,26 @@ class Tab(AutomationElement):
     @overload
     def select_tab_item(
         self, index: int, value: None = None, post_wait: Optional[Union[bool, float, Callable[[], None]]] = None
-    ) -> None: ...
+    ) -> TabItem:
+        """Selects a TabItem by index
 
-    """Selects a TabItem by index
-
-    :param index: Selects by index value
-    :param value: Selects by tab value
-    :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
-    """
+        :param index: Selects by index value
+        :param value: Selects by tab value
+        :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
+        """
+        ...
 
     @overload
     def select_tab_item(
         self, index: None = None, value: str = ..., post_wait: Optional[Union[bool, float, Callable[[], None]]] = None
-    ) -> None: ...
+    ) -> TabItem:
+        """Selects a TabItem by value
 
-    """Selects a TabItem by index
-
-    :param index: Selects by index value
-    :param value: Selects by tab value
-    :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
-    """
+        :param index: Selects by index value
+        :param value: Selects by tab value
+        :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
+        """
+        ...
 
     @handle_csharp_exceptions
     def select_tab_item(
@@ -2791,22 +2805,24 @@ class Tab(AutomationElement):
         index: Optional[int] = None,
         value: Optional[str] = None,
         post_wait: Optional[Union[bool, float, Callable[[], None]]] = None,
-    ) -> None:
-        """Selects a TabItem by index
+    ) -> TabItem:
+        """Selects a TabItem by index or value
 
         :param index: Selects by index value
         :param value: Selects by tab value
         :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
+        :return: The selected TabItem
         """
         from flaui.core.input import Mouse
 
         if index is None and value is None:
             raise ValueError("Either index or value have to be set for selected TabItem")
-        try:
-            self.raw_element.SelectTabItem(index) if index is not None else self.raw_element.SelectTabItem(value)
-            Mouse._apply_post_wait(post_wait)
-        except Exception as e:
-            logging.getLogger(__name__).error("Failed to select tab item: %s", e)
+        if index is not None:
+            raw_item = self.raw_element.SelectTabItem(index)
+        else:
+            raw_item = self.raw_element.SelectTabItem(value)
+        Mouse._apply_post_wait(post_wait)
+        return TabItem(raw_element=raw_item)
 
 
 class TabItem(AutomationElement, SelectionItemAutomationElement):
@@ -2846,7 +2862,7 @@ class TextBox(AutomationElement):
         return self.raw_element.IsReadOnly
 
     @handle_csharp_exceptions
-    def enter(self, value: str, post_wait: Optional[Union[bool, float, Callable[[], None]]] = None):
+    def enter(self, value: str, post_wait: Optional[Union[bool, float, Callable[[], None]]] = None) -> None:
         """Simulate typing in text. This is slower than setting Text but raises more events.
 
         :param value: Value to enter in the element
@@ -2862,7 +2878,7 @@ class Thumb(AutomationElement):
     """Class to interact with a thumb element."""
 
     @handle_csharp_exceptions
-    def slide_horizontally(self, distance: int):
+    def slide_horizontally(self, distance: int) -> None:
         """Moves the slider horizontally.
 
         :param distance: The distance to move the slider, + for right, - for left.
@@ -2870,7 +2886,7 @@ class Thumb(AutomationElement):
         self.raw_element.SlideHorizontally(distance)
 
     @handle_csharp_exceptions
-    def slide_vertically(self, distance: int):
+    def slide_vertically(self, distance: int) -> None:
         """Moves the slider vertically.
 
         :param distance: The distance to move the slider, + for down, - for up.
@@ -2922,7 +2938,7 @@ class ToggleButton(AutomationElement):
     """Class to interact with a toggle button element."""
 
     @handle_csharp_exceptions
-    def toggle(self):
+    def toggle(self) -> None:
         """Toggles the toggle button.
         **Note**: In some WPF scenarios, the bounded command might not be fired. Use AutomationElement.Click instead in that case.
         """
@@ -2991,17 +3007,17 @@ class TreeItem(AutomationElement):
         return ExpandCollapseState(self.raw_element.ExpandCollapseState)
 
     @handle_csharp_exceptions
-    def expand(self):
+    def expand(self) -> None:
         """Expands the element."""
         self.raw_element.Expand()
 
     @handle_csharp_exceptions
-    def collapse(self):
+    def collapse(self) -> None:
         """Collapses the element."""
         self.raw_element.Collapse()
 
     @handle_csharp_exceptions
-    def select(self):
+    def select(self) -> None:
         """Selects the element."""
         self.raw_element.Select()
 
@@ -3128,12 +3144,12 @@ class Window(AutomationElement):
         return Menu(raw_element=self.raw_element.GetContextMenuByFrameworkType(framework_type))
 
     @handle_csharp_exceptions
-    def close(self):
+    def close(self) -> None:
         """Closes the window."""
         self.raw_element.Close()
 
     @handle_csharp_exceptions
-    def move(self, x: int, y: int):
+    def move(self, x: int, y: int) -> None:
         """Moves the window to the given coordinates.
 
         :param x: X cordinate
@@ -3142,7 +3158,7 @@ class Window(AutomationElement):
         self.raw_element.Move(x, y)
 
     @handle_csharp_exceptions
-    def set_transparency(self, alpha: bytes):
+    def set_transparency(self, alpha: bytes) -> None:
         """Brings the element to the foreground.
 
         :param alpha: Transparency value
@@ -3209,7 +3225,7 @@ class AutomationProperty(IAutomationProperty):
 
     @property
     @handle_csharp_exceptions
-    def property_id(self) -> str:
+    def property_id(self) -> int:
         """Returns the property ID.
 
         :return: The property ID.
@@ -3227,7 +3243,7 @@ class AutomationProperty(IAutomationProperty):
 
     @staticmethod
     @handle_csharp_exceptions
-    def cast_to_py_wrapper(value):
+    def cast_to_py_wrapper(value: Any) -> Any:
         """Casts any possible value to Python equivalent wrapper if available
 
         :param value: Value to cast
@@ -3271,7 +3287,7 @@ class AutomationProperty(IAutomationProperty):
         return self.raw_property.TryGetValue()
 
     @handle_csharp_exceptions
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
         """
         Checks if the current AutomationProperty is equal to another AutomationProperty.
 
@@ -3283,7 +3299,7 @@ class AutomationProperty(IAutomationProperty):
         return False
 
     @handle_csharp_exceptions
-    def __str__(self):
+    def __str__(self) -> str:
         """Returns the string representation of the value or default value."""
         return str(self.value_or_default)
 
