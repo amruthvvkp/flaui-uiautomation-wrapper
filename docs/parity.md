@@ -29,9 +29,9 @@ elsewhere are usually intentional. 🟡 can also be an API-shape difference (e.g
 
 | Status | Types | % |
 | --- | ---: | ---: |
-| ✅ Covered | 176 | 34% |
-| 🟡 Partial | 21 | 4% |
-| ❌ Missing | 309 | 61% |
+| ✅ Covered | 184 | 36% |
+| 🟡 Partial | 19 | 3% |
+| ❌ Missing | 303 | 59% |
 | **Total** | **506** | 100% |
 
 ## FlaUI.Core
@@ -83,16 +83,16 @@ elsewhere are usually intentional. 🟡 can also be an API-shape difference (e.g
 | Type | Kind | Status | Notes |
 | --- | --- | --- | --- |
 | Capture | class | ✅ |  |
-| CaptureImage | class | 🟡 | unwrapped: `BitmapImage`, `Settings` |
+| CaptureImage | class | ✅ |  |
 | CaptureSettings | class | 🟡 | unwrapped: `OutputHeight`, `OutputScale`, `OutputWidth` |
-| CaptureUtilities | class | ❌ | no Python class |
-| ICaptureOverlay | interface | ❌ | no Python class |
-| InfoOverlay | class | ❌ | no Python class |
-| InfoOverlayPosition | enum | ❌ | no Python class |
-| MouseOverlay | class | ❌ | no Python class |
-| OverlayBase | class | ❌ | no Python class |
+| CaptureUtilities | class | ✅ |  |
+| ICaptureOverlay | interface | ✅ |  |
+| InfoOverlay | class | ✅ |  |
+| InfoOverlayPosition | enum | ✅ |  |
+| MouseOverlay | class | ✅ |  |
+| OverlayBase | class | ✅ |  |
 | VideoFormat | enum | ✅ |  |
-| VideoRecorder | class | 🟡 | unwrapped: `RecordTimeSpan` |
+| VideoRecorder | class | ✅ |  |
 | VideoRecorderSettings | class | 🟡 | unwrapped: `EncodeWithLowPriority`, `FrameRate`, `LogMissingFrames`, `TargetVideoPath`, `UseCompressedImages`, `VideoFormat` (+2 more) |
 
 ### Conditions
