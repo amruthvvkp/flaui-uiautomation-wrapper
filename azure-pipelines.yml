@@ -133,43 +133,49 @@ stages:
             artifact: docs-site
 
       - job: windows_smoke_tests
-        displayName: Windows hosted smoke - windows-2022 - Python 3.12 x64
+        displayName: Windows hosted smoke
         pool:
           vmImage: $(WINDOWS_VM_IMAGE)
 
-        # Enable this matrix after the hosted-agent smoke job is stable.
-        # strategy:
-        #   matrix:
-        #     Python311_Windows2022:
-        #       WINDOWS_VM_IMAGE: "windows-2022"
-        #       ACTIVE_PYTHON_VERSION: "3.11"
-        #     Python312_Windows2022:
-        #       WINDOWS_VM_IMAGE: "windows-2022"
-        #       ACTIVE_PYTHON_VERSION: "3.12"
-        #     Python313_Windows2022:
-        #       WINDOWS_VM_IMAGE: "windows-2022"
-        #       ACTIVE_PYTHON_VERSION: "3.13"
-        #     Python314_Windows2022:
-        #       WINDOWS_VM_IMAGE: "windows-2022"
-        #       ACTIVE_PYTHON_VERSION: "3.14"
-        #     Python315_Windows2022:
-        #       WINDOWS_VM_IMAGE: "windows-2022"
-        #       ACTIVE_PYTHON_VERSION: "3.15"
+        # Every supported Python on windows-2022 (Windows Server 2022), plus the oldest and newest
+        # on windows-2025 (Windows Server 2025). The full desktop UI suite runs on AppVeyor
+        # (Visual Studio 2026 image); see docs/contributing/development.md for the coverage table.
+        # The interpreter is a uv-managed CPython, so new Python releases do not wait on the
+        # hosted-image tool cache.
+        strategy:
+          matrix:
+            Windows2022_Python311:
+              WINDOWS_VM_IMAGE: "windows-2022"
+              ACTIVE_PYTHON_VERSION: "3.11"
+              SMOKE_LEG: "win2022-py311"
+            Windows2022_Python312:
+              WINDOWS_VM_IMAGE: "windows-2022"
+              ACTIVE_PYTHON_VERSION: "3.12"
+              SMOKE_LEG: "win2022-py312"
+            Windows2022_Python313:
+              WINDOWS_VM_IMAGE: "windows-2022"
+              ACTIVE_PYTHON_VERSION: "3.13"
+              SMOKE_LEG: "win2022-py313"
+            Windows2022_Python314:
+              WINDOWS_VM_IMAGE: "windows-2022"
+              ACTIVE_PYTHON_VERSION: "3.14"
+              SMOKE_LEG: "win2022-py314"
+            Windows2022_Python315:
+              WINDOWS_VM_IMAGE: "windows-2022"
+              ACTIVE_PYTHON_VERSION: "3.15"
+              SMOKE_LEG: "win2022-py315"
+            Windows2025_Python311:
+              WINDOWS_VM_IMAGE: "windows-2025"
+              ACTIVE_PYTHON_VERSION: "3.11"
+              SMOKE_LEG: "win2025-py311"
+            Windows2025_Python315:
+              WINDOWS_VM_IMAGE: "windows-2025"
+              ACTIVE_PYTHON_VERSION: "3.15"
+              SMOKE_LEG: "win2025-py315"
 
         steps:
           - checkout: self
             fetchDepth: 0
-
-          - task: UsePythonVersion@0
-            displayName: Use Python $(ACTIVE_PYTHON_VERSION) x64
-            inputs:
-              versionSpec: "$(ACTIVE_PYTHON_VERSION)"
-              architecture: x64
-
-          - pwsh: |
-              python --version
-              python -c "import struct; print('Python architecture: {}-bit'.format(struct.calcsize('P') * 8))"
-            displayName: Show Python runtime
 
           - pwsh: |
               irm https://astral.sh/uv/install.ps1 | iex
@@ -177,6 +183,16 @@ stages:
               Write-Host "##vso[task.prependpath]$uvPath"
               & "$uvPath\uv.exe" --version
             displayName: Install uv
+
+          - pwsh: |
+              $os = Get-CimInstance Win32_OperatingSystem
+              Write-Host "Image: $(WINDOWS_VM_IMAGE) - $($os.Caption) $($os.Version) (build $($os.BuildNumber))"
+              uv python install $(ACTIVE_PYTHON_VERSION)
+              if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+              uv run --no-project --python $(ACTIVE_PYTHON_VERSION) python -c "import platform, struct, sys; print(sys.executable); print(platform.python_version(), '{}-bit'.format(struct.calcsize('P') * 8))"
+            displayName: Install and show Python $(ACTIVE_PYTHON_VERSION) x64
+            env:
+              UV_CACHE_DIR: "$(UV_CACHE_DIR)"
 
           - task: Cache@2
             displayName: Restore uv cache
@@ -190,9 +206,9 @@ stages:
           - task: Cache@2
             displayName: Restore project virtualenv cache
             inputs:
-              key: 'uv-venv | "$(Agent.OS)" | "$(ACTIVE_PYTHON_VERSION)" | uv.lock | pyproject.toml'
+              key: 'uv-venv | "$(WINDOWS_VM_IMAGE)" | "$(ACTIVE_PYTHON_VERSION)" | uv.lock | pyproject.toml'
               restoreKeys: |
-                uv-venv | "$(Agent.OS)" | "$(ACTIVE_PYTHON_VERSION)"
+                uv-venv | "$(WINDOWS_VM_IMAGE)" | "$(ACTIVE_PYTHON_VERSION)"
               path: "$(UV_PROJECT_ENVIRONMENT)"
 
           - pwsh: |
@@ -257,7 +273,7 @@ stages:
               testResultsFiles: test-results.xml
               failTaskOnFailedTests: true
               failTaskOnMissingTestResultsFile: false
-              testRunTitle: Python $(ACTIVE_PYTHON_VERSION) x64 hosted smoke tests
+              testRunTitle: $(WINDOWS_VM_IMAGE) Python $(ACTIVE_PYTHON_VERSION) x64 hosted smoke tests
 
           - task: PublishCodeCoverageResults@2
             displayName: Publish coverage
@@ -269,22 +285,95 @@ stages:
           - publish: htmlcov
             displayName: Publish HTML coverage artifact
             condition: succeededOrFailed()
-            artifact: coverage-html
+            artifact: coverage-html-$(SMOKE_LEG)
 
           - publish: allure-results
             displayName: Publish Allure results artifact
             condition: succeededOrFailed()
-            artifact: allure-results
+            artifact: allure-results-$(SMOKE_LEG)
 
           - publish: test-report.jsonl
             displayName: Publish pytest report log artifact
             condition: succeededOrFailed()
-            artifact: pytest-report-log
+            artifact: pytest-report-log-$(SMOKE_LEG)
 
           - publish: test-results.xml
             displayName: Publish raw JUnit artifact
             condition: succeededOrFailed()
-            artifact: test-results
+            artifact: test-results-$(SMOKE_LEG)
+
+      - job: wheel_install_smoke
+        displayName: Clean wheel install smoke
+        # Build the wheel, install it with no dev dependencies into fresh venvs outside the checkout,
+        # and run scripts/wheel_smoke.py in isolated mode so flaui can only come from site-packages.
+        # Hosted Azure agents have no interactive desktop for the test apps, so this job runs the
+        # packaging and PythonNet checks; AppVeyor repeats it with the WPF/WinForms apps on UIA2/UIA3.
+        # Installation types: the hosted image's tool-cache CPython with pip, and uv-managed CPython
+        # (oldest and newest supported) with uv pip.
+        pool:
+          vmImage: windows-2022
+        steps:
+          - checkout: self
+            fetchDepth: 1
+
+          - task: UsePythonVersion@0
+            displayName: Use tool-cache Python $(PACKAGE_PYTHON_VERSION) x64
+            inputs:
+              versionSpec: "$(PACKAGE_PYTHON_VERSION)"
+              architecture: x64
+
+          - pwsh: |
+              irm https://astral.sh/uv/install.ps1 | iex
+              $uvPath = "$env:USERPROFILE\.local\bin"
+              Write-Host "##vso[task.prependpath]$uvPath"
+              & "$uvPath\uv.exe" --version
+            displayName: Install uv
+
+          - pwsh: |
+              function Invoke-Checked {
+                param([scriptblock] $Command)
+                & $Command
+                if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+              }
+
+              $repo = "$(Build.SourcesDirectory)"
+              $smokeRoot = Join-Path "$(Agent.TempDirectory)" "flaui-wheel-smoke"
+              New-Item -ItemType Directory -Force -Path $smokeRoot | Out-Null
+
+              Invoke-Checked { uv build -q --wheel --out-dir "$smokeRoot\dist" $repo }
+              $wheel = (Get-ChildItem "$smokeRoot\dist\*.whl" | Select-Object -First 1).FullName
+              Write-Host "Built $wheel"
+
+              # Tool-cache CPython (UsePythonVersion) with plain pip.
+              $toolCachePython = (Get-Command python).Source
+              Write-Host "Tool-cache Python: $toolCachePython"
+              Invoke-Checked { & $toolCachePython -m venv "$smokeRoot\toolcache-pip" }
+              Invoke-Checked { & "$smokeRoot\toolcache-pip\Scripts\python.exe" -m pip install -q $wheel }
+              $venvs = @("toolcache-pip")
+
+              # uv-managed CPython, oldest and newest supported, with uv pip.
+              foreach ($version in @("3.11", "3.15")) {
+                $name = "uv-managed-$version"
+                Invoke-Checked { uv venv -q --managed-python --python $version "$smokeRoot\$name" }
+                Invoke-Checked { uv pip install -q --python "$smokeRoot\$name\Scripts\python.exe" $wheel }
+                $venvs += $name
+              }
+
+              # Run from outside the checkout in isolated mode (-I: no script dir, no user site, no PYTHON* env).
+              Push-Location $smokeRoot
+              try {
+                foreach ($venv in $venvs) {
+                  Write-Host "=== Wheel smoke: $venv ==="
+                  Invoke-Checked { & "$smokeRoot\$venv\Scripts\python.exe" -I "$repo\scripts\wheel_smoke.py" }
+                }
+              } finally {
+                Pop-Location
+              }
+            displayName: Build wheel, install into clean venvs, run smoke
+            env:
+              UV_CACHE_DIR: "$(UV_CACHE_DIR)"
+              UV_NO_PROGRESS: "1"
+              PIP_DISABLE_PIP_VERSION_CHECK: "1"
 
   - stage: package
     displayName: Package

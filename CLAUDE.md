@@ -513,18 +513,21 @@ CI/CD runs on a **hybrid Azure Pipelines + AppVeyor** setup. The two systems spl
 
 - **Azure Pipelines** ([`azure-pipelines.yml`](azure-pipelines.yml), GitHub check
   `flaui-uiautomation-wrapper-ci`) owns the fast gates and release plumbing: Ruff + Interrogate
-  linting, the strict Zensical docs build, a hosted `windows-2022` smoke suite (unit + identifier
-  tests), package builds, and gated `deploy_testpypi` / `deploy_pypi` / `deploy_docs` stages.
+  linting, the strict Zensical docs build, a hosted smoke suite (unit + identifier tests) on every
+  Python 3.11–3.15 on `windows-2022` plus 3.11/3.15 on `windows-2025`, a clean wheel-install smoke
+  (`scripts/wheel_smoke.py`), package builds, and gated `deploy_testpypi` / `deploy_pypi` /
+  `deploy_docs` stages.
 - **AppVeyor** ([`.appveyor.yml`](.appveyor.yml), checks `continuous-integration/appveyor/pr`
   and `/branch`) is the hosted Windows desktop UI gate on `Visual Studio 2026`. The gate is
   **trimmed**: the slow full UI suite only runs where it gates a merge — **pull requests and pushes
   to `master`** (`APPVEYOR_PULL_REQUEST_NUMBER` set, or `APPVEYOR_REPO_BRANCH == master`). Routine
   feature-branch pushes run the **fast `tests/unit` subset only**, so day-to-day turnaround does not
-  pay for the full serial run.
+  pay for the full serial run. There is one job per Python 3.11–3.15; only the `FULL_UI` jobs
+  (3.11, 3.12, 3.15) run the full suite, and 3.13/3.14 always run the unit subset. The 3.12 job
+  also runs the wheel smoke with the WPF/WinForms apps on UIA2/UIA3.
 - **GitHub Actions** is kept for CodeQL/labeling only; other workflows are manual-only stubs.
 
-Both runners drive tests with `uv run … pytest` and currently pin Python 3.12 x64 while the hybrid
-setup stabilizes (the 3.11–3.15 matrix is commented in both files). Azure cancels stale PR runs via
+Both runners drive tests with `uv run … pytest` on 64-bit CPython. Azure cancels stale PR runs via
 `pr.autoCancel: true`; AppVeyor relies on the project-level **Rolling builds** setting (not a yaml
 key). A conflicting/non-mergeable PR makes AppVeyor report "unable to build non-mergeable pull
 request" — rebase or merge the base branch to clear it.
