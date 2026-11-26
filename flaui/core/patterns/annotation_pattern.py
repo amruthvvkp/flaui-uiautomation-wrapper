@@ -15,7 +15,7 @@ class AnnotationPattern(PatternBase):
     def annotation_type(self) -> AutomationProperty:
         """Return the annotation type identifier.
 
-        :return: An :class:`AutomationProperty` wrapping the ``AnnotationType`` value.
+        :return: An :class:`AutomationProperty` whose value is a :class:`~flaui.core.definitions.AnnotationType`.
         """
         return AutomationProperty(raw_property=self.raw_pattern.AnnotationType)
 

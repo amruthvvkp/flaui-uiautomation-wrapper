@@ -9,6 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validat
 
 from flaui.core.automation_type import AutomationType
 from flaui.core.condition_factory import ConditionFactory
+from flaui.core.definitions import CoalesceEventsOptions, ConnectionRecoveryBehaviorOptions, to_cs_enum, to_python_enum
 from flaui.lib.exceptions import handle_csharp_exceptions
 from flaui.lib.system.drawing import Point
 
@@ -122,27 +123,39 @@ class AutomationBase(BaseModel):
 
     @property
     @handle_csharp_exceptions
-    def connection_recovery_behavior(self) -> Any:
-        """Get connection recovery behavior (C# enum)."""
-        return self.raw_automation.ConnectionRecoveryBehavior
+    def connection_recovery_behavior(self) -> ConnectionRecoveryBehaviorOptions:
+        """Get the connection recovery behavior.
+
+        :return: The current :class:`~flaui.core.definitions.ConnectionRecoveryBehaviorOptions`.
+        """
+        return to_python_enum(self.raw_automation.ConnectionRecoveryBehavior, ConnectionRecoveryBehaviorOptions)
 
     @connection_recovery_behavior.setter
     @handle_csharp_exceptions
-    def connection_recovery_behavior(self, value: Any) -> None:
-        """Set connection recovery behavior (C# enum)."""
-        self.raw_automation.ConnectionRecoveryBehavior = value
+    def connection_recovery_behavior(self, value: ConnectionRecoveryBehaviorOptions) -> None:
+        """Set the connection recovery behavior.
+
+        :param value: A :class:`~flaui.core.definitions.ConnectionRecoveryBehaviorOptions` (or raw C# value).
+        """
+        self.raw_automation.ConnectionRecoveryBehavior = to_cs_enum(value)
 
     @property
     @handle_csharp_exceptions
-    def coalesce_events(self) -> Any:
-        """Get coalesce-events option (C# enum)."""
-        return self.raw_automation.CoalesceEvents
+    def coalesce_events(self) -> CoalesceEventsOptions:
+        """Get the coalesce-events option.
+
+        :return: The current :class:`~flaui.core.definitions.CoalesceEventsOptions`.
+        """
+        return to_python_enum(self.raw_automation.CoalesceEvents, CoalesceEventsOptions)
 
     @coalesce_events.setter
     @handle_csharp_exceptions
-    def coalesce_events(self, value: Any) -> None:
-        """Set coalesce-events option (C# enum)."""
-        self.raw_automation.CoalesceEvents = value
+    def coalesce_events(self, value: CoalesceEventsOptions) -> None:
+        """Set the coalesce-events option.
+
+        :param value: A :class:`~flaui.core.definitions.CoalesceEventsOptions` (or raw C# value).
+        """
+        self.raw_automation.CoalesceEvents = to_cs_enum(value)
 
     @staticmethod
     def _to_cs_automation_element(element: Any) -> Any:

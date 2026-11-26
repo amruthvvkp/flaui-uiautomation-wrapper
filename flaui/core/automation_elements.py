@@ -20,10 +20,16 @@ from flaui.core.condition_factory import ConditionFactory, PropertyCondition
 from flaui.core.definitions import (
     ControlType,
     ExpandCollapseState,
+    NotificationKind,
+    NotificationProcessing,
     RowOrColumnMajor,
+    StructureChangeType,
+    TextEditChangeType,
     ToggleState,
     TreeScope,
     TreeTraversalOptions,
+    to_cs_enum,
+    to_python_enum,
 )
 from flaui.core.framework_types import FrameworkType
 from flaui.lib.collections import TypeCast
@@ -891,13 +897,16 @@ class AutomationElement(ElementBase):
 
     @handle_csharp_exceptions
     def register_notification_event(
-        self, tree_scope: TreeScope, action: Callable[["AutomationElement", Any, Any, str, str], None]
+        self,
+        tree_scope: TreeScope,
+        action: Callable[["AutomationElement", NotificationKind, NotificationProcessing, str, str], None],
     ) -> "EventRegistration":
         """Register a notification event handler.
 
         :param tree_scope: The tree scope to listen on.
         :param action: Callback ``(element, notification_kind, notification_processing, display_string,
-            activity_id) -> None`` invoked when the event fires.
+            activity_id) -> None`` invoked when the event fires; the kind and processing arrive as
+            :class:`~flaui.core.definitions.NotificationKind` / :class:`~flaui.core.definitions.NotificationProcessing`.
         :return: An :class:`~flaui.core.event_handlers.EventRegistration` handle.
         """
         from flaui.core.event_handlers import (
@@ -909,7 +918,14 @@ class AutomationElement(ElementBase):
 
         def _handler(sender: Any, kind: Any, processing: Any, display_string: str, activity_id: str) -> None:
             """Bridge the C# callback to the Python action."""
-            safe_invoke(action, AutomationElement(raw_element=sender), kind, processing, display_string, activity_id)
+            safe_invoke(
+                action,
+                AutomationElement(raw_element=sender),
+                to_python_enum(kind, NotificationKind),
+                to_python_enum(processing, NotificationProcessing),
+                display_string,
+                activity_id,
+            )
 
         handler = self.raw_element.RegisterNotificationEvent(
             coerce_tree_scope(tree_scope), make_notification_delegate(_handler)
@@ -962,12 +978,13 @@ class AutomationElement(ElementBase):
 
     @handle_csharp_exceptions
     def register_structure_changed_event(
-        self, tree_scope: TreeScope, action: Callable[["AutomationElement", Any, List[int]], None]
+        self, tree_scope: TreeScope, action: Callable[["AutomationElement", StructureChangeType, List[int]], None]
     ) -> "EventRegistration":
         """Register a structure-changed event handler.
 
         :param tree_scope: The tree scope to listen on.
-        :param action: Callback ``(element, change_type, runtime_id) -> None`` invoked on change.
+        :param action: Callback ``(element, change_type, runtime_id) -> None`` invoked on change; ``change_type``
+            is a :class:`~flaui.core.definitions.StructureChangeType`.
         :return: An :class:`~flaui.core.event_handlers.EventRegistration` handle.
         """
         from flaui.core.event_handlers import (
@@ -979,7 +996,12 @@ class AutomationElement(ElementBase):
 
         def _handler(sender: Any, change_type: Any, runtime_id: Any) -> None:
             """Bridge the C# callback to the Python action."""
-            safe_invoke(action, AutomationElement(raw_element=sender), change_type, runtime_id)
+            safe_invoke(
+                action,
+                AutomationElement(raw_element=sender),
+                to_python_enum(change_type, StructureChangeType),
+                runtime_id,
+            )
 
         handler = self.raw_element.RegisterStructureChangedEvent(
             coerce_tree_scope(tree_scope), make_structure_changed_delegate(_handler)
@@ -994,14 +1016,16 @@ class AutomationElement(ElementBase):
     def register_text_edit_text_changed_event_handler(
         self,
         tree_scope: TreeScope,
-        text_edit_change_type: Any,
-        action: Callable[["AutomationElement", Any, List[str]], None],
+        text_edit_change_type: TextEditChangeType,
+        action: Callable[["AutomationElement", TextEditChangeType, List[str]], None],
     ) -> "EventRegistration":
         """Register a text-edit text-changed event handler.
 
         :param tree_scope: The tree scope to listen on.
-        :param text_edit_change_type: The C# ``TextEditChangeType`` to listen for.
-        :param action: Callback ``(element, change_type, event_strings) -> None`` invoked on change.
+        :param text_edit_change_type: The :class:`~flaui.core.definitions.TextEditChangeType` to listen for
+            (a raw C# value is also accepted).
+        :param action: Callback ``(element, change_type, event_strings) -> None`` invoked on change; ``change_type``
+            is a :class:`~flaui.core.definitions.TextEditChangeType`.
         :return: An :class:`~flaui.core.event_handlers.EventRegistration` handle.
         """
         from flaui.core.event_handlers import (
@@ -1013,11 +1037,16 @@ class AutomationElement(ElementBase):
 
         def _handler(sender: Any, change_type: Any, event_strings: Any) -> None:
             """Bridge the C# callback to the Python action."""
-            safe_invoke(action, AutomationElement(raw_element=sender), change_type, event_strings)
+            safe_invoke(
+                action,
+                AutomationElement(raw_element=sender),
+                to_python_enum(change_type, TextEditChangeType),
+                event_strings,
+            )
 
         handler = self.raw_element.RegisterTextEditTextChangedEventHandler(
             coerce_tree_scope(tree_scope),
-            getattr(text_edit_change_type, "value", text_edit_change_type),
+            to_cs_enum(text_edit_change_type),
             make_text_edit_delegate(_handler),
         )
         return EventRegistration(
@@ -3301,7 +3330,7 @@ class AutomationProperty(IAutomationProperty):
         elif isinstance(value, CSRectangle):
             return Rectangle(raw_value=value)
         else:
-            return value
+            return to_python_enum(value)
 
     @property
     @handle_csharp_exceptions
@@ -3555,7 +3584,7 @@ class Properties(BaseModel):
     def heading_level(self) -> AutomationProperty:
         """Returns the HeadingLevel of the property.
 
-        :return: The HeadingLevel of the property.
+        :return: The HeadingLevel of the property; its value is a :class:`~flaui.core.definitions.HeadingLevel`.
         """
         return AutomationProperty(raw_property=self.raw_properties.HeadingLevel)
 
@@ -3690,7 +3719,7 @@ class Properties(BaseModel):
     def landmark_type(self) -> AutomationProperty:
         """Returns the LandmarkType of the property.
 
-        :return: The LandmarkType of the property.
+        :return: The LandmarkType of the property; its value is a :class:`~flaui.core.definitions.LandmarkType`.
         """
         return AutomationProperty(raw_property=self.raw_properties.LandmarkType)
 
@@ -3708,7 +3737,7 @@ class Properties(BaseModel):
     def live_setting(self) -> AutomationProperty:
         """Returns the LiveSetting of the property.
 
-        :return: The LiveSetting of the property.
+        :return: The LiveSetting of the property; its value is a :class:`~flaui.core.definitions.LiveSetting`.
         """
         return AutomationProperty(raw_property=self.raw_properties.LiveSetting)
 
@@ -3762,7 +3791,7 @@ class Properties(BaseModel):
     def orientation(self) -> AutomationProperty:
         """Returns the Orientation of the property.
 
-        :return: The Orientation of the property.
+        :return: The Orientation of the property; its value is a :class:`~flaui.core.definitions.OrientationType`.
         """
         return AutomationProperty(raw_property=self.raw_properties.Orientation)
 
@@ -3852,6 +3881,6 @@ class Properties(BaseModel):
     def visual_effects(self) -> AutomationProperty:
         """Returns the VisualEffects of the property.
 
-        :return: The VisualEffects of the property.
+        :return: The VisualEffects of the property; its value is a :class:`~flaui.core.definitions.VisualEffects`.
         """
         return AutomationProperty(raw_property=self.raw_properties.VisualEffects)

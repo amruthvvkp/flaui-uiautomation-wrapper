@@ -214,9 +214,11 @@ Each wrapper exposes `.raw_value` (or `.cs_object` for colours) when you need to
     ```
 
 `Capture` can also grab a single screen (`screen(index)`), any rectangle (`rectangle(bounds)`), or
-every screen an element spans (`screens_with_element`). To record video, use `VideoRecorder`. It
-needs ffmpeg, which `VideoRecorder.download_ffmpeg(folder)` can fetch for you. See the
-[Capturing reference](api/capturing.md).
+every screen an element spans (`screens_with_element`). `image.apply_overlays(MouseOverlay(image),
+InfoOverlay(image))` draws the cursor and an info bar (time, machine name, CPU/RAM) onto a capture.
+To record video, use `VideoRecorder`. It needs ffmpeg, which `VideoRecorder.download_ffmpeg(folder)`
+can fetch for you. See the [Capturing reference](api/capturing.md) for overlays, typed settings and
+recording examples.
 
 !!! tip "Screenshot every failure automatically"
     Taking the screenshot from a test-framework hook means every failure gets one without any

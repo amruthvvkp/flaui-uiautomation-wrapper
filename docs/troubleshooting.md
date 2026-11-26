@@ -183,6 +183,23 @@ uv, the Microsoft Store, conda, ...).
   hosted CI because native UIA/COM failures can abort the Python process before pytest records an
   xfail.
 
+## Known platform limitations
+
+These come from Windows, .NET or the UI frameworks themselves, not from FlaUI or this wrapper.
+Each element page has a **Usage notes** box with the details and workarounds.
+
+| Control | Where | What happens | Workaround |
+|---|---|---|---|
+| [ComboBox](api/elements/combobox.md) | WinForms, UIA2 and UIA3 | `items` is empty, `select(index)` raises, `expand()` does nothing ([#75](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/75)) | None through UI Automation; WPF works |
+| [ComboBox](api/elements/combobox.md) | WPF | The drop-down closes when its window loses focus | `set_foreground()` before `expand()` |
+| [ListBox](api/elements/listbox.md) | WinForms single-select | Can't return to "no selection" | Select the item you need instead of clearing |
+| [Tree](api/elements/tree.md) | WPF | Child items appear only after the parent expands ([#76](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/76)) | Wait for the children before indexing |
+| [Menu](api/elements/menu.md) | WinForms | Checkable menu items don't support Toggle ([#78](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/78)) | Use WPF, or read the state another way |
+| [Menu](api/elements/menu.md) | UIA3 + WinForms | Context menus are unreliable ([#79](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/79)) | Use UIA2 |
+| [Menu](api/elements/menu.md) / [Window](api/elements/window.md) | All | An open context menu can become the app's "main window" ([#82](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/82)) | Press Escape to close it |
+| [Spinner](api/elements/spinner.md) | WinForms, some Windows 11 builds | `NumericUpDown` is missing from the tree ([#74](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/74)) | None; WPF works |
+| [AutomationElement](api/automation_element.md) | UIA2 | `find_*_with_options` is not implemented ([#80](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/80)) | Use UIA3 |
+
 ## Known pytest skips/xfails (manual list)
 - `skip_notepad_on_win11`: Notepad tests (XPath, getter/search) skipped on Windows 11 Store app.
 - `skip_if_matrix` UIA2_WinForms: XPath IsPassword property unavailable in UIA2+WinForms.

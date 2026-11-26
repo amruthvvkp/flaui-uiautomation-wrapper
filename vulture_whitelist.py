@@ -56,6 +56,13 @@ _.VideoQuality  # unused attribute
 _.EncodeWithLowPriority  # unused attribute
 _.LogMissingFrames  # unused attribute
 keep_alive  # unused variable
+# `InfoOverlayPosition` enum members (GH-160), mirroring the C# enum; only `TopLeft` is the default.
+TopLeft  # unused variable
+TopRight  # unused variable
+TopCenter  # unused variable
+BottomLeft  # unused variable
+BottomRight  # unused variable
+BottomCenter  # unused variable
 
 # --- flaui/core/condition_factory.py -----------------------------------------------------------------
 # Public API (C# parity), used by callers and tests rather than inside the package.
@@ -74,6 +81,14 @@ _.menu  # unused method
 _.grid  # unused method
 _.horizontal_scroll_bar  # unused method
 _.vertical_scroll_bar  # unused method
+
+# --- flaui/core/definitions.py ----------------------------------------------------------------------
+# VisualEffects is an IntFlag with plain int values, so vulture sees its members as unused variables.
+_.Shadow  # unused variable
+_.Reflection  # unused variable
+_.Glow  # unused variable
+_.SoftEdges  # unused variable
+_.Bevel  # unused variable
 
 # --- flaui/core/event_handlers.py --------------------------------------------------------------------
 # `_callback` keeps the Python callback alive for as long as the C# handler is registered.

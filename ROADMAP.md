@@ -22,16 +22,16 @@ order we'll tackle the rest.
 | Phase | Milestone | Status | Open / Closed |
 |-------|-----------|--------|---------------|
 | — | [Create initial usable release](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/1) | ✅ Done | 0 / 18 |
-| 0 | [Stabilize](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/7) | 🟡 In progress | 10 / 1 |
+| 0 | [Stabilize](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/7) | ✅ Done | 0 / 11 |
 | 1 | [Exceptions & Identifiers](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/8) | ✅ Done | 0 / 6 |
 | 2 | [Patterns](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/9) | ✅ Done | 0 / 5 |
 | 3 | [Elements & ScrollBars](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/10) | ✅ Done | 0 / 2 |
 | 4 | [Events](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/11) | ✅ Done | 0 / 2 |
 | 5 | [Capturing / Overlay / Video](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/12) | ✅ Done | 0 / 2 |
-| 6 | [Logging / Tools / Enhancers](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/13) | ✅ Done | 1 / 3 |
-| 7 | [Docs & Zensical](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/14) | ✅ Done | 0 / 5 |
-| 8 | [Polish & v1.0](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/15) | ⏳ Pending | 5 / 0 |
-| Post-v1 | [Ecosystem & Playwright-grade polish](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/16) | ⏳ Not started | 9 / 0 |
+| 6 | [Logging / Tools / Enhancers](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/13) | ✅ Done | 0 / 6 |
+| 7 | [Docs & Zensical](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/14) | ✅ Done | 0 / 8 |
+| 8 | [Polish & v1.0](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/15) | 🟡 In progress | 8 / 3 |
+| Post-v1 | [Ecosystem & Playwright-grade polish](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/milestone/16) | ⏳ Not started | 11 / 3 |
 
 **Legend:** ✅ done · 🟡 in progress · ⏳ not started
 
@@ -82,17 +82,14 @@ order we'll tackle the rest.
 
 ## ⏳ Pending — prioritized backlog
 
-Phases 1–7 are now complete (exceptions/identifiers, patterns, elements, events, capturing/overlay/
-video, logging/tools/Pythonic enhancers, docs). The remaining v1.0 gate is **Phase 0 → 8**, in that
-priority order.
+Phases 0–7 are complete. The remaining v1.0 gate is **Phase 8**.
 
-### P1 — Phase 0: Stabilize *(pre-release gate — active)*
-- **[#88](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/88)** — `flaui.core` test
-  coverage umbrella. Target **95%** (gate raised from the 85% floor; verified on the AppVeyor full
-  UI matrix). See [C# Parity Map](parity.md) / `docs/parity.md` for surface coverage.
-- Bug fixes: **#74 #75 #76 #78 #79 #80 #82 #83 #89** (see table below). Most are now triaged with
-  `platform_limitation` / `bug(run=True)` markers and documented in
-  [bug-tracking](bug-tracking.md); several are upstream Windows/.NET issues kept as known xfail/skip.
+### ✅ Phase 0: Stabilize *(complete)*
+- **[#88](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/88)** — `flaui.core` coverage: the **95%** gate is enforced on the AppVeyor full UI
+  matrix. See [C# Parity Map](parity.md).
+- Known bugs **#74 #76 #78 #79 #80 #82 #83** are closed (see table below). **#75** (WinForms
+  ComboBox) and **#89** (Windows 11 Notepad) are upstream or environment limitations, documented and
+  moved to Post-v1.
 
 ### ✅ Phase 7: Docs & Zensical *(complete)*
 - **[#86](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/86)** comprehensive docs
@@ -107,23 +104,28 @@ priority order.
   [Upgrade guide](upgrade-guide.md) gained a *Migrating from FlaUI C#* translation table.
   *(Robot Framework deferred to post-v1.)*
 
-### P3 — Phase 8: Polish & release
-- **[#85](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/85)** polish & production
-  readiness · release automation
-  **[#57](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/57)** /
-  **[#65](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/65)** /
-  **[#66](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/66)** · then
-  **[#84](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/84) v1.0.0 release**.
-  *(Tag-driven beta automation is wired — see [Release automation](#release-automation) — pending
-  token enablement.)*
+### 🟡 Phase 8: Polish & release *(active)*
+- **[#85](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/85)** polish & production readiness. Done: benchmarks, the integration suite, the
+  Python 3.11–3.15 × Windows 2022/2025 matrix, static analysis (pylint 9.91, bandit, vulture, `ty`),
+  clean wheel install, and LGPL license files. Left: the code-review fixes from the audit, the
+  pywinauto and agent-workload benchmarks (in review), and caching / cold-start work.
+- **C# parity gaps** found by a FlaUI scan: **[#157](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/157)** Definitions enums ·
+  **[#158](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/158)** Pythonic condition combinators · **[#159](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/159)** `FlaUI.Core.Debug` ·
+  **[#160](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/160)** typed capture settings and overlays · **[#161](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/161)** small Core gaps. All
+  are in review. **[#162](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/162)**, the FlaUI 5.1 DLL bump, waits for the NuGet release.
+- Release automation **#57 / #65 / #66** is done. Betas publish to PyPI on every merge to `master`,
+  moving to Trusted Publishing with provenance.
+- Then **[#84](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/84) v1.0.0 release**. Its gate still includes clearing the Dependabot alerts in
+  `uv.lock`.
 
 ### Post-v1 — parity gaps & deferred tests (out of scope for v1.0)
 - **[#121](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/121)** — CustomNavigation
   pattern (absent from FlaUI.Core; lives only in raw COM interop).
 - **Touch input tests** — `TouchTests.cs` is `[Ignore]`d upstream (unreliable on most CI/hardware).
-- **Full app integration suites** (Calculator / Notepad / Paint end-to-end) — deferred under #88/#89;
-  UI varies by Windows version/language. A `tests/integration/` skeleton (marked
-  `@pytest.mark.integration`, skipped by default) is the intended home.
+- **Full app integration suites** (Calculator / Notepad / Paint end-to-end) — deferred under #89;
+  UI varies by Windows version/language. `tests/integration/` already holds the journey suite for the
+  bundled WinForms/WPF test apps (#153).
+- **[#75](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/75)** WinForms ComboBox (a Windows/.NET bug) and **[#89](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/89)** Windows 11 Notepad.
 
 ---
 
@@ -206,17 +208,17 @@ audiences.
 
 ## Known bugs (Phase 0)
 
-| Issue | Symptom | Tests |
-|-------|---------|-------|
-| [#74](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/74) | Spinner element finding flaky — AutomationID instability | 3 |
-| [#75](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/75) | Combobox heavily broken on WinForms (Windows/.NET bugs) | 22 |
-| [#76](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/76) | Tree test flaky on AppVeyor CI — only 1 item found | 4 |
-| [#78](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/78) | Toggle pattern unsupported on WinForms menu items | 2 |
-| [#79](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/79) | WinForms context menu broken on UIA3 / newer .NET | 1 |
-| [#80](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/80) | `find_*_with_options` fail on specific UIA/platform combos | 8 |
-| [#82](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/82) | `test_get_control_type` fails on UIA2_WinForms (setup) | 4 |
-| [#83](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/83) | `test_select_by_index` fails on UIA3_WPF (ListBox) | 4 |
-| [#89](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/89) | Notepad UI tests on Windows 11 (Store app) need rework | — |
+| Issue | Symptom | Tests | Status |
+|-------|---------|-------|--------|
+| [#74](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/74) | Spinner element finding flaky — AutomationID instability | 3 | ✅ Closed: locator hardened; upstream peer bug skipped with a reason |
+| [#75](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/75) | Combobox heavily broken on WinForms (Windows/.NET bugs) | 22 | Upstream: WinForms skipped, WPF runs (#154); Post-v1 |
+| [#76](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/76) | Tree test flaky on AppVeyor CI — only 1 item found | 4 | ✅ Closed: waits for lazily realised items (#155) |
+| [#78](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/78) | Toggle pattern unsupported on WinForms menu items | 2 | ✅ Closed: upstream limitation, documented |
+| [#79](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/79) | WinForms context menu broken on UIA3 / newer .NET | 1 | ✅ Closed: upstream limitation, documented |
+| [#80](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/80) | `find_*_with_options` fail on specific UIA/platform combos | 8 | ✅ Closed: UIA2 skipped (not implemented); test fixed |
+| [#82](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/82) | `test_get_control_type` fails on UIA2_WinForms (setup) | 4 | ✅ Closed: leftover context menu dismissed |
+| [#83](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/83) | `test_select_by_index` fails on UIA3_WPF (ListBox) | 4 | ✅ Closed: leftover selection reset (#156) |
+| [#89](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/89) | Notepad UI tests on Windows 11 (Store app) need rework | — | Guarded skip; Post-v1 |
 
 ---
 
@@ -226,13 +228,12 @@ Releases are **tag-driven** so no workflow needs to push to protected `master` (
 
 | Event | Outcome | Where |
 |-------|---------|-------|
-| Pull request | dev build `1.0.0.dev<buildId>` → **TestPyPI** | Azure `deploy_testpypi` |
-| Merge to `master` | next `1.0.0bN` minted → GitHub **pre-release** (notes via release-drafter, #65) + tag `v1.0.0bN` | `.github/workflows/release-beta.yml` |
-| Tag `v1.0.0bN` | wheel/sdist → **PyPI** pre-release (links to PyPI + docs on the notes, #66) | Azure `deploy_pypi` |
-| Tag `v1.0.0` | stable release + `stable` docs alias | Azure `deploy_pypi` + `deploy_docs` |
+| Pull request | dev build `1.0.0.dev<run_id>` → **TestPyPI** | `.github/workflows/publish-testpypi.yml` |
+| Merge to `master` | next `1.0.0bN` minted → GitHub **pre-release** (notes via release-drafter, #65; PyPI link, #66) + tag `v1.0.0bN` → **PyPI** pre-release | `release-beta.yml` → `publish-pypi.yml` |
+| Publish the stable draft | **PyPI** stable release | `release-stable.yml` → `publish-pypi.yml` |
 
-All publish paths are **off by default**; enable via Azure `PUBLISH_*` flags + tokens and the GitHub
-`ENABLE_BETA_RELEASES` repo variable. Full flow: [Road to v1.0](release-plan.md#how-releases-are-automated).
+GitHub Actions owns publishing; the Azure `deploy_*` stages are legacy and stay off. Betas are gated
+by the `ENABLE_BETA_RELEASES` repo variable, which is on. Full flow: [Road to v1.0](release-plan.md#how-releases-are-automated).
 
 ## C# parity
 
@@ -252,6 +253,11 @@ UIA2/UIA3 framework-adapter internals are out of scope by design.
 | Ruff lint | 0 errors | clean ✅ |
 | Pattern parity | 34/34 | ✅ |
 | Wrapper overhead vs FlaUI C# | < 5ms avg per call | −8 to +2ms across UIA2/UIA3 × WinForms/WPF ✅ |
+| Compared with pywinauto | measured | median/p95 on the same apps; wrapper UIA descendant searches 1.4–5.6× faster than pywinauto `uia`, pywinauto `win32` fastest on WinForms ✅ |
+| Agent tree snapshot (whole main window, 5 properties per element) | measured | WPF 62–71ms cached subtree (~0.9ms/element), WinForms 190–320ms by any method (UIA-bound); wrapper ≈ raw C# ✅ |
+| Agent cold start (fresh process → first find) | measured | ~2.0–2.6s, ~1.3s of it importing (CLR + pydantic_settings); pywinauto ~0.9s ⚠️ keep one long-lived process |
+| Agent screenshot (window → PNG bytes) | measured | 17–33ms (one or two display frames), 2–4× faster than Pillow `ImageGrab` ✅ |
+| Agent reliability (find + toggle) | 100% | 500/500 on all four UIA2/UIA3 × WinForms/WPF combos ✅ |
 | Wheel size | < 10MB | 0.39MB (386KB, DLLs included) ✅ |
 
 **Absolute latency is reference-only, not a gate.** `scripts/benchmark.py` (GH-85) times each
@@ -294,6 +300,39 @@ suite's `BaseSettings` classes, which re-read environment variables, and under 0
 recipe's `BaseModel`. Run-to-run noise is about ±5ms on WinForms. The one real cost is outside this
 table: when the tab is not selected, the suite map selects it with `post_wait=True`, a deliberate
 100ms+ wait.
+
+**Compared with pywinauto.** `scripts/benchmark_pywinauto.py` (`uv run --group bench`, pywinauto in
+the optional `bench` dependency group only) runs the same operations through pywinauto 0.6.9's `uia`
+backend on both apps and its `win32` backend on WinForms, in the same process as the wrapper.
+Median / p95 in ms over 100 runs:
+
+| Operation | Wrapper UIA3 WinForms | pywinauto `uia` WinForms | pywinauto `win32` WinForms | Wrapper UIA3 WPF | pywinauto `uia` WPF |
+|-----------|-----------------------|--------------------------|----------------------------|------------------|---------------------|
+| Find descendant by automation id | 114 / 141 | 189 / 248 | n/a | 18 / 21 | 54 / 60 |
+| Find descendant by name | 35 / 43 | 198 / 240 | 1.7 / 3.0 | 25 / 28 | 49 / 57 |
+| Find all children | 16 / 18 | 23 / 45 | 0.23 / 0.31 | 3.3 / 3.9 | 4.8 / 6.4 |
+| Select radio button | 0.09 / 0.12 | 2.6 / 4.9 | 0.06 / 0.11 | 0.36 / 0.47 | 3.4 / 4.5 |
+| Toggle checkbox | 2.1 / 3.2 | 2.3 / 3.2 | 0.06 / 0.09 | 4.0 / 4.9 | 3.8 / 4.8 |
+| Mouse click | 127 / 142 | 566 / 570 | 566 / 569 | 111 / 127 | 561 / 568 |
+
+pywinauto's `win32` backend beats the wrapper wherever it applies (WinForms only, no AutomationId,
+`BM_SETCHECK` instead of UIA patterns). On UIA the gap in searches is pywinauto's strategy (fetch every
+descendant, filter in Python, insist on a unique match): the same `FindFirst` through its comtypes
+object matches FlaUI. pywinauto's clicks wait out the double-click time since the last input on every
+click, plus 90ms. Full tables and caveats: [docs/performance.md](docs/performance.md#compared-with-pywinauto).
+
+
+**Agent workloads.** `scripts/benchmark_agent.py` times what an AI computer-use agent does on each step
+(GH-85, groundwork for the MCP server in #145). It covers a full accessibility-tree snapshot (wrapper,
+`CacheRequest`, cached subtree, raw C#, pywinauto `descendants()` and raw comtypes), cold start in 10
+fresh processes, window and element capture to PNG bytes, `find_all_descendants` on the largest lists
+and grids, and 500 find-plus-toggle cycles. Snapshots are UIA-bound and the wrapper adds nothing. On WPF
+a cached-subtree walk halves the cost and beats pywinauto and comtypes. On WinForms every method costs
+3.4–5.8ms per element. Cold start (~2s, mostly imports) is the weak spot against pywinauto (~0.9s).
+Follow-ups that would help, not done in the benchmark PR: a snapshot helper that returns plain Python
+data from a cached subtree (`cached_children` returns raw C# today), a `CaptureImage` to-PNG-bytes
+helper, and lazy imports of `pydantic_settings` and the CLR. Full tables:
+[docs/performance.md](docs/performance.md#workloads-for-ai-agents).
 
 ---
 

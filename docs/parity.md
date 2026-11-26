@@ -29,9 +29,9 @@ elsewhere are usually intentional. 🟡 can also be an API-shape difference (e.g
 
 | Status | Types | % |
 | --- | ---: | ---: |
-| ✅ Covered | 171 | 33% |
-| 🟡 Partial | 18 | 3% |
-| ❌ Missing | 317 | 62% |
+| ✅ Covered | 201 | 39% |
+| 🟡 Partial | 16 | 3% |
+| ❌ Missing | 289 | 57% |
 | **Total** | **506** | 100% |
 
 ## FlaUI.Core
@@ -83,32 +83,32 @@ elsewhere are usually intentional. 🟡 can also be an API-shape difference (e.g
 | Type | Kind | Status | Notes |
 | --- | --- | --- | --- |
 | Capture | class | ✅ |  |
-| CaptureImage | class | 🟡 | unwrapped: `BitmapImage`, `Settings` |
+| CaptureImage | class | ✅ |  |
 | CaptureSettings | class | 🟡 | unwrapped: `OutputHeight`, `OutputScale`, `OutputWidth` |
-| CaptureUtilities | class | ❌ | no Python class |
-| ICaptureOverlay | interface | ❌ | no Python class |
-| InfoOverlay | class | ❌ | no Python class |
-| InfoOverlayPosition | enum | ❌ | no Python class |
-| MouseOverlay | class | ❌ | no Python class |
-| OverlayBase | class | ❌ | no Python class |
+| CaptureUtilities | class | ✅ |  |
+| ICaptureOverlay | interface | ✅ |  |
+| InfoOverlay | class | ✅ |  |
+| InfoOverlayPosition | enum | ✅ |  |
+| MouseOverlay | class | ✅ |  |
+| OverlayBase | class | ✅ |  |
 | VideoFormat | enum | ✅ |  |
-| VideoRecorder | class | 🟡 | unwrapped: `RecordTimeSpan` |
+| VideoRecorder | class | ✅ |  |
 | VideoRecorderSettings | class | 🟡 | unwrapped: `EncodeWithLowPriority`, `FrameRate`, `LogMissingFrames`, `TargetVideoPath`, `UseCompressedImages`, `VideoFormat` (+2 more) |
 
 ### Conditions
 
 | Type | Kind | Status | Notes |
 | --- | --- | --- | --- |
-| AndCondition | class | ❌ | no Python class |
-| BoolCondition | class | ❌ | no Python class |
-| ConditionBase | class | ❌ | no Python class |
+| AndCondition | class | ✅ |  |
+| BoolCondition | class | ✅ |  |
+| ConditionBase | class | ✅ |  |
 | ConditionFactory | class | ✅ |  |
-| FalseCondition | class | ❌ | no Python class |
-| JunctionConditionBase | class | ❌ | no Python class |
-| NotCondition | class | ❌ | no Python class |
-| OrCondition | class | ❌ | no Python class |
+| FalseCondition | class | ✅ |  |
+| JunctionConditionBase | class | ✅ |  |
+| NotCondition | class | ✅ |  |
+| OrCondition | class | ✅ |  |
 | PropertyCondition | class | ✅ |  |
-| TrueCondition | class | ❌ | no Python class |
+| TrueCondition | class | ✅ |  |
 
 ### Core
 
@@ -141,34 +141,34 @@ elsewhere are usually intentional. 🟡 can also be an API-shape difference (e.g
 
 | Type | Kind | Status | Notes |
 | --- | --- | --- | --- |
-| AnnotationType | enum | ❌ | no Python class |
+| AnnotationType | enum | ✅ |  |
 | AutomationElementMode | enum | ✅ |  |
-| CoalesceEventsOptions | enum | ❌ | no Python class |
-| ConnectionRecoveryBehaviorOptions | enum | ❌ | no Python class |
+| CoalesceEventsOptions | enum | ✅ |  |
+| ConnectionRecoveryBehaviorOptions | enum | ✅ |  |
 | ControlType | enum | ✅ |  |
 | DockPosition | enum | ✅ |  |
 | ExpandCollapseState | enum | ✅ |  |
-| FrameworkIds | class | ❌ | no Python class |
-| HeadingLevel | enum | ❌ | no Python class |
-| LandmarkType | enum | ❌ | no Python class |
-| LiveSetting | enum | ❌ | no Python class |
-| NotificationKind | enum | ❌ | no Python class |
-| NotificationProcessing | enum | ❌ | no Python class |
-| OrientationType | enum | ❌ | no Python class |
+| FrameworkIds | class | ✅ |  |
+| HeadingLevel | enum | ✅ |  |
+| LandmarkType | enum | ✅ |  |
+| LiveSetting | enum | ✅ |  |
+| NotificationKind | enum | ✅ |  |
+| NotificationProcessing | enum | ✅ |  |
+| OrientationType | enum | ✅ |  |
 | PropertyConditionFlags | enum | ✅ |  |
 | RowOrColumnMajor | enum | ✅ |  |
 | ScrollAmount | enum | ✅ |  |
-| StructureChangeType | enum | ❌ | no Python class |
-| StyleType | enum | ❌ | no Python class |
+| StructureChangeType | enum | ✅ |  |
+| StyleType | enum | ✅ |  |
 | SupportedTextSelection | enum | ✅ |  |
 | SynchronizedInputType | enum | ✅ |  |
-| TextEditChangeType | enum | ❌ | no Python class |
+| TextEditChangeType | enum | ✅ |  |
 | TextPatternRangeEndpoint | enum | ✅ |  |
 | TextUnit | enum | ✅ |  |
 | ToggleState | enum | ✅ |  |
 | TreeScope | enum | ✅ |  |
 | TreeTraversalOptions | enum | ✅ |  |
-| VisualEffects | enum | ❌ | no Python class |
+| VisualEffects | enum | ✅ |  |
 | WindowInteractionState | enum | ✅ |  |
 | WindowVisualState | enum | ✅ |  |
 | ZoomUnit | enum | ✅ |  |
