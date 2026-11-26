@@ -10,7 +10,8 @@ from site-packages::
 The packaging checks always run:
 
 * ``flaui`` is imported from site-packages, not from a source checkout;
-* the five bundled DLLs and ``py.typed`` ship inside the installed package;
+* the five bundled DLLs and ``py.typed`` ship inside the installed package, and the ``LICENSE``
+  and ``COPYING`` files ship in ``dist-info/licenses``;
 * ``setup_pythonnet_bridge()`` loads the DLLs and reports FlaUI 5.x.
 
 With ``--apps-dir`` (needs an interactive desktop, e.g. AppVeyor), the script also launches the
@@ -37,6 +38,7 @@ EXPECTED_DLLS = (
     "Interop.UIAutomationClient.dll",
     "System.CodeDom.dll",
 )
+LICENSE_FILES = ("LICENSE", "COPYING")
 DISTRIBUTION = "flaui-uiautomation-wrapper"
 APPS = {
     "WPF": Path("WPFApplication") / "WpfApplication.exe",
@@ -91,6 +93,11 @@ def check_installed_package() -> Path:
     for dll in EXPECTED_DLLS:
         check((bin_dir / dll).is_file(), f"bundled {dll} is installed")
     check((package_dir / "py.typed").is_file(), "py.typed marker is installed")
+
+    files = metadata.files(DISTRIBUTION) or []
+    licenses = {f.name for f in files if f.parent.name == "licenses"}
+    for name in LICENSE_FILES:
+        check(name in licenses, f"license file {name} is installed in dist-info/licenses")
     return package_dir
 
 
