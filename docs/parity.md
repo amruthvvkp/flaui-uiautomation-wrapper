@@ -29,8 +29,8 @@ elsewhere are usually intentional. 🟡 can also be an API-shape difference (e.g
 
 | Status | Types | % |
 | --- | ---: | ---: |
-| ✅ Covered | 168 | 33% |
-| 🟡 Partial | 21 | 4% |
+| ✅ Covered | 171 | 33% |
+| 🟡 Partial | 18 | 3% |
 | ❌ Missing | 317 | 62% |
 | **Total** | **506** | 100% |
 
@@ -61,10 +61,10 @@ elsewhere are usually intentional. 🟡 can also be an API-shape difference (e.g
 | Label | class | ✅ |  |
 | ListBox | class | ✅ |  |
 | ListBoxItem | class | ✅ |  |
-| Menu | class | 🟡 | unwrapped: `IsWin32Menu` |
+| Menu | class | ✅ |  |
 | MenuItem | class | ✅ |  |
 | MenuItems | class | ❌ | no Python class |
-| ProgressBar | class | 🟡 | unwrapped: `RangeValuePattern` |
+| ProgressBar | class | ✅ |  |
 | RadioButton | class | ✅ |  |
 | Slider | class | ✅ |  |
 | Spinner | class | ✅ |  |
@@ -117,11 +117,11 @@ elsewhere are usually intentional. 🟡 can also be an API-shape difference (e.g
 | ActionDisposable | class | ❌ | no Python class |
 | Application | class | ✅ |  |
 | AutomationBase | class | ✅ |  |
-| AutomationElementXPathNavigator | class | 🟡 | unwrapped: `BaseURI`, `HasAttributes`, `IsEmptyElement`, `IsSamePosition`, `LocalName`, `MoveTo` (+10 more) |
+| AutomationElementXPathNavigator | class | 🟡 | unwrapped: `BaseURI`, `MoveToFirstNamespace`, `MoveToId`, `MoveToNextNamespace`, `NameTable`, `NamespaceURI` (+1 more) |
 | AutomationPattern`2 | class | ❌ | no Python class |
 | AutomationProperty`1 | class | ❌ | no Python class |
 | AutomationType | enum | ✅ |  |
-| CacheRequest | class | 🟡 | unwrapped: `Add` |
+| CacheRequest | class | ✅ |  |
 | Debug | class | ❌ | no Python class |
 | FrameworkAutomationElementBase | class | ❌ | no Python class |
 | FrameworkType | enum | ✅ |  |
@@ -199,10 +199,10 @@ elsewhere are usually intentional. 🟡 can also be an API-shape difference (e.g
 | NotCachedException | class | ✅ |  |
 | NotSupportedByFrameworkException | class | ✅ |  |
 | NotSupportedException | class | ✅ |  |
-| PatternNotCachedException | class | 🟡 | unwrapped: `GetObjectData`, `Pattern` |
-| PatternNotSupportedException | class | 🟡 | unwrapped: `GetObjectData`, `Pattern` |
-| PropertyNotCachedException | class | 🟡 | unwrapped: `GetObjectData`, `Property` |
-| PropertyNotSupportedException | class | 🟡 | unwrapped: `GetObjectData`, `Property` |
+| PatternNotCachedException | class | 🟡 | unwrapped: `GetObjectData` |
+| PatternNotSupportedException | class | 🟡 | unwrapped: `GetObjectData` |
+| PropertyNotCachedException | class | 🟡 | unwrapped: `GetObjectData` |
+| PropertyNotSupportedException | class | 🟡 | unwrapped: `GetObjectData` |
 | ProxyAssemblyNotLoadedException | class | ✅ |  |
 
 ### Identifiers
@@ -213,7 +213,7 @@ elsewhere are usually intentional. 🟡 can also be an API-shape difference (e.g
 | EventId | class | ✅ |  |
 | IdentifierBase | class | ✅ |  |
 | PatternId | class | ✅ |  |
-| PropertyId | class | 🟡 | unwrapped: `GetCondition`, `SetConverter` |
+| PropertyId | class | 🟡 | unwrapped: `SetConverter` |
 | TextAttributeId | class | 🟡 | unwrapped: `SetConverter` |
 
 ### Infrastructure

@@ -132,3 +132,86 @@ class AutomationElementXPathNavigator(BaseModel):
         :return: The attribute value, or an empty string when unset.
         """
         return self.raw_navigator.GetAttribute(name, "")
+
+    @property
+    @handle_csharp_exceptions
+    def underlying_object(self) -> "AutomationElement":
+        """Return the element at the current position (C# ``UnderlyingObject``; same as :attr:`current_element`).
+
+        :return: The current :class:`~flaui.core.automation_elements.AutomationElement`.
+        """
+        return self.current_element
+
+    @property
+    @handle_csharp_exceptions
+    def local_name(self) -> str:
+        """Return the local name of the current node; equal to :attr:`name` since the tree has no namespaces.
+
+        :return: The node's local name.
+        """
+        return self.raw_navigator.LocalName
+
+    @property
+    @handle_csharp_exceptions
+    def has_attributes(self) -> bool:
+        """Return whether the current node has attributes (``True`` on element nodes).
+
+        :return: ``True`` when the current node is an element, ``False`` when positioned on an attribute.
+        """
+        return self.raw_navigator.HasAttributes
+
+    @property
+    @handle_csharp_exceptions
+    def is_empty_element(self) -> bool:
+        """Return whether the current node is an empty element (always ``False`` for UIA elements).
+
+        :return: The C# ``IsEmptyElement`` flag.
+        """
+        return self.raw_navigator.IsEmptyElement
+
+    @handle_csharp_exceptions
+    def move_to(self, other: "AutomationElementXPathNavigator") -> bool:
+        """Move to the same position as another navigator over the same tree.
+
+        :param other: The navigator whose position to copy.
+        :return: ``True`` if moved, ``False`` if ``other`` is not an :class:`AutomationElementXPathNavigator`.
+        """
+        return self.raw_navigator.MoveTo(other.raw_navigator)
+
+    @handle_csharp_exceptions
+    def is_same_position(self, other: "AutomationElementXPathNavigator") -> bool:
+        """Return whether this navigator is at the same position as another.
+
+        :param other: The navigator to compare against.
+        :return: ``True`` when both point at the same element (and attribute, if any).
+        """
+        return self.raw_navigator.IsSamePosition(other.raw_navigator)
+
+    @handle_csharp_exceptions
+    def move_to_first_attribute(self) -> bool:
+        """Move to the first attribute of the current element.
+
+        While on an attribute, :attr:`name` is the attribute name and :attr:`value` its value; call
+        :meth:`move_to_parent` to return to the element.
+
+        :return: ``True`` if moved, ``False`` if already on an attribute.
+        """
+        return self.raw_navigator.MoveToFirstAttribute()
+
+    @handle_csharp_exceptions
+    def move_to_next_attribute(self) -> bool:
+        """Move to the next attribute of the current element.
+
+        :return: ``True`` if moved, ``False`` when on the last attribute or not on an attribute.
+        """
+        return self.raw_navigator.MoveToNextAttribute()
+
+    @handle_csharp_exceptions
+    def move_to_attribute(self, local_name: str, namespace_uri: str = "") -> bool:
+        """Move to the named attribute of the current element.
+
+        :param local_name: The attribute name (see :meth:`get_attribute` for the supported names).
+        :param namespace_uri: The attribute namespace; the UIA tree uses none, so keep the default.
+        :return: ``True`` if moved, ``False`` if the attribute does not exist.
+        """
+        return self.raw_navigator.MoveToAttribute(local_name, namespace_uri)

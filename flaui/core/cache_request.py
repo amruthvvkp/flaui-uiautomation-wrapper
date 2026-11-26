@@ -7,12 +7,14 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 import logging
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 # Import the C# CacheRequest class via PythonNet
 from FlaUI.Core import CacheRequest as CSCacheRequest  # pyright: ignore
 
 from flaui.core.definitions import TreeScope
+from flaui.core.identifiers import IdentifierBase, PatternId, PropertyId
+from flaui.lib.exceptions import handle_csharp_exceptions
 from flaui.modules.automation import Automation
 
 logger = logging.getLogger(__name__)
@@ -87,13 +89,31 @@ class CacheRequest:
         """Get or set the properties."""
         return self._cs_instance.Properties
 
-    def add_pattern(self, pattern: Any) -> None:
-        """Add a pattern to the cache request."""
-        self._cs_instance.Add(pattern)
+    @handle_csharp_exceptions
+    def add(self, identifier: Union[PatternId, PropertyId, Any]) -> None:
+        """Add a pattern or property to the cache request (C# ``CacheRequest.Add``).
 
-    def add_property(self, property_: Any) -> None:
-        """Add a property to the cache request."""
-        self._cs_instance.Add(property_)
+        C# overloads ``Add`` for ``PatternId`` and ``PropertyId``; this method accepts either, as the
+        Python :class:`~flaui.core.identifiers.PatternId` / :class:`~flaui.core.identifiers.PropertyId`
+        wrappers or as the raw C# identifiers (e.g. ``automation.cs_automation.PropertyLibrary.Element.Name``).
+
+        :param identifier: The pattern or property identifier to cache.
+        """
+        self._cs_instance.Add(identifier.raw if isinstance(identifier, IdentifierBase) else identifier)
+
+    def add_pattern(self, pattern: Union[PatternId, Any]) -> None:
+        """Add a pattern to the cache request.
+
+        :param pattern: The pattern identifier, wrapped or raw C#.
+        """
+        self.add(pattern)
+
+    def add_property(self, property_: Union[PropertyId, Any]) -> None:
+        """Add a property to the cache request.
+
+        :param property_: The property identifier, wrapped or raw C#.
+        """
+        self.add(property_)
 
     @contextmanager
     def activate(self) -> Any:

@@ -296,3 +296,46 @@ class TestTranslationLadder:
         with pytest.raises(PatternNotSupportedException) as info:
             boom()
         assert info.value.pattern_id is not None
+
+    def test_property_attribute_wraps_property_id(self) -> None:
+        """``.property`` exposes the forwarded C# ``PropertyId`` as a Python ``PropertyId`` (C# ``.Property``)."""
+        from flaui.core.identifiers import PropertyId as PyPropertyId
+
+        @handle_csharp_exceptions
+        def boom() -> None:
+            """Raise a C# PropertyNotCachedException carrying a PropertyId."""
+            raise CSharpPropertyNotCachedException(_property_id())
+
+        with pytest.raises(PropertyNotCachedException) as info:
+            boom()
+        assert isinstance(info.value.property, PyPropertyId)
+        assert info.value.property.id == 30005
+        assert info.value.property.name == "TestProp"
+
+    def test_pattern_attribute_wraps_pattern_id(self) -> None:
+        """``.pattern`` exposes the forwarded C# ``PatternId`` as a Python ``PatternId`` (C# ``.Pattern``)."""
+        from flaui.core.identifiers import PatternId as PyPatternId
+
+        @handle_csharp_exceptions
+        def boom() -> None:
+            """Raise a C# PatternNotCachedException carrying a PatternId."""
+            raise CSharpPatternNotCachedException(_pattern_id())
+
+        with pytest.raises(PatternNotCachedException) as info:
+            boom()
+        assert isinstance(info.value.pattern, PyPatternId)
+        assert info.value.pattern.id == 10000
+        assert info.value.pattern.name == "TestPattern"
+
+    @pytest.mark.parametrize(
+        "exc, attr",
+        [
+            (PropertyNotSupportedException, "property"),
+            (PropertyNotCachedException, "property"),
+            (PatternNotSupportedException, "pattern"),
+            (PatternNotCachedException, "pattern"),
+        ],
+    )
+    def test_identifier_attribute_none_when_unknown(self, exc: type, attr: str) -> None:
+        """``.property``/``.pattern`` is ``None`` when no identifier was carried."""
+        assert getattr(exc(), attr) is None

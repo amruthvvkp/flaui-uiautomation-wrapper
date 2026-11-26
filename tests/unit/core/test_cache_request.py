@@ -77,6 +77,20 @@ class TestProperties:
         assert cache_request.properties is not None
         assert cache_request.patterns is not None
 
+    def test_add_accepts_raw_and_wrapped_identifiers(self) -> None:
+        """``add`` (C# ``CacheRequest.Add``) takes raw C# or Python-wrapped pattern and property ids."""
+        from flaui.core.identifiers import PatternId as PyPatternId, PropertyId as PyPropertyId
+
+        cache_request = CacheRequest()
+
+        cache_request.add(PropertyId(30005, "Name"))
+        cache_request.add(PyPropertyId(raw=PropertyId(30011, "AutomationId")))
+        cache_request.add(PatternId(10000, "Invoke", None))
+        cache_request.add(PyPatternId(raw=PatternId(10002, "Value", None)))
+
+        assert sorted(p.Id for p in cache_request.properties) == [30005, 30011]
+        assert sorted(p.Id for p in cache_request.patterns) == [10000, 10002]
+
 
 class TestCachingLifecycle:
     """Validate activation, the active-state query, and the static stack helpers."""

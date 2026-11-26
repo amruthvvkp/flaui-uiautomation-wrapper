@@ -15,11 +15,11 @@ The Python exceptions mirror the C# ``FlaUI.Core.Exceptions`` inheritance tree s
         ├── NotSupportedByFrameworkException
         ├── ProxyAssemblyNotLoadedException
         ├── NotCachedException
-        │   ├── PatternNotCachedException    (carries ``pattern_id``)
-        │   └── PropertyNotCachedException   (carries ``property_id``)
+        │   ├── PatternNotCachedException    (carries ``pattern_id`` / ``pattern``)
+        │   └── PropertyNotCachedException   (carries ``property_id`` / ``property``)
         └── NotSupportedException
-            ├── PatternNotSupportedException  (carries ``pattern_id``)
-            └── PropertyNotSupportedException (carries ``property_id``)
+            ├── PatternNotSupportedException  (carries ``pattern_id`` / ``pattern``)
+            └── PropertyNotSupportedException (carries ``property_id`` / ``property``)
 
 ``SystemException`` is intentionally kept outside the ``FlaUIException`` tree: it wraps a raw
 ``System.Exception`` that is not a FlaUI error, so ``except FlaUIException`` should not catch it.
@@ -27,7 +27,7 @@ The Python exceptions mirror the C# ``FlaUI.Core.Exceptions`` inheritance tree s
 
 from contextlib import contextmanager
 from functools import wraps
-from typing import Any, Callable, Generator, Optional, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, Generator, Optional, TypeVar, Union, cast
 
 from FlaUI.Core.Exceptions import (  # type: ignore
     ElementNotAvailableException as CSharpElementNotAvailableException,
@@ -45,6 +45,10 @@ from FlaUI.Core.Exceptions import (  # type: ignore
     ProxyAssemblyNotLoadedException as CSharpProxyAssemblyNotLoadedException,
 )
 import System  # type: ignore
+
+if TYPE_CHECKING:
+    from flaui.core.identifiers.pattern_id import PatternId
+    from flaui.core.identifiers.property_id import PropertyId
 
 
 # ---------------------------------------------------------------------------
@@ -164,6 +168,16 @@ class PropertyNotSupportedException(NotSupportedException):
         self.property_id = property_id
         super().__init__(message)
 
+    @property
+    def property(self) -> Optional["PropertyId"]:  # pylint: disable=redefined-builtin
+        """Return the offending property as a :class:`~flaui.core.identifiers.PropertyId` (C# ``.Property``).
+
+        :return: The wrapped property identifier, or ``None`` when it is unknown.
+        """
+        from flaui.core.identifiers.property_id import PropertyId
+
+        return None if self.property_id is None else PropertyId(raw=self.property_id)
+
 
 class PatternNotSupportedException(NotSupportedException):
     """Python equivalent of C# ``PatternNotSupportedException``; carries the offending ``pattern_id``."""
@@ -178,6 +192,16 @@ class PatternNotSupportedException(NotSupportedException):
         """
         self.pattern_id = pattern_id
         super().__init__(message)
+
+    @property
+    def pattern(self) -> Optional["PatternId"]:
+        """Return the offending pattern as a :class:`~flaui.core.identifiers.PatternId` (C# ``.Pattern``).
+
+        :return: The wrapped pattern identifier, or ``None`` when it is unknown.
+        """
+        from flaui.core.identifiers.pattern_id import PatternId
+
+        return None if self.pattern_id is None else PatternId(raw=self.pattern_id)
 
 
 class PropertyNotCachedException(NotCachedException):
@@ -194,6 +218,16 @@ class PropertyNotCachedException(NotCachedException):
         self.property_id = property_id
         super().__init__(message)
 
+    @property
+    def property(self) -> Optional["PropertyId"]:  # pylint: disable=redefined-builtin
+        """Return the offending property as a :class:`~flaui.core.identifiers.PropertyId` (C# ``.Property``).
+
+        :return: The wrapped property identifier, or ``None`` when it is unknown.
+        """
+        from flaui.core.identifiers.property_id import PropertyId
+
+        return None if self.property_id is None else PropertyId(raw=self.property_id)
+
 
 class PatternNotCachedException(NotCachedException):
     """Python equivalent of C# ``PatternNotCachedException``; carries the offending ``pattern_id``."""
@@ -206,6 +240,16 @@ class PatternNotCachedException(NotCachedException):
         """
         self.pattern_id = pattern_id
         super().__init__(message)
+
+    @property
+    def pattern(self) -> Optional["PatternId"]:
+        """Return the offending pattern as a :class:`~flaui.core.identifiers.PatternId` (C# ``.Pattern``).
+
+        :return: The wrapped pattern identifier, or ``None`` when it is unknown.
+        """
+        from flaui.core.identifiers.pattern_id import PatternId
+
+        return None if self.pattern_id is None else PatternId(raw=self.pattern_id)
 
 
 class ElementNotFound(FlaUIException):
