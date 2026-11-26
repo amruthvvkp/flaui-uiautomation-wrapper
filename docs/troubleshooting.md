@@ -158,6 +158,9 @@ uv, the Microsoft Store, conda, ...).
 - Verify `automation_id` spelling (use Accessibility Insights or FlaUIInspect).
 - Use `Retry.While` for slow-loading UI.
 - Prefer `condition_factory.by_automation_id` over XPath when possible.
+- Log `element.details()` for a nearby element to see its real properties and patterns, and
+  `element.get_xpath_to_element(desktop)` to get a locator for one you found another way. See
+  [Debugging elements](utilities.md#debugging-elements).
 
 ## Timing and sync
 - Use `post_wait=True|seconds|callable` on mouse/keyboard actions.

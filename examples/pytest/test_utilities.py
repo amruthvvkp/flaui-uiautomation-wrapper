@@ -217,6 +217,22 @@ def test_highlight(automation: Automation, window: Window, cf: ConditionFactory)
     # --8<-- [end:highlight]
 
 
+def test_debug_details_and_xpath(automation: Automation, window: Window, cf: ConditionFactory) -> None:
+    """Dump an element's properties and turn it into an XPath locator."""
+    button = window.find_first_descendant(cf.by_automation_id("InvokableButton"))
+    # --8<-- [start:debug]
+    from flaui.core import debug
+
+    print(debug.details(button))  # or button.details(): AutomationId, ControlType, Name, patterns
+
+    desktop = automation.automation_base.get_desktop()
+    xpath = button.get_xpath_to_element(desktop)  # e.g. "/Tab/TabItem[1]/Button[2]"
+    same_button = window.find_first_by_x_path(xpath)  # the path is relative to the window
+    # --8<-- [end:debug]
+    assert "AutomationId: InvokableButton" in button.details()
+    assert same_button.equals(button)
+
+
 # ---------------------------------------------------------------------------------------------
 # Tools
 # ---------------------------------------------------------------------------------------------
