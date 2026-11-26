@@ -199,7 +199,7 @@ does not wait for the hosted image's tool cache.
 
 | Where | Image | Windows version | What runs |
 |-------|-------|-----------------|-----------|
-| AppVeyor | `Visual Studio 2026` | Windows Server 2025 | Full desktop UI suite, wheel smoke with UI checks |
+| AppVeyor | `Visual Studio 2026` | Windows Server (exact build logged in each job's `init` step) | Full desktop UI suite, wheel smoke with UI checks |
 | Azure | `windows-2022` | Windows Server 2022 | Hosted smoke on every Python, clean wheel install smoke |
 | Azure | `windows-2025` | Windows Server 2025 | Hosted smoke on 3.11 and 3.15 |
 | Contributors | local machines | Windows 10 / 11 | Full suite locally (`uv run pytest`) |
