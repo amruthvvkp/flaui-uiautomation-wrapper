@@ -59,6 +59,7 @@ class ElementModel(BaseModel, abc.ABC):  # pragma: no cover
     )  # Consider making this a private property
 
     @field_validator("raw_element")
+    @classmethod
     def validate_element_exists(cls, v: Any, info: ValidationInfo) -> Any:  # pragma: no cover
         """Validate the element exists
 

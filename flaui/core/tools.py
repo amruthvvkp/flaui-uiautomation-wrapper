@@ -158,7 +158,7 @@ class Retry:
             Retry._sleep_ms(interval)
 
     @staticmethod
-    def WhileTrue(
+    def WhileTrue(  # pylint: disable=unused-argument  # last_value/default_on_timeout: C# signature parity
         retry_method: Callable[[], T],
         timeout: int = 1000,
         interval: int = 100,
@@ -204,7 +204,7 @@ class Retry:
             Retry._sleep_ms(interval)
 
     @staticmethod
-    def WhileFalse(
+    def WhileFalse(  # pylint: disable=unused-argument  # last_value/default_on_timeout: C# signature parity
         retry_method: Callable[[], T],
         timeout: int = 1000,
         interval: int = 100,
@@ -254,7 +254,7 @@ class Retry:
             Retry._sleep_ms(interval)
 
     @staticmethod
-    def WhileNull(
+    def WhileNull(  # pylint: disable=unused-argument  # last_value/default_on_timeout: C# signature parity
         retry_method: Callable[[], T],
         timeout: int = 1000,
         interval: int = 100,
@@ -298,7 +298,7 @@ class Retry:
             Retry._sleep_ms(interval)
 
     @staticmethod
-    def WhileNotNull(
+    def WhileNotNull(  # pylint: disable=unused-argument  # last_value/default_on_timeout: C# signature parity
         retry_method: Callable[[], T],
         timeout: int = 1000,
         interval: int = 100,
@@ -403,7 +403,7 @@ class Retry:
             Retry._sleep_ms(interval)
 
     @staticmethod
-    def WhileException(
+    def WhileException(  # pylint: disable=unused-argument  # last_value/default_on_timeout: C# signature parity
         retry_method: Callable[[], T],
         timeout: int = 1000,
         interval: int = 100,

@@ -3,12 +3,10 @@ Python wrapper for the C# FlaUI.Core.CacheRequest class.
 Mirrors the C# API and exposes a high-level interface for cache requests.
 """
 
-# Untested code may not work as expected.
-# This code is a direct translation of the C# API and may require adjustments.
-
 from __future__ import annotations
 
 from contextlib import contextmanager
+import logging
 from typing import Any, Optional
 
 # Import the C# CacheRequest class via PythonNet
@@ -16,6 +14,8 @@ from FlaUI.Core import CacheRequest as CSCacheRequest  # pyright: ignore
 
 from flaui.core.definitions import TreeScope
 from flaui.modules.automation import Automation
+
+logger = logging.getLogger(__name__)
 
 
 class CacheRequest:
@@ -110,7 +110,7 @@ class CacheRequest:
                 try:
                     disposable.dispose()
                 except Exception:
-                    pass
+                    logger.debug("Failed to dispose the cache-request activation", exc_info=True)
 
     @classmethod
     def is_caching_active(cls) -> bool:

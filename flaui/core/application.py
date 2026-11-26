@@ -195,7 +195,7 @@ class Application:
         try:
             self.wait_while_main_handle_is_missing(time_out=min(3000, total_timeout_ms))
         except Exception:
-            pass
+            logger.debug("Initial wait for the main window handle failed", exc_info=True)
 
         last_err: Optional[Exception] = None
         while time.time() < deadline:
@@ -226,7 +226,7 @@ class Application:
                     self.wait_while_main_handle_is_missing(time_out=poll_interval_ms)
             except Exception:
                 # swallow and retry
-                pass
+                logger.debug("Waiting for the main window handle failed; retrying", exc_info=True)
             time.sleep(poll_interval_ms / 1000.0)
 
         # Final attempt before giving up
@@ -253,7 +253,7 @@ class Application:
         try:
             self.wait_while_main_handle_is_missing(2000)
         except Exception:
-            pass
+            logger.debug("Main window handle did not appear after launch", exc_info=True)
         # Fallback: Some modern Windows apps may require AttachOrLaunch to bind process
         try:
             pid = self.process_id
@@ -264,7 +264,7 @@ class Application:
                 self.attach_or_launch(executable)
                 self.wait_while_main_handle_is_missing(2000)
             except Exception:
-                pass
+                logger.debug("attach_or_launch fallback failed for %s", executable, exc_info=True)
 
     def launch_store_app(self, app_user_model_ltd: str, arguments: Optional[str] = None) -> None:
         """Launches a store application.

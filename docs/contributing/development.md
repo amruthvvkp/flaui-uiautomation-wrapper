@@ -42,6 +42,37 @@ ruff format .            # format
 interrogate flaui/ --fail-under=95   # docstring coverage (95% required)
 ```
 
+### Static analysis
+
+Run these before opening a PR; the Azure `linting_checks` job enforces all of them.
+
+```bash
+uv run --group dev ty check flaui                    # type check
+uv run --group dev pylint flaui --fail-under=9.5     # lint score must stay >= 9.5
+uv run --group dev bandit -c pyproject.toml -r flaui # security lint
+uv run --group dev vulture                           # dead code (paths and options come from pyproject.toml)
+```
+
+All three tools are configured in `pyproject.toml`:
+
+- **Pylint** (`[tool.pylint.*]`). PythonNet loads the C# namespaces (`FlaUI.*`, `System.*`, `clr`)
+  only at runtime, so they are listed in `ignored-modules`. That is the pylint counterpart of
+  `[tool.ty.rules]`. Do not add per-line `# pylint: disable=import-error` / `no-member` for C#
+  imports. A small set of checks is disabled on purpose, and the comments next to `disable` explain
+  each one: late imports and the cycles they break, C#-parity class and module sizes, broad catches
+  around .NET exceptions, and the line-length and import-order checks that Ruff and isort own. C#
+  names kept for parity (`ControlType.Button`, `Retry.While`, `PropertyCondition.And`) are allowed
+  through `class-const-naming-style` and `good-names-rgxs`.
+- **Bandit** (`[tool.bandit]`). Do not silence a finding without saying why. Prefer fixing it. For
+  a silent `except: pass`, log at `debug` with `exc_info=True`. If a finding really is safe, use
+  `# nosec BXXX  # <reason>`.
+- **Vulture** (`[tool.vulture]`). `flaui` is a library, so most of its public API is never called
+  inside the package. Members decorated with `@property`, `@handle_csharp_exceptions`,
+  `@staticmethod` / `@classmethod` or a Pydantic validator are skipped. The remaining public names
+  are listed in `vulture_whitelist.py`, grouped by module. When vulture flags new code, delete it if
+  it is dead. If it is public API, add it to the whitelist. Run
+  `uv run --group dev vulture flaui --make-whitelist` for a draft.
+
 ## Pre-commit hooks
 
 Defined in `.pre-commit-config.yaml`:
@@ -50,6 +81,7 @@ Defined in `.pre-commit-config.yaml`:
 - End-of-file fixes
 - Ruff linting and formatting
 - Interrogate docstring checks
+- Pylint, Bandit and Vulture (local hooks that run through `uv run`)
 - Python AST validation
 
 ```bash

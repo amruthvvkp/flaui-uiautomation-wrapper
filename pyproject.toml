@@ -62,12 +62,15 @@ pytest-sugar = ["pytest-sugar>=1.0.0"]
 
 [dependency-groups]
 dev = [
+  "bandit>=1.9.4",
   "interrogate>=1.7.0",
   "isort>=9.0.2",
   "jupyter>=1.1.1",
   "pre-commit>=4.7.0",
+  "pylint>=4.1.4",
   "ruff>=0.17.6",
   "ty>=0.0.110",
+  "vulture>=2.16",
 ]
 # Docs toolchain (Zensical). Docs are built on 3.12 in CI.
 docs = [
@@ -273,3 +276,104 @@ unused-type-ignore-comment = "ignore"
 
 [tool.uv.sources]
 flaui = { path = "./flaui" }
+
+# ---------------------------------------------------------------------------------------------
+# Static analysis: pylint, bandit, vulture (GH-85). Run with `uv run --group dev <tool> ...`.
+# ---------------------------------------------------------------------------------------------
+[tool.pylint.main]
+py-version = "3.11"
+jobs = 0
+# PythonNet exposes the C# namespaces (FlaUI.*, System.*) and the `clr` module only at runtime,
+# after `setup_pythonnet_bridge()` has loaded the DLLs. Static inference cannot see them, so every
+# import from them is an import-error / no-name-in-module and every member access a no-member. Mark
+# them as ignored modules (the pylint counterpart of `[tool.ty.rules]` import-not-found /
+# missing-attribute) instead of sprinkling per-line disables over the interop code.
+ignored-modules = ["FlaUI", "System", "clr", "Interop", "UIAutomationClient"]
+
+[tool.pylint.typecheck]
+# `ctypes.windll` only exists on Windows; the Azure lint job runs pylint on Ubuntu.
+generated-members = ["ctypes.windll"]
+
+[tool.pylint.refactoring]
+# `_raise_translated` always raises, so `handle_csharp_exceptions.wrapper` never falls through.
+never-returning-functions = ["sys.exit", "argparse.parse_error", "flaui.lib.exceptions._raise_translated"]
+
+[tool.pylint.format]
+max-line-length = 120
+
+[tool.pylint.basic]
+# C# parity: enum members and C#-facing constants keep FlaUI's PascalCase names
+# (`ControlType.Button`, `KnownColor.AliceBlue`, `VirtualKeyShort.KEY_A`).
+class-const-naming-style = "any"
+# Names kept for 1:1 FlaUI parity where the snake_case form would collide with a Python keyword or
+# break the published API (`PropertyCondition.And/Or/Not/Property/Value`, `Retry.While*`), plus the Win32 `hWnd`
+# argument and the C#-style `TPattern` type variable. Module-private mutable singletons
+# (`_active_sink`, `_executor_singleton`) are not constants.
+good-names-rgxs = [
+  "^(And|Or|Not|Equals|ToString|Property|PropertyConditionFlags|Value)$",
+  "^(While|WhileNot|WhileTrue|WhileFalse|WhileNull|WhileNotNull|WhileEmpty|WhileException|IsTimeOutReached)$",
+  "^hWnd$",
+  "^TPattern$",
+  "^_[a-z][a-z0-9_]*$",
+]
+
+[tool.pylint.design]
+# Signatures mirror FlaUI's C# overloads (e.g. `Retry.While*`, `Interpolation.execute_rotation`,
+# `Color.from_argb`), so allow more parameters than pylint's default of 5.
+max-args = 8
+max-positional-arguments = 8
+
+[tool.pylint.variables]
+# Pydantic validators take a `ValidationInfo` argument they often do not use.
+ignored-argument-names = "_.*|^ignored_|^unused_|^info$"
+
+[tool.pylint."messages control"]
+disable = [
+  # Deliberate architecture, documented in CLAUDE.md ("Late imports for C# types"): C# types are
+  # imported inside methods because they only exist once the bridge is set up, and late imports
+  # break the automation_elements <-> input / text_range / automation_base import cycles. The
+  # cycles pylint reports are exactly those, already resolved at runtime by the late imports.
+  "import-outside-toplevel",
+  "cyclic-import",
+  # 1:1 C# API parity: FlaUI's AutomationElement / Properties / Patterns / Rectangle classes expose
+  # dozens of members, and automation_elements.py / windows_api.py / drawing.py mirror whole C#
+  # namespaces. Splitting them would break the parity the package exists to provide.
+  "too-many-public-methods",
+  "too-few-public-methods",
+  "too-many-lines",
+  # The C# side raises arbitrary .NET exception types across the PythonNet boundary. Broad catches
+  # are used only for best-effort cleanup (dispose / detach / close) and for `__repr__` / predicate
+  # helpers that must never raise; each logs or re-raises where it matters.
+  "broad-exception-caught",
+  # Owned by other tools: line length by the formatter (Ruff already ignores E501, see
+  # [tool.ruff.lint]) and import order by isort. On case-insensitive Windows file systems pylint
+  # also classifies the PythonNet `FlaUI` namespace as the first-party `flaui` package, so its
+  # import-order checks misfire on every C# import.
+  "line-too-long",
+  "wrong-import-order",
+  "ungrouped-imports",
+]
+
+[tool.vulture]
+# `flaui` is a library, so its public API is "unused" from inside the package. Decorated C#-parity
+# members are skipped below; the remaining public names live in vulture_whitelist.py.
+paths = ["flaui", "vulture_whitelist.py"]
+min_confidence = 60
+ignore_decorators = [
+  "@property",
+  "@*.setter",
+  "@handle_csharp_exceptions",
+  "@staticmethod",
+  "@classmethod",
+  "@abc.abstractmethod",
+  "@field_validator",
+  "@model_validator",
+]
+# Pydantic reads `model_config` reflectively.
+ignore_names = ["model_config"]
+sort_by_size = true
+
+[tool.bandit]
+# Bandit reads this table when run with `-c pyproject.toml`. Tests are not scanned (asserts and
+# subprocess launches of the bundled test apps are expected there).
+exclude_dirs = ["tests", ".venv", "build", "dist"]

@@ -53,3 +53,34 @@ repos:
         description: This hook runs interrogate checks.
         args: [-vv, --config, pyproject.toml, --color]
         pass_filenames: false
+
+  # Static analysis (GH-85). Run through `uv run` so the versions match uv.lock and the
+  # configuration in pyproject.toml ([tool.pylint.*], [tool.bandit], [tool.vulture]).
+  - repo: local
+    hooks:
+      - id: pylint
+        name: Pylint
+        description: Lint the flaui package; fails below a 9.5 score.
+        entry: uv run --group dev pylint flaui --fail-under=9.5
+        language: system
+        types: [python]
+        files: ^flaui/
+        pass_filenames: false
+
+      - id: bandit
+        name: Bandit
+        description: Security lint of the flaui package.
+        entry: uv run --group dev bandit -c pyproject.toml -q -r flaui
+        language: system
+        types: [python]
+        files: ^flaui/
+        pass_filenames: false
+
+      - id: vulture
+        name: Vulture
+        description: Dead-code check of the flaui package (public API whitelisted in vulture_whitelist.py).
+        entry: uv run --group dev vulture
+        language: system
+        types: [python]
+        files: ^(flaui/|vulture_whitelist\.py$)
+        pass_filenames: false

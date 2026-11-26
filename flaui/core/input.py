@@ -25,7 +25,7 @@ class Wait:
     DEFAULT_TIMEOUT = 1  # in seconds
 
     @staticmethod
-    def until_input_is_processed(wait_timeout_in_secs: Optional[float] = None):
+    def until_input_is_processed(wait_timeout_in_secs: Optional[float] = None) -> None:
         """
         Waits a little to allow inputs (mouse, keyboard, ...) to be processed.
 
@@ -276,12 +276,12 @@ class MouseButton(Enum):
 class _MousePositionDescriptor:
     """Descriptor to make Mouse.position work as a class-level property."""
 
-    def __get__(self, obj, objtype=None) -> Point:
+    def __get__(self, obj: Any, objtype: Any = None) -> Point:
         """Get the current mouse position as a Point object."""
         pos = CSMouse.Position
         return Point(raw_value=(pos.X, pos.Y))
 
-    def __set__(self, obj, value: Point) -> None:
+    def __set__(self, obj: Any, value: Point) -> None:
         """Set the current mouse position from a Point object."""
         CSMouse.Position = value.raw_value
 
@@ -375,7 +375,10 @@ class Mouse(metaclass=_MouseMeta):
         :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
         if (new_x is not None and new_y is not None) or new_position is not None:
-            CSMouse.MoveTo(new_position.raw_value) if new_position is not None else CSMouse.MoveTo(new_x, new_y)
+            if new_position is not None:
+                CSMouse.MoveTo(new_position.raw_value)
+            else:
+                CSMouse.MoveTo(new_x, new_y)
         else:
             raise ValueError(
                 "`new_x, new_y or new_position argument needs to be sent for the Mouse to move to a new position`"
@@ -394,7 +397,10 @@ class Mouse(metaclass=_MouseMeta):
         :param mouse_button: The mouse button to click. Defaults to the left button, defaults to MouseButton.Left
         :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
-        CSMouse.Click(mouse_button.value) if point is None else CSMouse.Click(point.raw_value, mouse_button.value)
+        if point is None:
+            CSMouse.Click(mouse_button.value)
+        else:
+            CSMouse.Click(point.raw_value, mouse_button.value)
         Mouse._apply_post_wait(post_wait)
 
     @staticmethod
@@ -409,9 +415,10 @@ class Mouse(metaclass=_MouseMeta):
         :param mouse_button: The mouse button to click. Defaults to the left button, defaults to MouseButton.Left
         :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
-        CSMouse.DoubleClick(mouse_button.value) if point is None else CSMouse.DoubleClick(
-            point.raw_value, mouse_button.value
-        )
+        if point is None:
+            CSMouse.DoubleClick(mouse_button.value)
+        else:
+            CSMouse.DoubleClick(point.raw_value, mouse_button.value)
         Mouse._apply_post_wait(post_wait)
 
     @staticmethod
@@ -527,7 +534,10 @@ class Mouse(metaclass=_MouseMeta):
         :param point: The position to move before clicking.
         :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
-        CSMouse.LeftClick() if point is None else CSMouse.LeftClick(point.raw_value)
+        if point is None:
+            CSMouse.LeftClick()
+        else:
+            CSMouse.LeftClick(point.raw_value)
         Mouse._apply_post_wait(post_wait)
 
     @staticmethod
@@ -539,7 +549,10 @@ class Mouse(metaclass=_MouseMeta):
         :param point: The position to move before clicking.
         :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
-        CSMouse.LeftDoubleClick() if point is None else CSMouse.LeftDoubleClick(point.raw_value)
+        if point is None:
+            CSMouse.LeftDoubleClick()
+        else:
+            CSMouse.LeftDoubleClick(point.raw_value)
         Mouse._apply_post_wait(post_wait)
 
     @staticmethod
@@ -549,7 +562,10 @@ class Mouse(metaclass=_MouseMeta):
         :param point: The position to move before clicking.
         :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
-        CSMouse.RightClick() if point is None else CSMouse.RightClick(point.raw_value)
+        if point is None:
+            CSMouse.RightClick()
+        else:
+            CSMouse.RightClick(point.raw_value)
         Mouse._apply_post_wait(post_wait)
 
     @staticmethod
@@ -561,7 +577,10 @@ class Mouse(metaclass=_MouseMeta):
         :param point: The position to move before clicking.
         :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
-        CSMouse.RightDoubleClick() if point is None else CSMouse.RightDoubleClick(point.raw_value)
+        if point is None:
+            CSMouse.RightDoubleClick()
+        else:
+            CSMouse.RightDoubleClick(point.raw_value)
         Mouse._apply_post_wait(post_wait)
 
 
@@ -592,7 +611,7 @@ class Interpolation:
         from System.Drawing import Point as CSPoint  # pyright: ignore
 
         # Convert Python action to C# Action<Point[]>
-        def cs_action_wrapper(points):
+        def cs_action_wrapper(points: Any) -> None:
             """Wrapper to convert C# Point[] to Python Point list and call the Python action."""
             # Convert C# Point[] to Python Point list
             py_points = [Point(raw_value=p) for p in points]
@@ -634,7 +653,7 @@ class Interpolation:
         from System.Drawing import Point as CSPoint  # pyright: ignore
 
         # Convert Python action to C# Action<Point>
-        def cs_action_wrapper(point):
+        def cs_action_wrapper(point: Any) -> None:
             """Wrapper to convert C# Point to Python Point and call the Python action."""
             action(Point(raw_value=point))
 
@@ -675,7 +694,7 @@ class Interpolation:
         from System.Drawing import Point as CSPoint  # pyright: ignore
 
         # Convert Python action to C# Action<Point>
-        def cs_action_wrapper(point):
+        def cs_action_wrapper(point: Any) -> None:
             """Wrapper to convert C# Point to Python Point and call the Python action."""
             action(Point(raw_value=point))
 
@@ -702,7 +721,10 @@ class Touch:
 
         :param points: Point to touch, defaults to None
         """
-        CSTouch.Tap() if points is None else CSTouch.Tap([_.raw_value for _ in points])
+        if points is None:
+            CSTouch.Tap()
+        else:
+            CSTouch.Tap([_.raw_value for _ in points])
 
     @staticmethod
     def hold(duration: int, points: Optional[List[Point]] = None) -> None:

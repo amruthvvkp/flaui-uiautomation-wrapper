@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, Any, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
@@ -14,6 +15,8 @@ from flaui.lib.system.drawing import Point
 if TYPE_CHECKING:
     from flaui.core.automation_elements import AutomationElement
     from flaui.core.overlay import OverlayManager
+
+logger = logging.getLogger(__name__)
 
 
 class AutomationBase(BaseModel):
@@ -200,7 +203,7 @@ class AutomationBase(BaseModel):
         return EventRegistration(
             cs_handler=handler,
             callback=_handler,
-            unregister=lambda h: self.raw_automation.UnregisterFocusChangedEvent(h),
+            unregister=self.raw_automation.UnregisterFocusChangedEvent,
         )
 
     @handle_csharp_exceptions
@@ -265,6 +268,6 @@ def wrap_cs_automation(raw: Any) -> AutomationBase:
         if label == "UIA2":
             return UIA2Automation(raw_automation=raw)
     except Exception:
-        pass
+        logger.debug("Could not read AutomationType from %r", type(raw), exc_info=True)
 
-    raise TypeError("Unsupported automation implementation: {!r}".format(type(raw)))
+    raise TypeError(f"Unsupported automation implementation: {type(raw)!r}")
