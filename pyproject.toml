@@ -9,7 +9,7 @@ dependencies = [
   "pillow>=10.4.0",
   "psutil>=6.1.1",
   "pydantic>=2.10.6",
-  "pydantic-settings>=2.7.1",
+  "pydantic-settings>=2.14.2",
   "pythonnet==3.2.1",
 ]
 authors = [
@@ -65,7 +65,6 @@ dev = [
   "bandit>=1.9.4",
   "interrogate>=1.7.0",
   "isort>=9.0.2",
-  "jupyter>=1.1.1",
   "pre-commit>=4.7.0",
   "pylint>=4.1.4",
   "ruff>=0.17.6",
