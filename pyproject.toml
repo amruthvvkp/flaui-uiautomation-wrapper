@@ -200,6 +200,7 @@ markers = [
   "platform_limitation: Known C# FlaUI platform limitation",
   "windows11: Tests affected by Windows 11 specific behavior",
   "bug: Known bug tracked in GitHub issues (use id and url parameters)",
+  "integration: End-to-end user journeys in tests/integration (fresh app per test; select with -m integration)",
 ]
 minversion = "8.0"
 testpaths = ["tests/"]
