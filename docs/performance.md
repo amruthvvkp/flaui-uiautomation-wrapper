@@ -183,6 +183,147 @@ The operations do the same job, but not always in the same way:
 - Both libraries run the default settings. pywinauto's `Timings` can be shortened, and FlaUI's
   `post_wait` and `Retry` settings can be changed. Neither was tuned here.
 
+## Workloads for AI agents
+
+A test finds a few elements and acts on them. An AI computer-use agent, such as one driving the
+desktop through an MCP server, does different work on every step: it dumps the accessibility tree
+so the model can see the screen, takes screenshots, and sometimes starts a new process for each
+command. `scripts/benchmark_agent.py` times that work on the same four combinations. Each cell is
+the **median / p95** in milliseconds: 10 runs for snapshots, captures and lists, 10 fresh processes
+for cold start, and 500 cycles for reliability. pywinauto 0.6.9 and Pillow ran in the same process
+and session.
+
+### Accessibility-tree snapshot
+
+Each method walks every control-view element under the main window (Simple Controls tab: 55
+elements on WinForms, 69 on WPF). It reads name, AutomationId, control type, bounding rectangle and
+enabled state, and builds a Python tuple for each element. All the methods return the same
+elements:
+
+- **wrapper**: `find_all_descendants()`, then `properties.<name>.value_or_default` for each
+  property. That is one UIA round trip per property, and the call works on UIA2 elements that have
+  no AutomationId.
+- **cached**: the same calls with a `CacheRequest` (`TreeScope.Element`) active for the five
+  properties, so `FindAll` returns them along with each element.
+- **cached subtree**: fetches the window once under a `TreeScope.Subtree` request, then walks
+  `cached_children`. One UIA call returns the whole tree.
+- **raw C#**: the same calls made directly on the FlaUI objects.
+- **pywinauto `uia`**: `descendants()`, then reads from `element_info`.
+- **comtypes**: pywinauto's own `IUIAutomation` called directly, in two forms: `FindAll` with
+  `Current*` reads, and `FindAllBuildCache` with `Cached*` reads. Windows-MCP and pathlight-mcp
+  talk to UIA this way.
+
+| Method | UIA2 WinForms | UIA2 WPF | UIA3 WinForms | UIA3 WPF |
+|--------|---------------|----------|---------------|----------|
+| Wrapper | 237 / 275 | 125 / 154 | 207 / 214 | 108 / 122 |
+| Wrapper, cached | 237 / 285 | 87 / 109 | 190 / 201 | 83 / 86 |
+| Wrapper, cached subtree | 320 / 441 | **71** / 86 | 192 / 209 | **62** / 65 |
+| Raw C# | 306 / 343 | 129 / 153 | 198 / 207 | 102 / 105 |
+| Raw C#, cached subtree | 286 / 320 | **64** / 70 | 215 / 410 | **59** / 60 |
+| pywinauto `uia` `descendants()` | 318 / 499 | 139 / 147 | 211 / 242 | 137 / 153 |
+| comtypes `FindAll` + `Current*` | 269 / 326 | 101 / 112 | 189 / 200 | 101 / 106 |
+| comtypes `FindAllBuildCache` | 285 / 385 | 84 / 88 | 189 / 226 | 83 / 87 |
+
+The UIA2 WinForms column had more run-to-run noise than the others: its p95 values are well above
+its medians.
+
+What the numbers say:
+
+- **On WPF, caching halves the cost.** A cached-subtree snapshot took 62–71 ms, or about 0.9 ms per
+  element, against 108–125 ms for plain property reads. That beats pywinauto's `descendants()` (137–139
+  ms) and comtypes `FindAllBuildCache` (83–84 ms), the approach the Python MCP servers use.
+- **On WinForms, nothing helps.** Every method, cached or not, through any library, took about
+  190–320 ms, or 3.4–5.8 ms per element. Each element costs that much on the app's side, because
+  WinForms answers UIA slowly. Caching saves round trips, not the app's own work.
+- **The wrapper adds nothing measurable.** The wrapper and raw C# rows are within noise of each
+  other.
+- **This is fine for one step, and slow for a big screen.** At about 1 ms per element on WPF and
+  4 ms per element on WinForms, a window with 1,000 elements takes about 1 second on WPF and 4
+  seconds on WinForms. An agent should snapshot a pane or dialog rather than the whole window.
+
+What would make snapshots faster (not changed in this benchmark):
+
+- A helper that runs the cached-subtree walk and returns plain Python data. Today, `cached_children`
+  returns raw C# objects that you wrap yourself.
+- A `TreeScope.Subtree` cache with a narrow `tree_filter`, such as only enabled controls or only
+  on-screen ones, so fewer elements cross the process boundary.
+
+### Cold start
+
+Each run is a new Python process that attaches to an app that is already running and finds the
+`SimpleCheckBox` once. The parent process measures the total, which includes interpreter start-up
+and exit. A bare `python -c` took 79–105 ms on the same machine.
+
+| Phase | UIA2 WinForms | UIA2 WPF | UIA3 WinForms | UIA3 WPF |
+|-------|---------------|----------|---------------|----------|
+| `import flaui.lib.pythonnet_bridge` | 1193 / 1825 | 1026 / 1080 | 1013 / 1130 | 1030 / 1536 |
+| `setup_pythonnet_bridge()` + C#-backed imports | 313 / 377 | 277 / 310 | 272 / 319 | 284 / 437 |
+| Create `Automation` | 60 / 117 | 54 / 67 | 22 / 24 | 22 / 45 |
+| Attach + `get_main_window` | 99 / 174 | 75 / 85 | 49 / 58 | 48 / 123 |
+| First find | 189 / 268 | 34 / 41 | 45 / 51 | 112 / 138 |
+| **Whole process** | **2589** / 3627 | **2059** / 2262 | **2003** / 2151 | **2078** / 2716 |
+| pywinauto `uia`, whole process | | | 844 / 872 | 892 / 1149 |
+
+**Cold start is the wrapper's weak spot.** It takes about 2 seconds before the first find, against
+under 1 second for pywinauto. Most of that time is spent importing: starting the .NET runtime
+(`clr`, about 0.4 s) and loading `pydantic_settings` (about 0.3 s, see `python -X importtime`). Once
+the process is running, attaching and finding take tens of milliseconds. An agent should therefore
+keep one process alive, as an MCP server does, rather than start a new interpreter for each command.
+Loading the settings and the bridge lazily would shorten the import, but that is library work this
+benchmark does not do.
+
+### Screenshots
+
+`Capture.element()` on the main window (843×672 on WinForms, 944×774 on WPF) and on one small
+control. "PNG bytes" saves the bitmap to a `MemoryStream` and copies it into Python `bytes`, which
+is what an agent sends to a model. There is no helper for this in the wrapper yet. "PIL" grabs the
+same rectangle with Pillow's `ImageGrab` and saves PNG to `BytesIO`, which is how pyautogui-based
+agents do it.
+
+| Operation | UIA2 WinForms | UIA2 WPF | UIA3 WinForms | UIA3 WPF |
+|-----------|---------------|----------|---------------|----------|
+| Window: capture | 16.6 / 17.2 | 16.6 / 17.2 | 16.5 / 17.8 | 16.6 / 18.5 |
+| Window: capture + PNG bytes | 16.6 / 16.9 | 33.0 / 38.6 | 16.7 / 17.8 | 33.3 / 36.5 |
+| Window: PIL `ImageGrab` + PNG | 66.6 / 69.1 | 66.1 / 70.0 | 66.5 / 76.1 | 66.1 / 73.7 |
+| Element: capture + PNG bytes | 16.7 / 19.3 | 16.3 / 18.3 | 16.6 / 17.7 | 16.9 / 17.6 |
+| Element: PIL `ImageGrab` + PNG | 61.6 / 78.9 | 49.7 / 57.3 | 54.1 / 75.3 | 49.7 / 52.2 |
+
+The PNGs were 1–4 KiB for the control and 22–74 KiB for the window.
+
+- **A screenshot costs one display frame.** Almost every capture took 16.6 ms, which is one refresh
+  at 60 Hz, whatever its size. With PNG encoding, the larger WPF window took two frames (33 ms),
+  probably because encoding pushed the work past the first one.
+- **FlaUI's capture is 2–4× faster than Pillow's** for the same rectangle and a PNG of about the
+  same size: 17–33 ms against 50–67 ms.
+
+### Large lists and grids
+
+`find_all_descendants()` on each list and grid in the test apps:
+
+| Control | UIA2 WinForms | UIA2 WPF | UIA3 WinForms | UIA3 WPF |
+|---------|---------------|----------|---------------|----------|
+| `LargeListView` | 10.5 / 11.0 (36 el) | 17.3 / 17.6 (19 el) | 9.7 / 10.2 (36 el) | 12.2 / 13.2 (19 el) |
+| `dataGridView` | 10.3 / 13.5 (21 el) | 40.2 / 41.1 (41 el) | 7.9 / 8.6 (21 el) | 26.9 / 29.2 (41 el) |
+| `LargeListBox` | n/a | 7.9 / 12.5 (8 el) | n/a | 5.8 / 11.8 (8 el) |
+
+Raw C# made the same calls within noise of these numbers. The test apps don't have a list large
+enough to show how this scales: WPF virtualises its lists, so UIA only sees the rows that have been
+drawn, and the WinForms More Controls tab is not exposed to UIA. These numbers come to 0.3–1.0 ms
+per element. To measure a list with thousands of rows, run the script against your own app.
+
+### Reliability
+
+Each cycle finds `SimpleCheckBox` from the window, reads its toggle state, toggles it, and checks
+that the state changed:
+
+| | UIA2 WinForms | UIA2 WPF | UIA3 WinForms | UIA3 WPF |
+|-|---------------|----------|---------------|----------|
+| Succeeded | 500 / 500 | 500 / 500 | 500 / 500 | 500 / 500 |
+| Cycle time | 125 / 155 | 20 / 23 | 118 / 144 | 23 / 34 |
+
+No cycle failed on any combination. A cycle on WinForms takes as long as the WinForms descendant
+search in the tables above.
+
 ## Tips for faster tests
 
 - **Narrow the search.** Find a container once per action, such as a tab, a pane or a dialog, and
@@ -199,7 +340,7 @@ The operations do the same job, but not always in the same way:
 
 ## Measure it yourself
 
-The repository has three scripts that produced these tables. All of them launch the bundled test
+The repository has four scripts that produced these tables. All of them launch the bundled test
 apps and click controls, so run them on an interactive desktop, not on a headless CI agent:
 
 ```bash
@@ -207,7 +348,12 @@ uv run python scripts/benchmark.py -n 100                  # wrapper vs C#, all 
 uv run python scripts/benchmark.py -n 200 --json out.json  # also write raw statistics
 uv run python scripts/benchmark_name_map.py -n 200         # name maps vs direct finds
 uv run --group bench python scripts/benchmark_pywinauto.py -n 100  # wrapper vs pywinauto
+uv run --group bench python scripts/benchmark_agent.py --json agent.json  # agent workloads
 ```
+
+`benchmark_agent.py` runs without the `bench` group too. It then skips the pywinauto and comtypes
+rows, and skips the Pillow rows if Pillow is not installed. `--sections` runs only some workloads,
+for example `--sections snapshot capture`. The script exits 1 if any reliability cycle fails.
 
 `benchmark.py` exits 1 if the wrapper adds 5 ms or more to any operation, so you can use it to
 check a change for performance regressions. `benchmark_name_map.py` and `benchmark_pywinauto.py`

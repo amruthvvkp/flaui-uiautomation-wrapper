@@ -120,7 +120,24 @@ The operations match in intent, not always in mechanism (pywinauto's search stra
 post-click sleep, `BM_SETCHECK` on `win32`). The script prints where they differ under the table.
 It only reports, so it always exits 0.
 
-All three scripts need an interactive desktop, because they launch the apps and click controls, so they
+`scripts/benchmark_agent.py` times what an AI computer-use agent does on each step, rather than
+single finds: a full accessibility-tree snapshot (wrapper properties, a `CacheRequest`, raw C#, and,
+with the `bench` group, pywinauto and raw comtypes), cold start in fresh processes, window and
+element screenshots encoded to PNG bytes, `find_all_descendants` on the largest lists and grids, and
+repeated find-plus-toggle cycles. It prints median and p95, and exits 1 if any reliability cycle
+fails:
+
+```bash
+uv run python scripts/benchmark_agent.py                            # flaui only
+uv run --group bench python scripts/benchmark_agent.py --json agent.json
+uv run python scripts/benchmark_agent.py --sections snapshot capture -n 20
+uv run python scripts/benchmark_agent.py --sections cold --cold-runs 20
+```
+
+`-n` sets the timed runs for snapshot, capture and scaling (default 10), `--cold-runs` the fresh
+processes per combination (default 10), and `--cycles` the find-plus-toggle cycles (default 500).
+
+All four scripts need an interactive desktop, because they launch the apps and click controls, so they
 are not run in CI. The v1 gate is wrapper overhead under 5 ms mean per operation, and
 `benchmark.py` exits 1 when any operation misses it. Absolute timings are printed for reference only: they come from Windows UIA and
 the app under test. Current numbers are on the [Performance](../performance.md) page.
