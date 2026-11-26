@@ -45,3 +45,46 @@ class TestXPathNavigator:
         navigator = test_application.main_window.get_x_path_navigator()
         # Name attribute should resolve to a string (possibly empty) without raising.
         assert isinstance(navigator.get_attribute("Name"), str)
+
+    def test_navigator_node_properties(
+        self,
+        test_application: WinFormsApplicationElements | WPFApplicationElements,
+    ) -> None:
+        """``local_name``, ``has_attributes``, ``is_empty_element`` and ``underlying_object`` describe the node."""
+        navigator = test_application.main_window.get_x_path_navigator()
+        assert navigator.local_name == navigator.name
+        assert navigator.has_attributes is True
+        assert navigator.is_empty_element is False
+        assert navigator.underlying_object.automation_id == test_application.main_window.automation_id
+
+    def test_navigator_position_comparison(
+        self,
+        test_application: WinFormsApplicationElements | WPFApplicationElements,
+    ) -> None:
+        """``is_same_position`` compares positions and ``move_to`` copies another navigator's position."""
+        navigator = test_application.main_window.get_x_path_navigator()
+        root = navigator.clone()
+        assert navigator.is_same_position(root)
+        if not navigator.move_to_first_child():
+            pytest.skip("Root element has no children to navigate to")
+        assert not navigator.is_same_position(root)
+        assert navigator.move_to(root)
+        assert navigator.is_same_position(root)
+
+    def test_navigator_attribute_axis(
+        self,
+        test_application: WinFormsApplicationElements | WPFApplicationElements,
+    ) -> None:
+        """The attribute axis can be walked and a named attribute selected, then left via ``move_to_parent``."""
+        navigator = test_application.main_window.get_x_path_navigator()
+        assert navigator.move_to_first_attribute()
+        assert navigator.has_attributes is False
+        names = [navigator.name]
+        while navigator.move_to_next_attribute():
+            names.append(navigator.name)
+        assert {"AutomationId", "Name", "ProcessId"} <= set(names)
+        assert navigator.move_to_parent()
+        assert navigator.move_to_attribute("ProcessId")
+        assert navigator.value == str(test_application.main_window.properties.process_id.value)
+        assert navigator.move_to_parent()
+        assert not navigator.move_to_attribute("NoSuchAttribute")

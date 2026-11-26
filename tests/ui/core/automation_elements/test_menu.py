@@ -147,6 +147,15 @@ class TestMenu:
         show_label.is_checked = True
         assert show_label == HasAttributes(is_checked=IsTrueLike), "Show Label menu item is checked"
 
+    def test_is_win32_menu(self, menu: Menu) -> None:
+        """``is_win32_menu`` (C# ``Menu.IsWin32Menu``) defaults to False and round-trips through the setter."""
+        assert menu.is_win32_menu is False, "Test application menus are not Win32 menus."
+        menu.is_win32_menu = True
+        assert menu.is_win32_menu is True
+        assert menu.is_win_menu is True, "is_win_menu is an alias for the same C# flag."
+        menu.is_win32_menu = False
+        assert menu.is_win32_menu is False
+
     @pytest.fixture(name="menu")
     def get_application_menu(
         self,

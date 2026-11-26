@@ -68,3 +68,18 @@ class TestIdentifierWrappers:
         # identity, yielding ``False``) for an unrelated object.
         assert (identifier == "not-an-identifier") is False
         assert identifier != "not-an-identifier"
+
+    def test_property_id_get_condition(self, automation: Any) -> None:
+        """``get_condition`` (C# ``PropertyId.GetCondition``) builds a condition on that property and value."""
+        from flaui.core.condition_factory import PropertyCondition
+        from flaui.core.definitions import ControlType
+
+        name = PropertyId(raw=automation.PropertyLibrary.Element.Name)
+        condition = name.get_condition("OK")
+        assert isinstance(condition, PropertyCondition)
+        assert condition.cs_condition.Property.Id == name.id
+        assert condition.cs_condition.Value == "OK"
+
+        control_type = PropertyId(raw=automation.PropertyLibrary.Element.ControlType)
+        enum_condition = control_type.get_condition(ControlType.Button)
+        assert enum_condition.cs_condition.Value == ControlType.Button.value

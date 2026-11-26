@@ -50,6 +50,7 @@ from flaui.lib.system.drawing import (
 if TYPE_CHECKING:
     from flaui.core.event_handlers import EventRegistration
     from flaui.core.patterns import Patterns
+    from flaui.core.patterns.range_value_pattern import RangeValuePattern
     from flaui.core.xpath_navigator import AutomationElementXPathNavigator
 
 # ================================================================================
@@ -2295,6 +2296,26 @@ class Menu(AutomationElement):
         """
         self.raw_element.IsWin32Menu = value
 
+    @property
+    @handle_csharp_exceptions
+    def is_win32_menu(self) -> bool:
+        """Flag to indicate if the containing menu is a Win32 menu, which needs special handling.
+
+        Mirrors C# ``Menu.IsWin32Menu``; :attr:`is_win_menu` is the older alias for the same value.
+
+        :return: True if the menu is a Win32 menu, else False
+        """
+        return self.raw_element.IsWin32Menu
+
+    @is_win32_menu.setter
+    @handle_csharp_exceptions
+    def is_win32_menu(self, value: bool) -> None:
+        """Set whether the containing menu is treated as a Win32 menu.
+
+        :param value: True to treat the menu as a Win32 menu, else False
+        """
+        self.raw_element.IsWin32Menu = value
+
 
 class MenuItem(AutomationElement):
     """Class to interact with a menu item element."""
@@ -2432,6 +2453,44 @@ class ProgressBar(AutomationElement):
         :return: Value
         """
         return float(self.raw_element.Value)
+
+    @property
+    @handle_csharp_exceptions
+    def range_value_pattern(self) -> RangeValuePattern:
+        """Return the RangeValue pattern backing this progress bar (C# ``ProgressBar.RangeValuePattern``).
+
+        :return: The wrapped :class:`~flaui.core.patterns.range_value_pattern.RangeValuePattern`.
+        """
+        from flaui.core.patterns.range_value_pattern import RangeValuePattern
+
+        return RangeValuePattern(raw_pattern=self.raw_element.RangeValuePattern)
+
+    @property
+    @handle_csharp_exceptions
+    def small_change(self) -> float:
+        """The value of a small change, read through the RangeValue pattern (matches :attr:`Slider.small_change`).
+
+        :return: Small change
+        """
+        return float(self.raw_element.RangeValuePattern.SmallChange.Value)
+
+    @property
+    @handle_csharp_exceptions
+    def large_change(self) -> float:
+        """The value of a large change, read through the RangeValue pattern (matches :attr:`Slider.large_change`).
+
+        :return: Large change
+        """
+        return float(self.raw_element.RangeValuePattern.LargeChange.Value)
+
+    @property
+    @handle_csharp_exceptions
+    def is_read_only(self) -> bool:
+        """Whether the progress bar value is read-only, read through the RangeValue pattern.
+
+        :return: True if the value is read-only, else False
+        """
+        return bool(self.raw_element.RangeValuePattern.IsReadOnly.Value)
 
 
 class RadioButton(AutomationElement):
