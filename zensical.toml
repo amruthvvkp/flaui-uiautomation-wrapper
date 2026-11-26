@@ -40,6 +40,7 @@ nav = [
       { "Condition Factory" = "api/condition_factory.md" },
       { "Automation Element" = "api/automation_element.md" },
       { "Identifiers" = "api/identifiers.md" },
+      { "Definitions (enums)" = "api/definitions.md" },
       { "Patterns" = "api/patterns.md" },
       { "XPath Navigator" = "api/xpath_navigator.md" },
       { "Event Handlers" = "api/event_handlers.md" },
