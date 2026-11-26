@@ -83,3 +83,19 @@ def test_mouse_speed_settings_reach_csharp(monkeypatch: pytest.MonkeyPatch, attr
 
     assert getattr(fake, cs_property) == 3.5
     assert getattr(Mouse, attribute) == 3.5
+
+
+def test_apply_post_wait_true_sleeps_100ms(monkeypatch: pytest.MonkeyPatch) -> None:
+    """``post_wait=True`` waits the documented 100 ms, not 1 s (bool is an int subclass)."""
+    sleeps: list[float] = []
+    monkeypatch.setattr("flaui.core.input.time.sleep", sleeps.append)
+    Mouse._apply_post_wait(True)
+    assert sleeps == [0.1]
+
+
+def test_apply_post_wait_float_sleeps_given_seconds(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A numeric post_wait sleeps for exactly that many seconds."""
+    sleeps: list[float] = []
+    monkeypatch.setattr("flaui.core.input.time.sleep", sleeps.append)
+    Mouse._apply_post_wait(0.5)
+    assert sleeps == [0.5]

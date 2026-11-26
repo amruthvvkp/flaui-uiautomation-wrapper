@@ -6,6 +6,7 @@ This module contains unit tests for the drawing.py module. It tests the followin
 """
 
 import pytest
+from pydantic import ValidationError
 
 from flaui.lib.system.drawing import Color, ColorData, KnownColor
 from System.Drawing import Color as CSColor, KnownColor as CSKnownColor  # pyright: ignore
@@ -98,3 +99,17 @@ def test_color_collection() -> None:
         "ToString",
     ]
     assert all([_ in actual_keys for _ in expected_keys if _ not in excluded_keys])
+
+
+def test_color_data_ignores_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+    """ColorData is a plain model: a stray CS_OBJECT env var must not populate it."""
+    monkeypatch.setenv("CS_OBJECT", "bogus")
+    with pytest.raises(ValidationError):
+        ColorData()  # type: ignore[call-arg]
+
+
+def test_color_data_components_are_ints() -> None:
+    """The A/R/G/B components are ints (PythonNet converts C# Byte to int)."""
+    color = ColorData(cs_object=CSColor.FromArgb(10, 20, 30, 40))
+    assert (color.a, color.r, color.g, color.b) == (10, 20, 30, 40)
+    assert all(isinstance(v, int) for v in (color.a, color.r, color.g, color.b))
