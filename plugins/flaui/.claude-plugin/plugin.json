@@ -1,0 +1,22 @@
+{
+  "name": "flaui",
+  "version": "1.0.0",
+  "displayName": "FlaUI for Python",
+  "description": "Skills for setting up FlaUI for Python, finding and driving Windows UI elements, writing pytest UI tests and debugging flaky automation.",
+  "author": {
+    "name": "Amruth VVKP",
+    "url": "https://github.com/amruthvvkp"
+  },
+  "homepage": "https://amruthvvkp.github.io/flaui-uiautomation-wrapper/latest/ai-agents/",
+  "repository": "https://github.com/amruthvvkp/flaui-uiautomation-wrapper",
+  "license": "LGPL-3.0-or-later",
+  "keywords": [
+    "windows",
+    "ui-automation",
+    "flaui",
+    "uia2",
+    "uia3",
+    "pytest",
+    "computer-use"
+  ]
+}

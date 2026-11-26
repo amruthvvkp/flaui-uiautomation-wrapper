@@ -43,7 +43,7 @@ See [Development Workflow](contributing/development.md) for full command referen
 
 ## Documentation
 - The site is built with [Zensical](https://zensical.org), configured by `zensical.toml`.
-- Build locally: `uv run python scripts/extract_versions.py && uv run zensical build -f zensical.toml` (preview with `uv run zensical serve -f zensical.toml`).
+- Build locally: `uv run python scripts/extract_versions.py && uv run python scripts/build_changelog.py && uv run --group docs python scripts/build_llms_txt.py && uv run zensical build -f zensical.toml` (preview with `uv run zensical serve -f zensical.toml`).
 - Update mkdocstrings docstrings when adding APIs.
 - Basics page stays simple and focused; Advanced gets full detail; API Reference is auto-generated.
 - Add C# tabs for parity when helpful.

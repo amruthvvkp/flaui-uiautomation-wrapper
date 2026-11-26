@@ -142,6 +142,10 @@ venv.bak/
 # Generated at docs build time by scripts/build_changelog.py (live GitHub Releases fetch)
 docs/changelog.md
 
+# Generated at docs build time by scripts/build_llms_txt.py
+docs/llms.txt
+docs/llms-full.txt
+
 # mypy
 .mypy_cache/
 .dmypy.json

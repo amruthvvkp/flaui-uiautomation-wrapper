@@ -90,6 +90,22 @@ including:
 - **Examples** for pytest, unittest, Behave, TestPlan, and Robot Framework.
 - **Contributing** guides for development, testing, and porting C# tests.
 
+### Use with AI agents
+
+FlaUI ships agent skills as a plugin for Claude Code and OpenAI Codex, plus
+[`llms.txt`](https://amruthvvkp.github.io/flaui-uiautomation-wrapper/llms.txt) and
+[`llms-full.txt`](https://amruthvvkp.github.io/flaui-uiautomation-wrapper/llms-full.txt) for any LLM
+tool. In Claude Code:
+
+```text
+/plugin marketplace add amruthvvkp/flaui-uiautomation-wrapper
+/plugin install flaui@flaui-uiautomation-wrapper
+```
+
+For Codex, run `codex plugin marketplace add amruthvvkp/flaui-uiautomation-wrapper`, then
+`codex plugin add flaui@flaui-uiautomation-wrapper`. The details are in
+[Use with AI agents](https://amruthvvkp.github.io/flaui-uiautomation-wrapper/latest/ai-agents/).
+
 ## Roadmap
 
 This project is in active development toward its first major release. Track progress on the
