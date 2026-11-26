@@ -2026,7 +2026,7 @@ class GridHeaderItem(AutomationElement):
         return self.raw_element.Text
 
 
-class GridRow(SelectionItemAutomationElement):
+class GridRow(AutomationElement, SelectionItemAutomationElement):
     """Row element for grids and tables."""
 
     @property
@@ -2186,7 +2186,7 @@ class ListBox(AutomationElement):
         return ListBoxItem(raw_element=self.raw_element.RemoveFromSelection(value))
 
 
-class ListBoxItem(SelectionItemAutomationElement):
+class ListBoxItem(AutomationElement, SelectionItemAutomationElement):
     """Class to interact with a list box item element"""
 
     @property
