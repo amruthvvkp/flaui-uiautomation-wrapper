@@ -145,6 +145,65 @@ def test_capture(window: Window, tmp_path: Path) -> None:
     assert (tmp_path / "shortcut.png").stat().st_size > 0
 
 
+def test_capture_overlays(window: Window, tmp_path: Path) -> None:
+    """Draw the mouse cursor and an info bar onto a screenshot."""
+    # --8<-- [start:capture_overlays]
+    from flaui.core.capturing import Capture, InfoOverlay, InfoOverlayPosition, MouseOverlay
+    from flaui.lib.system.drawing import Color
+
+    with Capture.element(window) as image:
+        info = InfoOverlay(
+            image,
+            overlay_string_format="{dt:HH:mm:ss} / {name}",  # time and machine name
+            overlay_position=InfoOverlayPosition.BottomRight,
+            overlay_text_color=Color.Yellow,
+        )
+        image.apply_overlays(MouseOverlay(image), info).to_file(str(tmp_path / "annotated.png"))
+    # --8<-- [end:capture_overlays]
+    assert (tmp_path / "annotated.png").stat().st_size > 0
+
+
+def test_video_recorder_settings(tmp_path: Path) -> None:
+    """Configure a screen recording that stamps the elapsed time on every frame."""
+    # --8<-- [start:video_recorder]
+    from flaui.core.capturing import (
+        Capture,
+        CaptureImage,
+        CaptureSettings,
+        InfoOverlay,
+        MouseOverlay,
+        VideoFormat,
+        VideoRecorder,
+        VideoRecorderSettings,
+    )
+
+    settings = VideoRecorderSettings(
+        ffmpeg_path=r"C:\tools\ffmpeg.exe",  # or VideoRecorder.download_ffmpeg(folder)
+        target_video_path=str(tmp_path / "run.mp4"),
+        frame_rate=10,
+        video_format=VideoFormat.xvid,  # bigger file, less CPU than x264
+    )
+
+    def frame(recorder: VideoRecorder) -> CaptureImage:
+        """Capture one frame with the cursor and the elapsed recording time ({rt}) drawn on it."""
+        image = Capture.main_screen(CaptureSettings(output_scale=0.5))
+        info = InfoOverlay(image, overlay_string_format="{rt:hh\\:mm\\:ss}", record_time_span=recorder.record_time_span)
+        return image.apply_overlays(info, MouseOverlay(image))
+
+    # with VideoRecorder.start(settings, frame) as recorder:  # needs ffmpeg at settings.ffmpeg_path
+    #     ...  # drive the application; leaving the block stops and encodes the video
+    # --8<-- [end:video_recorder]
+    from types import SimpleNamespace
+
+    from System import TimeSpan  # type: ignore
+
+    # Drive the frame callback once without ffmpeg, using a stand-in for the C# recorder.
+    not_recording = VideoRecorder(raw_recorder=SimpleNamespace(RecordTimeSpan=TimeSpan.Zero))
+    with frame(not_recording) as image:
+        assert image.original_bounds.width > 0
+    assert settings.cs_object.FrameRate == 10
+
+
 def test_highlight(automation: Automation, window: Window, cf: ConditionFactory) -> None:
     """Draw a coloured frame around an element while debugging."""
     button = window.find_first_descendant(cf.by_automation_id("InvokableButton"))
