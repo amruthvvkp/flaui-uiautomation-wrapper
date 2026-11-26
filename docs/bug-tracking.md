@@ -12,7 +12,7 @@ investigation as a genuine wrapper bug; **Env** = environment guard.
 |-------|-------|----------------|----------|----------|
 | [#74](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/74) | Spinner (WinForms NumericUpDown) UIA peer not exposed | test_spinner.py (3 tests) | UIA3 + WinForms | Upstream |
 | [#75](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/75) | Combobox broken on WinForms | test_combobox.py, test_listbox.py, test_pop_up.py (22 tests) | UIA2/UIA3 + WinForms | Upstream |
-| [#76](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/76) | Tree test flaky on AppVeyor CI | test_tree.py::test_selection (4 tests) | All (CI only) | Flaky |
+| ~~[#76](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/76)~~ | Tree test flaky on AppVeyor CI | test_tree.py::test_selection (4 tests) | All (CI only) | ✅ Resolved (no CI failure in 15 full runs; test waits for lazily realised items) |
 | ~~[#77](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/77)~~ | RegisterAutomationEvent not ported | test_invoke_pattern.py::test_invoke_with_event | All | ✅ Resolved (ported) |
 | [#78](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/78) | Toggle pattern unsupported on WinForms menus | test_menu.py::test_checked_menu_item (2 tests) | UIA2/UIA3 + WinForms | Upstream |
 | [#79](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/79) | Context menu broken with UIA3 + WinForms | test_window.py::test_context_menu (1 test) | UIA3 + WinForms | Upstream |
@@ -46,8 +46,8 @@ on *every* matrix combo, and with `run=True` it treats the *whole* test as xfail
 
 Current assignments after the Phase 0 marker-hygiene pass:
 
-- **#76** (tree, flaky on CI across all combos): `bug(run=True)` — replaced the previous inline
-  `try/except AssertionError → pytest.xfail`.
+- **#76** (tree, flaky on CI across all combos): the `bug(run=True)` monitor was removed once the
+  test was hardened (see outcomes below).
 - **#78** (menu Toggle, WinForms only) and **#79** (context menu, UIA3+WinForms only):
   `platform_limitation` + conditional skip fixture — replaced the previous in-body `pytest.skip`.
 - **#75** (combobox, WinForms): `platform_limitation` + `bug` + class-level `xfail`. Restoring real
@@ -86,6 +86,13 @@ Investigation results from running each item against the local UIA2/UIA3 × WinF
   skipped via `skip_on_uia2` + `platform_limitation`. The `find_all` test also used
   `by_class_name("TabControl")` (WPF-only); switched to `by_control_type(ControlType.Tab)` so it
   passes on UIA3 + WinForms too. Now passes on UIA3 (both frameworks) and skips on UIA2.
+- **#76** (Tree selection) — **hardened and resolved; no wrapper defect.** The test passed on all
+  four combos in every one of the 15 full-suite AppVeyor runs with a test report (builds 1.0.249 to
+  1.0.270), and in repeated local runs. The reported symptom, "only 1 item", fits a race:
+  tree items are realised lazily (WPF builds a node's item containers only after it expands), so
+  reading `items` right after `expand()` on a slow VM can return a partial list. The test now waits
+  (up to 5 s) for each level's children before indexing into them. The exact count assertions are
+  unchanged, and the `bug(run=True)` monitor was removed.
 - **#82** (test_get_control_type) — **root-caused and fixed; not a wrapper defect.** Reproduced
   deterministically by running `test_window.py` before the converter tests on UIA2 + WinForms.
   `test_context_menu` left the WinForms context menu open: reading `items[1].items` expands the
