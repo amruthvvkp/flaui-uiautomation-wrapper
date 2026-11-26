@@ -105,7 +105,22 @@ compares a direct find with the test-suite map and the documented `examples/pyte
 recipe, and splits the difference into extra UIA lookups and map-class cost. It only reports, so it
 always exits 0.
 
-Both scripts need an interactive desktop, because they launch the apps and click controls, so they
+`scripts/benchmark_pywinauto.py` runs the same finds and actions through pywinauto's `uia` backend
+(and its `win32` backend on WinForms) next to the wrapper on UIA2 and UIA3, in one process, and
+prints the median and p95 for each. pywinauto is not a dependency of the package; it lives in the
+optional `bench` dependency group:
+
+```bash
+uv run --group bench python scripts/benchmark_pywinauto.py -n 100
+uv run --group bench python scripts/benchmark_pywinauto.py -n 100 --json pywinauto.json
+uv run --group bench python scripts/benchmark_pywinauto.py --skip-flaui   # pywinauto only
+```
+
+The operations match in intent, not always in mechanism (pywinauto's search strategy, its own
+post-click sleep, `BM_SETCHECK` on `win32`). The script prints where they differ under the table.
+It only reports, so it always exits 0.
+
+All three scripts need an interactive desktop, because they launch the apps and click controls, so they
 are not run in CI. The v1 gate is wrapper overhead under 5 ms mean per operation, and
 `benchmark.py` exits 1 when any operation misses it. Absolute timings are printed for reference only: they come from Windows UIA and
 the app under test. Current numbers are on the [Performance](../performance.md) page.

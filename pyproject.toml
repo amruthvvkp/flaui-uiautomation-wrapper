@@ -61,6 +61,10 @@ coverage = ["coverage>=7.17.5"]
 pytest-sugar = ["pytest-sugar>=1.0.0"]
 
 [dependency-groups]
+# Optional benchmark comparisons (scripts/benchmark_pywinauto.py). Not a runtime dependency.
+bench = [
+  "pywinauto>=0.6.9",
+]
 dev = [
   "bandit>=1.9.4",
   "interrogate>=1.7.0",
