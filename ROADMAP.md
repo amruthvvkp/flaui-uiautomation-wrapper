@@ -253,6 +253,7 @@ UIA2/UIA3 framework-adapter internals are out of scope by design.
 | Ruff lint | 0 errors | clean ✅ |
 | Pattern parity | 34/34 | ✅ |
 | Wrapper overhead vs FlaUI C# | < 5ms avg per call | −8 to +2ms across UIA2/UIA3 × WinForms/WPF ✅ |
+| Compared with pywinauto | measured | median/p95 on the same apps; wrapper UIA descendant searches 1.4–5.6× faster than pywinauto `uia`, pywinauto `win32` fastest on WinForms ✅ |
 | Wheel size | < 10MB | 0.39MB (386KB, DLLs included) ✅ |
 
 **Absolute latency is reference-only, not a gate.** `scripts/benchmark.py` (GH-85) times each
@@ -295,6 +296,26 @@ suite's `BaseSettings` classes, which re-read environment variables, and under 0
 recipe's `BaseModel`. Run-to-run noise is about ±5ms on WinForms. The one real cost is outside this
 table: when the tab is not selected, the suite map selects it with `post_wait=True`, a deliberate
 100ms+ wait.
+
+**Compared with pywinauto.** `scripts/benchmark_pywinauto.py` (`uv run --group bench`, pywinauto in
+the optional `bench` dependency group only) runs the same operations through pywinauto 0.6.9's `uia`
+backend on both apps and its `win32` backend on WinForms, in the same process as the wrapper.
+Median / p95 in ms over 100 runs:
+
+| Operation | Wrapper UIA3 WinForms | pywinauto `uia` WinForms | pywinauto `win32` WinForms | Wrapper UIA3 WPF | pywinauto `uia` WPF |
+|-----------|-----------------------|--------------------------|----------------------------|------------------|---------------------|
+| Find descendant by automation id | 114 / 141 | 189 / 248 | n/a | 18 / 21 | 54 / 60 |
+| Find descendant by name | 35 / 43 | 198 / 240 | 1.7 / 3.0 | 25 / 28 | 49 / 57 |
+| Find all children | 16 / 18 | 23 / 45 | 0.23 / 0.31 | 3.3 / 3.9 | 4.8 / 6.4 |
+| Select radio button | 0.09 / 0.12 | 2.6 / 4.9 | 0.06 / 0.11 | 0.36 / 0.47 | 3.4 / 4.5 |
+| Toggle checkbox | 2.1 / 3.2 | 2.3 / 3.2 | 0.06 / 0.09 | 4.0 / 4.9 | 3.8 / 4.8 |
+| Mouse click | 127 / 142 | 566 / 570 | 566 / 569 | 111 / 127 | 561 / 568 |
+
+pywinauto's `win32` backend beats the wrapper wherever it applies (WinForms only, no AutomationId,
+`BM_SETCHECK` instead of UIA patterns). On UIA the gap in searches is pywinauto's strategy (fetch every
+descendant, filter in Python, insist on a unique match): the same `FindFirst` through its comtypes
+object matches FlaUI. pywinauto's clicks wait out the double-click time since the last input on every
+click, plus 90ms. Full tables and caveats: [docs/performance.md](docs/performance.md#compared-with-pywinauto).
 
 ---
 
