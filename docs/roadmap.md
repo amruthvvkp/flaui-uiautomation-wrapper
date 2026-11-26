@@ -71,7 +71,7 @@ of truth; this page is the human-friendly summary.
 - [ ] [Achieve ~90–95% `flaui.core` coverage + enforce a coverage gate (#88)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/88)
 - [ ] [Spinner AutomationID flakiness (#74)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/74) — harden locator
 - [ ] [Tree-item flakiness on CI (#76)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/76) — wait for items to materialize
-- [ ] [`test_get_control_type` setup flakiness (#82)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/82) — harden fixture
+- [x] [`test_get_control_type` setup flakiness (#82)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/82) — leftover context menu from `test_context_menu`; now dismissed
 - [ ] [`find_all/first_with_options` matrix failures (#80)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/80) — investigate `TreeTraversalOptions`
 - [ ] [`ListBox.select_by_index` on UIA3/WPF (#83)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/83) — fix selection
 - [ ] [Notepad tests on Windows 11 Store app (#89)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/89) — environment guard
