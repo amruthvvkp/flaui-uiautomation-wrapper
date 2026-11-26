@@ -167,7 +167,5 @@ _.IsBackground  # unused attribute
 get_sta_executor  # unused function
 
 # --- flaui/modules/automation.py ---------------------------------------------------------------------
-# Public attributes of the high-level `Automation` entry point.
-_._ui_automation_types  # unused attribute
 _.cf  # unused attribute
 _.tree_walker  # unused attribute

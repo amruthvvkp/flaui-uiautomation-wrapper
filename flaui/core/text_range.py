@@ -7,13 +7,16 @@ The wrapper mirrors ``ITextRange`` one-to-one; the native object stays reachable
 
 from __future__ import annotations
 
-from typing import Any, List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
 
 from flaui.core.definitions import TextPatternRangeEndpoint, TextUnit
 from flaui.lib.exceptions import ElementNotFound, handle_csharp_exceptions
 from flaui.lib.system.drawing import Rectangle
+
+if TYPE_CHECKING:
+    from flaui.core.automation_elements import AutomationElement
 
 
 class TextRange(BaseModel):
@@ -127,7 +130,7 @@ class TextRange(BaseModel):
         return [Rectangle(raw_value=_) for _ in self.raw_text_range.GetBoundingRectangles()]
 
     @handle_csharp_exceptions
-    def get_children(self) -> List[Any]:
+    def get_children(self) -> List[AutomationElement]:
         """Return the embedded child elements within the range.
 
         :return: A list of child automation elements.
@@ -137,7 +140,7 @@ class TextRange(BaseModel):
         return [AutomationElement(raw_element=_) for _ in self.raw_text_range.GetChildren()]
 
     @handle_csharp_exceptions
-    def get_enclosing_element(self) -> Any:
+    def get_enclosing_element(self) -> AutomationElement:
         """Return the innermost element that encloses the range.
 
         :return: The enclosing :class:`~flaui.core.automation_elements.AutomationElement`.

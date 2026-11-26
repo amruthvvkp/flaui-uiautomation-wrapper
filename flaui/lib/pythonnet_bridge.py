@@ -24,7 +24,7 @@ def setup_pythonnet_bridge() -> None:
     bin_home = config.settings.BIN_HOME
     if bin_home != config.DEFAULT_BIN_HOME:
         logger.warning("Loading FlaUI assemblies from FLAUI_BIN_HOME=%s instead of the bundled DLLs", bin_home)
-    global FLAUI_CSHARP_VERSION
+    global FLAUI_CSHARP_VERSION  # pylint: disable=global-statement  # module-level version record
     try:
         for _ in bin_home.glob("*.dll"):
             clr.AddReference(_.as_posix())  # pyright: ignore

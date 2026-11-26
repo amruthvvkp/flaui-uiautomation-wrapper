@@ -39,7 +39,7 @@ class Automation:
         :param timeout: Milliseconds ``application.get_main_window`` waits for the main window. ``None``
             (default) uses ``FLAUI_MAIN_WINDOW_TIMEOUT``, else 7000 ms (20000 ms when ``CI`` is set).
         """
-        self._ui_automation_types: UIAutomationTypes = ui_automation_type
+        self._ui_automation_type: UIAutomationTypes = ui_automation_type
         self.timeout: Optional[int] = timeout
         self.automation_base: AutomationBase = (
             UIA3Automation() if ui_automation_type == UIAutomationTypes.UIA3 else UIA2Automation()
@@ -48,6 +48,11 @@ class Automation:
         self.cf = ConditionFactory(raw_cf=self.cs_automation.ConditionFactory)
         self.tree_walker: Any = self.cs_automation.TreeWalkerFactory.GetRawViewWalker()
         self.application: Application = Application()
+
+    @property
+    def ui_automation_type(self) -> UIAutomationTypes:
+        """Return the UI automation backend (UIA2 or UIA3) this instance was created with."""
+        return self._ui_automation_type
 
     def __enter__(self) -> "Automation":
         """Enter the runtime context and return the automation instance.

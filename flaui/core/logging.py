@@ -27,7 +27,12 @@ Example::
 from __future__ import annotations
 
 import logging
-from typing import Any, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Optional, Tuple
+
+if TYPE_CHECKING:
+    from FlaUI.Core.Logging import EventLogger  # pyright: ignore
+
+logger = logging.getLogger(__name__)
 
 #: Name of the default Python logger the C# sink writes to.
 CSHARP_LOGGER_NAME = "flaui.csharp"
@@ -47,7 +52,7 @@ _LEVEL_MAP = {
 _active_sink: Optional[Tuple[Any, Any, Any]] = None
 
 
-def enable_csharp_logging(logger: Optional[logging.Logger] = None, level: Optional[str] = None) -> Any:
+def enable_csharp_logging(logger: Optional[logging.Logger] = None, level: Optional[str] = None) -> "EventLogger":
     """Install FlaUI's ``EventLogger`` as the default and forward its events into Python logging.
 
     All FlaUI C# log output is emitted at every level (the C# side gates nothing); the Python
@@ -78,7 +83,7 @@ def enable_csharp_logging(logger: Optional[logging.Logger] = None, level: Option
     event_logger.OnLog += delegate
     CSLogger.Default = event_logger
 
-    global _active_sink
+    global _active_sink  # pylint: disable=global-statement  # module-level singleton, see _active_sink
     _active_sink = (event_logger, delegate, _on_log)
     return event_logger
 
@@ -87,13 +92,13 @@ def disable_csharp_logging() -> None:
     """Stop routing C# logs into Python and restore a silent (``NullLogger``) default."""
     from FlaUI.Core.Logging import Logger as CSLogger, NullLogger  # pyright: ignore
 
-    global _active_sink
+    global _active_sink  # pylint: disable=global-statement  # module-level singleton, see _active_sink
     if _active_sink is not None:
         event_logger, delegate, _callback = _active_sink  # pylint: disable=unpacking-non-sequence  # narrowed by the None check
         try:
             event_logger.OnLog -= delegate
         except Exception:  # pragma: no cover - best-effort detach
-            logging.getLogger(__name__).debug("Failed to detach the C# log sink", exc_info=True)
+            logger.debug("Failed to detach the C# log sink", exc_info=True)
         _active_sink = None
     CSLogger.Default = NullLogger()
 
@@ -110,4 +115,4 @@ def maybe_enable_from_settings() -> None:
     try:
         enable_csharp_logging(level=settings.LOG_CSHARP_LEVEL)
     except Exception:  # pragma: no cover - logging must never break setup
-        logging.getLogger(__name__).exception("Failed to enable C# logging sink")
+        logger.exception("Failed to enable C# logging sink")

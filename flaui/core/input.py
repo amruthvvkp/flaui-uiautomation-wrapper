@@ -18,6 +18,10 @@ from flaui.core.windows_api import VirtualKeyShort
 from flaui.lib.collections import TypeCast
 from flaui.lib.system.drawing import Point
 
+#: Type of the optional ``post_wait`` argument: ``True`` waits 100 ms, a number waits that many
+#: seconds, a callable is invoked, and ``None``/``False`` skips the wait.
+PostWait = Optional[Union[bool, float, Callable[[], None]]]
+
 
 class Wait:
     """Various helper tools used in various places, wrapper over Wait class in FlaUI.Core.Input namespace"""
@@ -332,7 +336,7 @@ class Mouse(metaclass=_MouseMeta):
         return CSMouse.AreButtonsSwapped
 
     @staticmethod
-    def _apply_post_wait(post_wait: Optional[Union[bool, float, Callable[[], None]]]) -> None:
+    def _apply_post_wait(post_wait: PostWait) -> None:
         """Applies post-wait logic after mouse operations."""
         if not post_wait:
             return
@@ -584,12 +588,23 @@ class Mouse(metaclass=_MouseMeta):
         Mouse._apply_post_wait(post_wait)
 
 
+def apply_post_wait(post_wait: PostWait) -> None:
+    """Apply a ``post_wait`` value after an input operation.
+
+    Public counterpart of the private ``Mouse._apply_post_wait``, for use outside this module.
+
+    :param post_wait: ``True`` waits 100 ms, a number waits that many seconds, a callable is invoked,
+        and ``None``/``False`` does nothing.
+    """
+    Mouse._apply_post_wait(post_wait)  # pylint: disable=protected-access
+
+
 class Interpolation:
     """Interpolation tool to transition points during a time frame, wrapper over Interpolation class in FlaUI.Core.Input namespace"""
 
     @staticmethod
     def execute(
-        action: Any,
+        action: Callable[[List[Point]], None],
         start_end_points: List[Tuple[Point, Point]],
         duration_ms: int,
         interval_ms: int = 10,
@@ -633,7 +648,7 @@ class Interpolation:
 
     @staticmethod
     def execute_single(
-        action: Any,
+        action: Callable[[Point], None],
         start_point: Point,
         end_point: Point,
         duration_ms: int,
@@ -670,7 +685,7 @@ class Interpolation:
 
     @staticmethod
     def execute_rotation(
-        action: Any,
+        action: Callable[[Point], None],
         center_point: Point,
         radius: float,
         start_angle: float,

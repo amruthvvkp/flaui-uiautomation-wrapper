@@ -1,7 +1,7 @@
 """This module contains collections which can effective handle data transition between C# and Python."""
 
 from datetime import date
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import arrow
 from System import DateTime as CSDateTime, TimeSpan  # pyright: ignore[reportMissingImports]
@@ -29,7 +29,7 @@ class TypeCast:
         return raw if isinstance(raw, dict) else {_.Key: _.Value for _ in raw.GetEnumerator()}
 
     @staticmethod
-    def cs_timespan(value: int) -> Any:
+    def cs_timespan(value: Optional[int]) -> Optional[TimeSpan]:
         """Converts a Python time milliseconds value to C# TimeSpan object
 
         :param value: Time in milliseconds

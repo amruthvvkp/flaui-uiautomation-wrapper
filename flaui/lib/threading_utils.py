@@ -117,7 +117,7 @@ def get_sta_executor() -> STAThreadExecutor:
 
     :return: Shared `STAThreadExecutor` instance.
     """
-    global _executor_singleton
+    global _executor_singleton  # pylint: disable=global-statement  # lazily created module singleton
     if _executor_singleton is None:
         with _executor_lock:
             if _executor_singleton is None:

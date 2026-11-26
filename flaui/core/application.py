@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging
 import os
 import time
-from typing import Any, List, Optional, Union
+from typing import TYPE_CHECKING, Any, List, Optional, Union
 
 from flaui.core.automation_elements import Window
 
@@ -20,6 +20,9 @@ from FlaUI.Core import AutomationBase as CSAutomationBase  # pyright: ignore
 from flaui.core.automation_base import AutomationBase as PyAutomationBase
 from flaui.lib.collections import TypeCast
 from flaui.lib.config import settings
+
+if TYPE_CHECKING:
+    from flaui.modules.automation import Automation
 
 logger = logging.getLogger(__name__)
 
@@ -166,7 +169,7 @@ class Application:
         """
         self._application.CloseTimeout = value
 
-    def get_all_top_level_windows(self, automation: Any) -> List[Window]:
+    def get_all_top_level_windows(self, automation: Union[PyAutomationBase, Automation, Any]) -> List[Window]:
         """Gets all top level windows from the application.
 
         :param automation: The automation object to use.
@@ -175,7 +178,7 @@ class Application:
         parsed = self._application.GetAllTopLevelWindows(_coerce_cs_automation(automation))
         return [Window(raw_element=element) for element in parsed]
 
-    def get_main_window(self, automation: Any) -> Window:
+    def get_main_window(self, automation: Union[PyAutomationBase, Automation, Any]) -> Window:
         """Gets the main window of the applications process.
 
         The wait is ``Automation(timeout=...)`` when the high-level ``Automation`` is passed and has a

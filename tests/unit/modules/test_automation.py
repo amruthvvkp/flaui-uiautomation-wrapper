@@ -53,3 +53,14 @@ class TestAutomation:
         assert isinstance(wordpad.automation_base, PyUIA3Automation)
         assert isinstance(wordpad.cf, ConditionFactory)
         assert isinstance(wordpad.tree_walker, ITreeWalker)
+
+
+@pytest.mark.parametrize("ui_type", [UIAutomationTypes.UIA2, UIAutomationTypes.UIA3])
+def test_ui_automation_type_is_read_only(ui_type: UIAutomationTypes) -> None:
+    """``Automation.ui_automation_type`` returns the backend it was built with and cannot be reassigned."""
+    with Automation(ui_type) as automation:
+        assert automation.ui_automation_type == ui_type
+        with pytest.raises(AttributeError):
+            automation.ui_automation_type = (
+                UIAutomationTypes.UIA3 if ui_type == UIAutomationTypes.UIA2 else UIAutomationTypes.UIA2
+            )  # type: ignore[misc]

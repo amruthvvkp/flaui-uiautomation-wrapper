@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
 
@@ -14,6 +14,7 @@ from flaui.lib.system.drawing import Point
 
 if TYPE_CHECKING:
     from flaui.core.automation_elements import AutomationElement
+    from flaui.core.event_handlers import EventRegistration
     from flaui.core.overlay import OverlayManager
 
 logger = logging.getLogger(__name__)
@@ -185,7 +186,7 @@ class AutomationBase(BaseModel):
         return PyAutomationElement(raw_element=raw)
 
     @handle_csharp_exceptions
-    def register_focus_changed_event(self, action: Any) -> Any:
+    def register_focus_changed_event(self, action: Callable[[AutomationElement], None]) -> EventRegistration:
         """Register a focus-changed handler.
 
         :param action: Callback ``(element) -> None`` invoked when focus changes.
@@ -226,7 +227,7 @@ class AutomationBase(BaseModel):
         self.raw_automation.UnregisterAllEvents()
 
     @handle_csharp_exceptions
-    def compare(self, element1: Any, element2: Any) -> bool:
+    def compare(self, element1: Union[AutomationElement, Any], element2: Union[AutomationElement, Any]) -> bool:
         """Return whether two elements refer to the same underlying UI element."""
         return self.raw_automation.Compare(
             self._to_cs_automation_element(element1),

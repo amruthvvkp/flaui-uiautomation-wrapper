@@ -500,10 +500,10 @@ class AutomationElement(ElementBase):
         :param move_mouse: Flag to indicate, if the mouse should move slowly(True) or instantly(False), defaults to False
         :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
-        from flaui.core.input import Mouse
+        from flaui.core.input import apply_post_wait
 
         self.raw_element.Click(move_mouse)
-        Mouse._apply_post_wait(post_wait)
+        apply_post_wait(post_wait)
 
     @handle_csharp_exceptions
     def double_click(self, move_mouse: bool = False) -> None:
@@ -685,8 +685,7 @@ class AutomationElement(ElementBase):
         """
         if condition is None:
             return AutomationElement(raw_element=self.raw_element.FindFirstChild())
-        else:
-            return AutomationElement(raw_element=self.raw_element.FindFirstChild(condition.cs_condition))
+        return AutomationElement(raw_element=self.raw_element.FindFirstChild(condition.cs_condition))
 
     @handle_csharp_exceptions
     def find_first_descendant(self, condition: Optional[PropertyCondition] = None) -> AutomationElement:
@@ -697,8 +696,7 @@ class AutomationElement(ElementBase):
         """
         if condition is None:
             return AutomationElement(raw_element=self.raw_element.FindFirstDescendant())
-        else:
-            return AutomationElement(raw_element=self.raw_element.FindFirstDescendant(condition.cs_condition))
+        return AutomationElement(raw_element=self.raw_element.FindFirstDescendant(condition.cs_condition))
 
     @handle_csharp_exceptions
     def find_first_nested(self, conditions: Union[PropertyCondition, List[PropertyCondition]]) -> AutomationElement:
@@ -717,12 +715,15 @@ class AutomationElement(ElementBase):
 
             cs_conditions = Array[ConditionBase]([c.cs_condition for c in conditions])
             return AutomationElement(raw_element=self.raw_element.FindFirstNested(cs_conditions))
-        else:
-            return AutomationElement(raw_element=self.raw_element.FindFirstNested(conditions.cs_condition))
+        return AutomationElement(raw_element=self.raw_element.FindFirstNested(conditions.cs_condition))
 
     @handle_csharp_exceptions
     def find_first_with_options(
-        self, tree_scope: TreeScope, condition: PropertyCondition, traversal_options: TreeTraversalOptions, root: Any
+        self,
+        tree_scope: TreeScope,
+        condition: PropertyCondition,
+        traversal_options: TreeTraversalOptions,
+        root: AutomationElement,
     ) -> AutomationElement:
         """Find first matching element in the specified order.
 
@@ -853,7 +854,7 @@ class AutomationElement(ElementBase):
         return EventRegistration(
             cs_handler=handler,
             callback=_handler,
-            unregister=lambda h: self.framework_automation_element.UnregisterActiveTextPositionChangedEventHandler(h),
+            unregister=self.framework_automation_element.UnregisterActiveTextPositionChangedEventHandler,
         )
 
     @handle_csharp_exceptions
@@ -885,7 +886,7 @@ class AutomationElement(ElementBase):
         return EventRegistration(
             cs_handler=handler,
             callback=_handler,
-            unregister=lambda h: self.framework_automation_element.UnregisterAutomationEventHandler(h),
+            unregister=self.framework_automation_element.UnregisterAutomationEventHandler,
         )
 
     @handle_csharp_exceptions
@@ -916,7 +917,7 @@ class AutomationElement(ElementBase):
         return EventRegistration(
             cs_handler=handler,
             callback=_handler,
-            unregister=lambda h: self.framework_automation_element.UnregisterNotificationEventHandler(h),
+            unregister=self.framework_automation_element.UnregisterNotificationEventHandler,
         )
 
     @handle_csharp_exceptions
@@ -956,7 +957,7 @@ class AutomationElement(ElementBase):
         return EventRegistration(
             cs_handler=handler,
             callback=_handler,
-            unregister=lambda h: self.framework_automation_element.UnregisterPropertyChangedEventHandler(h),
+            unregister=self.framework_automation_element.UnregisterPropertyChangedEventHandler,
         )
 
     @handle_csharp_exceptions
@@ -986,7 +987,7 @@ class AutomationElement(ElementBase):
         return EventRegistration(
             cs_handler=handler,
             callback=_handler,
-            unregister=lambda h: self.framework_automation_element.UnregisterStructureChangedEventHandler(h),
+            unregister=self.framework_automation_element.UnregisterStructureChangedEventHandler,
         )
 
     @handle_csharp_exceptions
@@ -1022,7 +1023,7 @@ class AutomationElement(ElementBase):
         return EventRegistration(
             cs_handler=handler,
             callback=_handler,
-            unregister=lambda h: self.framework_automation_element.UnregisterTextEditTextChangedEventHandler(h),
+            unregister=self.framework_automation_element.UnregisterTextEditTextChangedEventHandler,
         )
 
     @handle_csharp_exceptions
@@ -1371,8 +1372,6 @@ class AutomationElement(ElementBase):
 
 class Button(AutomationElement, InvokeAutomationElement):  # pragma: no cover
     """Class to interact with a button element"""
-
-    pass
 
 
 class Calendar(AutomationElement):
@@ -1868,15 +1867,13 @@ class Grid(AutomationElement):
                     lambda: self.raw_element.Select(column_index, text_to_find), "Row not found in column"
                 )
             )
-        elif all([row_index]) and not any([column_index, text_to_find]):
+        if all([row_index]) and not any([column_index, text_to_find]):
             return GridRow(
                 raw_element=self._retry_while_null_reference_exception(
                     lambda: self.raw_element.Select(row_index), "Row not found in row index"
                 )
             )
-
-        else:
-            raise ValueError("Invalid input sent to the function, cannot select the row")
+        raise ValueError("Invalid input sent to the function, cannot select the row")
 
     # --- Overloads for add_to_selection ---
     @overload
@@ -1924,15 +1921,14 @@ class Grid(AutomationElement):
                     "Row not found in column, cannot add to selection",
                 )
             )
-        elif all([row_index]) and not any([column_index, text_to_find]):
+        if all([row_index]) and not any([column_index, text_to_find]):
             return GridRow(
                 raw_element=self._retry_while_null_reference_exception(
                     lambda: self.raw_element.AddToSelection(row_index),
                     "Row not found in row index, cannot add to selection",
                 )
             )
-        else:
-            raise ValueError("Invalid input sent to the function, cannot add to the selection")
+        raise ValueError("Invalid input sent to the function, cannot add to the selection")
 
     # --- Overloads for remove_from_selection ---
     @overload
@@ -1963,15 +1959,14 @@ class Grid(AutomationElement):
                     "Row not found in column, cannot remove from selection",
                 )
             )
-        elif all([row_index]) and not any([column_index, text_to_find]):
+        if all([row_index]) and not any([column_index, text_to_find]):
             return GridRow(
                 raw_element=self._retry_while_null_reference_exception(
                     lambda: self.raw_element.RemoveFromSelection(row_index),
                     "Row not found in row index, cannot remove from selection",
                 )
             )
-        else:
-            raise ValueError("Invalid input sent to the function, cannot remove from the selection")
+        raise ValueError("Invalid input sent to the function, cannot remove from the selection")
 
     @handle_csharp_exceptions
     def get_row_by_index(self, row_index: int) -> GridRow:
@@ -2812,8 +2807,6 @@ class Tab(AutomationElement):
 class TabItem(AutomationElement, SelectionItemAutomationElement):
     """Class to interact with a tabitem element."""
 
-    pass
-
 
 class TextBox(AutomationElement):
     """Class to interact with a textbox element."""
@@ -2852,10 +2845,10 @@ class TextBox(AutomationElement):
         :param value: Value to enter in the element
         :param post_wait: Optional wait after operation. True=100ms, float=custom seconds, callable=custom function
         """
-        from flaui.core.input import Mouse
+        from flaui.core.input import apply_post_wait
 
         self.raw_element.Enter(value)
-        Mouse._apply_post_wait(post_wait)
+        apply_post_wait(post_wait)
 
 
 class Thumb(AutomationElement):
@@ -3158,14 +3151,12 @@ class IAutomationProperty(BaseModel, abc.ABC):
     @handle_csharp_exceptions
     def value(self) -> Any:
         """Gets the value of the automation property."""
-        pass
 
     @property
     @abc.abstractmethod
     @handle_csharp_exceptions
     def value_or_default(self) -> Any:
         """Gets the value of the automation property or a default value if not available."""
-        pass
 
     @abc.abstractmethod
     @handle_csharp_exceptions
@@ -3174,14 +3165,12 @@ class IAutomationProperty(BaseModel, abc.ABC):
 
         :return: A tuple with the first element being True if the value was retrieved successfully, False otherwise.
         """
-        pass
 
     @property
     @abc.abstractmethod
     @handle_csharp_exceptions
     def is_supported(self) -> bool:
         """Checks if the automation property is supported."""
-        pass
 
 
 class AutomationProperty(IAutomationProperty):
@@ -3235,14 +3224,13 @@ class AutomationProperty(IAutomationProperty):
         """
         if isinstance(value, CSColor):
             return ColorData(cs_object=value)
-        elif isinstance(value, CSPoint):
+        if isinstance(value, CSPoint):
             return Point(raw_value=value)
-        elif isinstance(value, CSSize):
+        if isinstance(value, CSSize):
             return Size(raw_value=value)
-        elif isinstance(value, CSRectangle):
+        if isinstance(value, CSRectangle):
             return Rectangle(raw_value=value)
-        else:
-            return value
+        return value
 
     @property
     @handle_csharp_exceptions
@@ -3281,6 +3269,9 @@ class AutomationProperty(IAutomationProperty):
         if isinstance(other, AutomationProperty):
             return self.value == other.value  # pyright: ignore
         return False
+
+    # Defining ``__eq__`` makes instances unhashable; state it explicitly.
+    __hash__ = None  # type: ignore[assignment]
 
     @handle_csharp_exceptions
     def __str__(self):

@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING
 
 from flaui.core.patterns.pattern_base import PatternBase
 from flaui.core.text_range import TextRange
 from flaui.lib.exceptions import handle_csharp_exceptions
+
+if TYPE_CHECKING:
+    from flaui.core.automation_elements import AutomationElement
 
 
 class TextChildPattern(PatternBase):
@@ -14,7 +17,7 @@ class TextChildPattern(PatternBase):
 
     @property
     @handle_csharp_exceptions
-    def text_container(self) -> Any:
+    def text_container(self) -> AutomationElement:
         """Return the nearest ancestor that supports the Text pattern.
 
         :return: The containing :class:`~flaui.core.automation_elements.AutomationElement`.
