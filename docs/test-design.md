@@ -76,7 +76,7 @@ in a session fixture:
 A stored element points at one specific UI Automation node. That node goes stale when the app
 rebuilds that part of its UI: after switching tabs, closing a dialog, re-rendering a list, or
 restarting the app. Reading a stale element raises a COM error or `ElementNotFound`. A fresh lookup
-costs a few milliseconds, which is a good trade for never hitting a stale reference. The objects
+costs a few milliseconds ([measured](performance.md#element-name-maps-cost-nothing-extra)), which is a good trade for never hitting a stale reference. The objects
 that are safe to keep are the ones that live as long as the app does: the `Automation`, the
 `Application`, and the main `Window`.
 
