@@ -17,7 +17,8 @@ class TestPopUp:
     def skip_winforms(self, test_application_type: str) -> None:
         """Skip WinForms tests."""
         if test_application_type == "WinForms":
-            pytest.skip("Combobox got heavily broken with UIA2/UIA3 Winforms due to bugs in Windows/.Net")
+            # Upstream FlaUI's PopupTests have WPF fixtures only: the WinForms test app has no popups.
+            pytest.skip("Popup toggle buttons exist only in the WPF test application")
 
     @pytest.fixture(name="popup_toggle_button1")
     def get_popup_toggle_button1(

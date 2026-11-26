@@ -35,7 +35,9 @@ class TestListBox:
         :return: Test list box element with a large list.
         """
         if test_application_type == "WinForms":
-            pytest.skip("Combobox got heavily broken with UIA2/UIA3 Winforms due to bugs in Windows/.Net")
+            # Upstream FlaUI runs these WPF-only: the WinForms test app has no "More Controls" tab, and
+            # WinForms list boxes load every item at startup, so there is no virtualized list to test.
+            pytest.skip("Large (virtualized) list box exists only in the WPF test application")
         yield test_application.more_controls_tab.large_list_box
 
     def test_items(self, list_box: ListBox) -> None:

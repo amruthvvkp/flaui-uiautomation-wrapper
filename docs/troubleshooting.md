@@ -39,7 +39,10 @@ Common issues, fixes, and known test skips/xfails.
   abort in native UIA/COM before pytest records an xfail (issue #89).
 - `skipif` Paint mouse drag: Paint UI varies significantly.
 - `bug` GH-91 Mouse movement/drag flakiness under runners (mouse position reads may lag).
-- `bug` GH-75/others: ListBox instability on WinForms (see ListBox tests) — keep an eye on CI.
+- `platform_limitation` GH-75: ComboBox tests are skipped on UIA2/UIA3 + WinForms (Windows/.NET
+  bug; upstream FlaUI skips them too). They run on WPF.
+- WPF-only controls: the large ListBox and Popup tests are skipped on WinForms because the
+  WinForms test application has no such controls.
 
 ## Seeing what FlaUI is doing
 - Turn on FlaUI's C# messages with `FLAUI_LOG_CSHARP=1` (or `enable_csharp_logging()`), and show
