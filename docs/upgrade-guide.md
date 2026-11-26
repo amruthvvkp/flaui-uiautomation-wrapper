@@ -150,7 +150,8 @@ show the C# next to the Python in tabs throughout. Start with [Basics](basics.md
 | `.AsButton()`, `.AsTextBox()`, … | `.as_button()`, `.as_text_box()`, … | |
 | `element.Name`, `checkBox.ToggleState` | `element.name`, `check_box.toggle_state` | Properties stay properties, renamed to snake_case. |
 | `button.Invoke()`, `tab.SelectTabItem(1)` | `button.invoke()`, `tab.select_tab_item(1)` | Methods stay methods, renamed to snake_case. |
-| `condition.Not()` | `condition.Not(other)` → *condition AND NOT other* | The only condition operator whose shape changes. |
+| `a.And(b)`, `a.Or(b)`, `a.Not()` | `a & b`, `a \| b`, `~a` (or `a.and_(b)`, `a.or_(b)`, `a.not_()`) | The C# names still work as aliases. The legacy `a.Not(b)` means *a AND NOT b* (`a & ~b`). |
+| `TrueCondition.Default`, `FalseCondition.Default` | `ConditionFactory.true_condition()`, `ConditionFactory.false_condition()` | Also `TrueCondition.default()` / `FalseCondition.default()`. |
 | `TimeSpan.FromSeconds(5)` | `5000` (int milliseconds) | Applies to `Retry` and `timeout=` arguments. |
 | `Retry.WhileNull(...).Result` | `Retry.WhileNull(...)` | Python returns the value directly. |
 | `Click(); Wait.UntilInputIsProcessed();` | `click(post_wait=True)` | `post_wait` is a Python addition. |

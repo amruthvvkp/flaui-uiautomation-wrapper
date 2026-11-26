@@ -90,7 +90,7 @@ def test_find_window_by_process_id(automation: Automation) -> None:
         cf = automation.cf
 
         # Every copy has the same title, so search by process id: it is unique per instance.
-        condition = cf.by_process_id(app.process_id).And(cf.by_name("FlaUI WPF Test App"))
+        condition = cf.by_process_id(app.process_id) & cf.by_name("FlaUI WPF Test App")
         window = desktop.find_first_child(condition).as_window()
         # --8<-- [end:by_process_id]
         assert window.raw_element.Properties.ProcessId.Value == second.process_id

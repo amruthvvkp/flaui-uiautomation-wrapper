@@ -29,9 +29,9 @@ elsewhere are usually intentional. 🟡 can also be an API-shape difference (e.g
 
 | Status | Types | % |
 | --- | ---: | ---: |
-| ✅ Covered | 168 | 33% |
+| ✅ Covered | 176 | 34% |
 | 🟡 Partial | 21 | 4% |
-| ❌ Missing | 317 | 62% |
+| ❌ Missing | 309 | 61% |
 | **Total** | **506** | 100% |
 
 ## FlaUI.Core
@@ -99,16 +99,16 @@ elsewhere are usually intentional. 🟡 can also be an API-shape difference (e.g
 
 | Type | Kind | Status | Notes |
 | --- | --- | --- | --- |
-| AndCondition | class | ❌ | no Python class |
-| BoolCondition | class | ❌ | no Python class |
-| ConditionBase | class | ❌ | no Python class |
+| AndCondition | class | ✅ |  |
+| BoolCondition | class | ✅ |  |
+| ConditionBase | class | ✅ |  |
 | ConditionFactory | class | ✅ |  |
-| FalseCondition | class | ❌ | no Python class |
-| JunctionConditionBase | class | ❌ | no Python class |
-| NotCondition | class | ❌ | no Python class |
-| OrCondition | class | ❌ | no Python class |
+| FalseCondition | class | ✅ |  |
+| JunctionConditionBase | class | ✅ |  |
+| NotCondition | class | ✅ |  |
+| OrCondition | class | ✅ |  |
 | PropertyCondition | class | ✅ |  |
-| TrueCondition | class | ❌ | no Python class |
+| TrueCondition | class | ✅ |  |
 
 ### Core
 
