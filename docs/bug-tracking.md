@@ -22,12 +22,12 @@ investigation as a genuine wrapper bug; **Env** = environment guard.
 > is a **closed duplicate** of #80. The in-code markers now reference `GH-80` (the canonical open
 > issue); any lingering `GH-81` references should be treated as `GH-80`.
 | ~~[#82](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/82)~~ | test_get_control_type Tab not found during setup | test_value_converter.py::test_get_control_type | UIA2 + WinForms | ✅ Resolved (test pollution from `test_context_menu`) |
-| [#83](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/83) | ListBox select_by_index fails | test_listbox.py::test_select_by_index | UIA3 + WPF | Not reproducible — CI flake (monitor `run=True`) |
+| ~~[#83](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/83)~~ | ListBox select_by_index fails | test_listbox.py::test_select_by_index | UIA3 + WPF | ✅ Resolved (leftover selection in the shared app; test now resets it) |
 | [#89](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/89) | Notepad tests on Windows 11 (Store app) | Notepad-based tests (test_getter/search/xpath/keyboard) | Windows 11 | Env (guarded via `skip_notepad_on_win11`) |
 
 > **Triage policy (Phase 0).** Upstream issues are documented and skipped with `platform_limitation`
 > / `skip` markers — they are not wrapper defects and will not be "fixed" here. Flaky issues are
-> hardened (retry/wait) and CI-scoped where needed. Wrapper issues (#80, #83) remain `xfail` with a
+> hardened (retry/wait) and CI-scoped where needed. Suspected wrapper issues stay `xfail` with a
 > `bug` marker until a fix is verified against the full UIA2/UIA3 × WinForms/WPF matrix. The #88
 > coverage gate is enforced on the full suite (AppVeyor PR/master) — see
 > [Road to v1.0](release-plan.md).
@@ -120,14 +120,18 @@ Investigation results from running each item against the local UIA2/UIA3 × WinF
   `ElementNotFound`. C# FlaUI restarts the app per test fixture, so it never hits this. The test
   now presses Escape until no context menu is left, and brings its own window to the foreground
   before right-clicking. The `bug` monitor was removed from `test_get_control_type`.
-- **#83** (ListBox select_by_index) — **no wrapper defect found; still open.** `ListBox.select`
-  hands the Python `int`/`str` straight to the C# `Select(int)` / `Select(string)` overloads, the
-  same as FlaUI, and the selection assertions pass whenever they are reached. The test passes on
-  every combo in isolation, in two-combo runs, and in AppVeyor master builds 1.0.256 and 1.0.260.
-  One local full-matrix run did fail, but on the test's *precondition*: `selected_items` already
-  held one item before `select()` was called. Some earlier test in the shared, session-scoped
-  UIA3 + WPF app leaves a ListBox item selected (likely a stray click from an overlapping matrix
-  window). The polluting test has not been pinned down yet. Kept as a `bug(run=True)` monitor.
+- **#83** (ListBox select_by_index) — **root-caused and fixed in the test; no wrapper defect.**
+  `ListBox.select` hands the Python `int`/`str` straight to the C# `Select(int)` / `Select(string)`
+  overloads, the same as FlaUI, and the selection assertions pass whenever they are reached. The test
+  passed on all four combos in every one of the 15 full-suite AppVeyor runs with a test report
+  (builds 1.0.249 to 1.0.270). The one local failure was on the test's *precondition*:
+  `selected_items` already held an item before `select()` was called. Upstream FlaUI restarts the
+  app per fixture, but the matrix apps here are session-scoped, so an earlier test or a stray click
+  on an overlapping matrix window can leave an item selected. The test now clears any leftover
+  selection (`remove_from_selection`) before checking that nothing is selected. A WinForms
+  single-select list box refuses to return to "no selection" ("Selection container requires one
+  selection"); there the precondition check runs only when the box starts out clean. A run that
+  pre-selects an item on purpose passes on all four combos. The `bug(run=True)` monitor was removed.
 
 ## Usage Examples
 

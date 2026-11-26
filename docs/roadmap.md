@@ -73,7 +73,7 @@ of truth; this page is the human-friendly summary.
 - [x] [Tree-item flakiness on CI (#76)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/76) — wait for items to materialize
 - [x] [`test_get_control_type` setup flakiness (#82)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/82) — leftover context menu from `test_context_menu`; now dismissed
 - [ ] [`find_all/first_with_options` matrix failures (#80)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/80) — investigate `TreeTraversalOptions`
-- [ ] [`ListBox.select_by_index` on UIA3/WPF (#83)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/83) — fix selection
+- [x] [`ListBox.select_by_index` on UIA3/WPF (#83)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/83) — fix selection
 - [ ] [Notepad tests on Windows 11 Store app (#89)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/89) — environment guard
 - [x] Document upstream Windows/.NET limitations — [ComboBox/WinForms (#75)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/75), [Toggle on WinForms menus (#78)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/78), [UIA3 WinForms context menus (#79)](https://github.com/amruthvvkp/flaui-uiautomation-wrapper/issues/79)
 
